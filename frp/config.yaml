@@ -1,0 +1,14 @@
+name: frp
+enable: true
+priority: 50
+height: 6
+padding: 3
+extend:
+  ConfigPath:
+    val: "/home/data/disk400G/data/server/frpc/frpc.ini"
+    desc: 配置文件
+    priority: 200
+  RestartScript:
+    val: "docker restart frpc"
+    desc: 重启脚本
+    priority: 201
