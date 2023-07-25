@@ -1,0 +1,5 @@
+name: frp
+enable: true
+priority: 0
+height: 6
+padding: 3

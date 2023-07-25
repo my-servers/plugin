@@ -1,0 +1,19 @@
+name: 系统监控
+enable: true
+priority: 7
+padding: 3
+extend:
+  CpuWin:
+    val: "100"
+    desc: cpu走势图窗口大小
+    priority: 0
+  Interface:
+    val: enp7s0f1
+    desc: 网络接口
+    priority: 90
+  Disk:
+    val: /home/data/disk400G/data
+    desc: nas挂载点
+    priority: 100
+
+height: 4
