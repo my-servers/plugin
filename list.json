@@ -3,7 +3,7 @@
         {
             "id" : "qbittorrent",
             "name": "qbittorrent",
-            "introduce" : "下载神器",
+            "introduce" : "qbittorrent下载管理，支持指定链接下载，搜索，暂停，下载，删除。",
             "author" : "admin",
             "home_url": "",
             "download_url":"https://raw.githubusercontent.com/service-house/plugin/feature/dev/qbittorrent",
@@ -14,7 +14,7 @@
         {
             "id" : "docker",
             "name": "docker",
-            "introduce" : "docker管理",
+            "introduce" : "docker管理，支持容器的停止，重启",
             "author" : "admin",
             "home_url": "",
             "download_url":"https://raw.githubusercontent.com/service-house/plugin/feature/dev/docker",
@@ -24,19 +24,18 @@
         {
             "id" : "system",
             "name": "system",
-            "introduce" : "系统监控",
+            "introduce" : "系统监控，支持对系统cpu，内存，网络，磁盘的监控，并且支持监控cpu的走势。",
             "author" : "admin",
             "home_url": "",
             "download_url":"https://raw.githubusercontent.com/service-house/plugin/feature/dev/system",
             "img":[
-                "https://i.mji.rip/2023/07/26/c7bcfd98cc3c773f0b9fbf14fad04528.jpeg",
-                "https://i.mji.rip/2023/07/26/555b35fd548fc76c711356af584b2d14.jpeg"
+                "https://i.mji.rip/2023/07/26/c7bcfd98cc3c773f0b9fbf14fad04528.jpeg"
             ]
         },
         {
             "id" : "frp",
             "name": "frp",
-            "introduce" : "内网穿透",
+            "introduce" : "内网穿透，支持管理内网穿透的端口。",
             "author" : "admin",
             "home_url": "",
             "download_url":"https://raw.githubusercontent.com/service-house/plugin/feature/dev/frp",
