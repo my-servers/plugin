@@ -15,7 +15,7 @@
             "id" : "docker",
             "name": "docker",
             "introduce" : "docker管理，支持容器的停止，重启",
-            "author" : "admin1",
+            "author" : "other",
             "home_url": "",
             "download_url":"https://raw.githubusercontent.com/service-house/plugin/feature/dev/docker",
             "img":[
