@@ -15,7 +15,7 @@
             "id" : "docker",
             "name": "docker",
             "introduce" : "docker管理，支持容器的停止，重启",
-            "author" : "admin",
+            "author" : "admin1",
             "home_url": "",
             "download_url":"https://raw.githubusercontent.com/service-house/plugin/feature/dev/docker",
             "img":[
@@ -24,7 +24,7 @@
         {
             "id" : "system",
             "name": "system",
-            "introduce" : "系统监控，支持对系统cpu，内存，网络，磁盘的监控，并且支持监控cpu的走势。",
+            "introduce" : "系统监控，支持对cpu，内存，网络，磁盘的监控，并且支持监控cpu的走势。",
             "author" : "admin",
             "home_url": "",
             "download_url":"https://raw.githubusercontent.com/service-house/plugin/feature/dev/system",
