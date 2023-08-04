@@ -85,22 +85,33 @@ function NewDocker(ctx)
     end
 
     function self:Stop()
-        net.Post(string.format(self.config.HostPort..global.api.stopContainer,self.arg.id),{},{})
+        local handle = {}
+        handle.restart = function()
+            net.Post(string.format(self.config.HostPort..global.api.stopContainer,self.arg.id),{},{})
+        end
+        go(handle)
     end
 
     function self:Restart()
-        net.Post(string.format(self.config.HostPort..global.api.restartContainer,self.arg.id),{},{})
+        local handle = {}
+        handle.restart = function()
+            net.Post(string.format(self.config.HostPort..global.api.restartContainer,self.arg.id),{},{})
+        end
+        go(handle)
     end
 
     function self:Start()
-        net.Post(string.format(self.config.HostPort..global.api.startContainer,self.arg.id),{},{})
+        local handle = {}
+        handle.restart = function()
+            net.Post(string.format(self.config.HostPort..global.api.startContainer,self.arg.id),{},{})
+        end
+        go(handle)
     end
 
 
 
 
     function self:GetUi()
-
         app = NewApp()
         getContainersStats(app)
         return app.Data()
