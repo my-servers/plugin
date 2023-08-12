@@ -1,10 +1,12 @@
+local json = require("json")
 local global = {
     cpuPoints = {},
     netState = {
         recv = 0,
         send = 0,
         ts = 0,
-    }
+    },
+    execResult = ""
 }
 
 ---@param ctx Ctx
@@ -81,7 +83,6 @@ local function NewSystem(ctx)
         local cpuUi = NewProcessCircleUi().SetTitle(cpuTitle)
             .SetDesc(cpuDesc)
             .SetProcessData(NewProcessData(self.runCtx.cpuPercent[1], 100))
-            .AddAction(NewAction("test", {}, "测试"))
         return cpuUi
     end
 
@@ -110,18 +111,64 @@ local function NewSystem(ctx)
         return cpuLineChart
     end
 
-    local function GetUi()
+    ---@param app AppUI
+    local function getAllMenu(app)
+        --  运行命令
+        local button = NewIconButton()
+                .SetAction(NewAction("exec",{},"").AddInput("Cmd",NewInput("命令",1)))
+                .SetIcon("terminal")
+                .SetSize(14)
+        app.AddMenu(button)
+
+        if global.execResult ~= "" then
+            local buttonClear = NewIconButton()
+                    .SetAction(NewAction("clear",{},""))
+                    .SetIcon("stop.circle")
+                    .SetSize(14)
+                    .SetColor("#F00")
+            app.AddMenu(buttonClear)
+        end
+    end
+
+    function self:GetUi()
         local app = NewApp()
+        getAllMenu(app)
         app.AddUi(1, getNetUi())
         app.AddUi(1, getMemUi())
         app.AddUi(1, getCpuUi())
         app.AddUi(1, getNasUi())
         app.AddUi(2, getCpuLineChart())
         updateNetWin()
+        if global.execResult ~= "" then
+            index = 3
+            text = NewText("")
+            allLine = string.split(global.execResult,"\n")
+            for i = 1, #allLine do
+                local allCol = string.split(allLine[i],"\t")
+                text = NewText("")
+                for j = 1, #allCol do
+                    text.AddString(1,NewString(allCol[j]).SetFontSize(8))
+                end
+                app.AddUi(index,NewTextUi().SetText(text).SetHeight(10))
+                index = index+1
+            end
+        end
         return app.Data()
     end
 
-    self.GetUi = GetUi
+    function self:Exec()
+        local handle = io.popen(self.input.Cmd)
+        local result = handle:read("*a")
+        handle:close()
+        global.execResult = result
+        return {}
+    end
+
+    function self:Clear()
+        global.execResult = ""
+        return {}
+    end
+
     return self
 end
 
@@ -135,5 +182,17 @@ end
 ---@param ctx Ctx
 ---@return AppUIData
 function update(ctx)
-    return NewSystem(ctx).GetUi()
+    return NewSystem(ctx):GetUi()
+end
+
+---@param ctx Ctx
+function exec(ctx)
+    print("exec start----")
+    return NewSystem(ctx):Exec()
+end
+
+---@param ctx Ctx
+function clear(ctx)
+    print("clear start----")
+    return NewSystem(ctx):Clear()
 end

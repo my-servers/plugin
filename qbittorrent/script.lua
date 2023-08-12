@@ -1,4 +1,9 @@
 local json = require("json")
+local http = require("http")
+local httpClient = http.client({
+    timeout = 1, -- 超时1s
+    headers = {["Content-Type"]="application/x-www-form-urlencoded"},
+})
 
 local global = {
     cookie = "",
@@ -76,19 +81,29 @@ local function NewQBittorrent(ctx)
     end
 
     local function updateCookie()
-        loginRsp = net.Post(self.config.HostPort .. global.api.LoginUrl, {}, { username = self.config.Username, password = self.config.Password },
-                "form")
-        global.cookie = loginRsp.header["Set-Cookie"]
+        data = string.format("username=%s&password=%s",self.config.Username,self.config.Password)
+        req = http.request("POST",self.config.HostPort .. global.api.LoginUrl,data)
+        loginRsp,err = httpClient:do_request(req)
+        if err then
+            error(err)
+        end
+        print("update cookie---------",json.encode(loginRsp),data)
     end
 
     local function getSearchResult()
         cfg = self.config
-        data = net.Post(cfg.HostPort .. global.api.SearchResultUrl, { Cookie = global.cookie },
-                { id = global.searchTaskId, limit = tonumber(cfg.SearchNum) }, "form")
-        table.sort(data.data.results, function(a, b)
+
+        data = string.format("id=%s&limit=%d",global.searchTaskId,tonumber(cfg.SearchNum) )
+        req = http.request("POST",self.config.HostPort .. global.api.SearchResultUrl,data)
+        loginRsp,err = httpClient:do_request(req)
+        if err then
+            error(err)
+        end
+        results = json.decode(loginRsp.body)
+        table.sort(results.results, function(a, b)
             return a.nbSeeders * 1000000000000 + a.fileSize > b.nbSeeders * 1000000000000 + b.fileSize
         end)
-        return data
+        return results
     end
 
 
@@ -96,14 +111,12 @@ local function NewQBittorrent(ctx)
     local function handleSearchList(app)
         -- 周期获取数据
         -- 周期获取数据
-        config = ctx.config
-        data = getSearchResult()
-        if data.ret == 403 then
+        local data = getSearchResult()
+        if data.code == 403 then
             updateCookie()
             data = getSearchResult()
         end
-        print("search--------------", json.encode(data))
-        list = data.data.results
+        list = data.results
         row = 1000
         index = 1
         if #list == 0 then
@@ -130,39 +143,27 @@ local function NewQBittorrent(ctx)
     end
 
     local function getBittorrentList()
-        return net.Get(self.config.HostPort .. global.api.Url .. global.urlArg, { Cookie = global.cookie }, {})
-    end
-
-    local function updateCookie()
-        loginRsp = net.Post(self.config.HostPort .. global.api.LoginUrl, {}, { username = self.config.Username, password = self.config.Password },
-                "form")
-        global.cookie = loginRsp.header["Set-Cookie"]
-    end
-
-
-    local function getSearchResult()
-        cfg = self.config
-        data = net.Post(cfg.HostPort .. global.api.SearchResultUrl, { Cookie = global.cookie },
-                { id = global.searchTaskId, limit = tonumber(cfg.SearchNum) }, "form")
-        table.sort(data.data.results, function(a, b)
-            return a.nbSeeders * 1000000000000 + a.fileSize > b.nbSeeders * 1000000000000 + b.fileSize
-        end)
-        return data
+        req = http.request("GET",self.config.HostPort .. global.api.Url .. global.urlArg)
+        loginRsp,err = httpClient:do_request(req)
+        if err then
+            error(err)
+        end
+        return loginRsp
     end
 
     local function handleBittorrentList(app)
         -- 周期获取数据
         local config = self.config
         data = getBittorrentList()
-        if data.ret == 403 then
+        if data.code == 403 then
             updateCookie(config)
             data = getBittorrentList()
         end
-
+        list = json.decode(data.body)
         local index = 2
         local col = 0
-        for i = 1, #data.data do
-            d = data.data[i]
+        for i = 1, #list do
+            d = list[i]
             state = NewString(string.format("↓%s/S ↑%s/S", ByteToUiString(d.dlspeed), ByteToUiString(d.upspeed)))
                     .SetFontSize(10)
             if global.stateMsg[d.state] ~= nil then
@@ -219,54 +220,95 @@ local function NewQBittorrent(ctx)
     local function Pause()
         arg = self.arg
         cfg = self.config
-        net.Post(cfg.HostPort .. global.api.PauseUrl, { Cookie = global.cookie }, { hashes = arg.hash }, "form")
+
+        data = string.format("hashes=%s",arg.hash )
+        req = http.request("POST",self.config.HostPort .. global.api.PauseUrl,data)
+        local pauseRsp,err = httpClient:do_request(req)
+        if err then
+            error(err)
+        end
+
         return {}
     end
 
     local function Resume()
         arg = self.arg
         cfg = self.config
-        net.Post(cfg.HostPort .. global.api.ResumeUrl, { Cookie = global.cookie }, { hashes = arg.hash }, "form")
+
+        data = string.format("hashes=%s",arg.hash )
+        req = http.request("POST",self.config.HostPort .. global.api.ResumeUrl,data)
+        local pauseRsp,err = httpClient:do_request(req)
+        if err then
+            error(err)
+        end
+
         return {}
     end
 
     local function Delete()
         arg = self.arg
         cfg = self.config
-        net.Post(cfg.HostPort .. global.api.DeleteUrl, { Cookie = global.cookie }, { hashes = arg.hash, deleteFiles = false }, "form")
+
+        data = string.format("hashes=%s&deleteFiles=false",arg.hash )
+        req = http.request("POST",self.config.HostPort .. global.api.DeleteUrl,data)
+        local pauseRsp,err = httpClient:do_request(req)
+        if err then
+            error(err)
+        end
+
         return {}
     end
 
     local function Search()
         input = self.input
         cfg = self.config
-        data = net.Post(cfg.HostPort .. global.api.SearchUrl, { Cookie = global.cookie },
-                { pattern = input.Key, plugins = "enabled", category = "all" }, "form")
-        global.searchTaskId = data.data.id
+        data = string.format("pattern=%s&plugins=enabled&category=all",input.Key )
+        req = http.request("POST",self.config.HostPort .. global.api.SearchUrl,data)
+        local searchRsp,err = httpClient:do_request(req)
+        if err then
+            error(err)
+        end
+        global.searchTaskId = json.decode(searchRsp.body).id
         return {}
     end
 
     local function StopSearch()
         arg = self.arg
         cfg = self.config
-        data = net.Post(cfg.HostPort .. global.api.StopSearchUrl, { Cookie = global.cookie }, { id = global.searchTaskId }, "form")
+
+        data = string.format("id=%s",tostring(global.searchTaskId))
+        req = http.request("POST",self.config.HostPort .. global.api.StopSearchUrl,data)
+        local searchRsp,err = httpClient:do_request(req)
+        if err then
+            error(err)
+        end
         global.searchTaskId = 0
-        print("stop--------------", json.encode(data))
+        print("stop--------------", json.encode(searchRsp))
         return {}
     end
 
     local function Add()
         input = self.input
         cfg = self.config
-        data = net.Post(cfg.HostPort .. global.api.AddUrl, { Cookie = global.cookie }, { urls = input.Url, savepath = "/downloads" },
-                "form")
+        data = string.format("urls=%s&savepath=/downloads", input.Url)
+        req = http.request("POST",self.config.HostPort .. global.api.AddUrl,data)
+        local addRsp,err = httpClient:do_request(req)
+        if err then
+            error(err)
+        end
         return {}
     end
 
     local function Download()
         arg = self.arg
         cfg = self.config
-        data = net.Post(cfg.HostPort .. global.api.AddUrl, { Cookie = global.cookie }, { urls = arg.Url, savepath = "/downloads" }, "form")
+
+        data = string.format("urls=%s&savepath=/downloads", arg.Url)
+        req = http.request("POST",self.config.HostPort .. global.api.AddUrl,data)
+        local addRsp,err = httpClient:do_request(req)
+        if err then
+            error(err)
+        end
         return {}
     end
 

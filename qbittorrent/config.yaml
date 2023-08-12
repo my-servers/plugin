@@ -13,11 +13,11 @@ extend:
     desc: 名字长度限制
     priority: 210
   Username:
-    val: admin
+    val: codelover
     desc: 用户名
     priority: 200
   Password:
-    val: adminadmin
+    val: codelover123.
     desc: 密码
     priority: 190
   HostPort:

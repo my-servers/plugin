@@ -25,6 +25,19 @@ function Tonumber(num)
     return tonumber(num)
 end
 
+function string.split(input, delimiter)
+    input = tostring(input)
+    delimiter = tostring(delimiter)
+    if (delimiter=='') then return false end
+    local pos,arr = 0, {}
+    for st,sp in function() return string.find(input, delimiter, pos, true) end do
+        table.insert(arr, string.sub(input, pos, st - 1))
+        pos = sp + 1
+    end
+    table.insert(arr, string.sub(input, pos))
+    return arr
+end
+
 ---@class CpuInfo
 local cpuInfo = {
     CPU        = "",
@@ -308,7 +321,6 @@ function NewText(alignment)
 
     -- AddString 添加文本段
     ---@param row string 行
-    ---@param col string 列
     ---@param str String 文本
     ---@return Text
     local function AddString(row, str)
@@ -435,18 +447,6 @@ function NewIconButton()
         return iconButton
     end
 
-    ---- AddInput 添加用户输入
-    -----@param key string key
-    -----@param input Input 输入
-    -----@return IconButton
-    --local function AddInput(key, input)
-    --    if iconButton.data.extend == nil then
-    --        iconButton.data.extend = {}
-    --    end
-    --    iconButton.data.extend[tostring(key)] = input.Data()
-    --    return iconButton
-    --end
-
     -- SetId 设置id
     ---@param id string key
     ---@return IconButton
@@ -518,6 +518,14 @@ function NewLineChartUi()
         return lineChart
     end
 
+    -- SetHeight 添加动作
+    ---@param height number 高度
+    ---@return LineChartUi
+    local function SetHeight(height)
+        lineChart.data.height = height
+        return lineChart
+    end
+
     ---@return LineChartUiData
     local function Data()
         return lineChart.data
@@ -527,6 +535,7 @@ function NewLineChartUi()
     lineChart.SetTitle = SetTitle
     lineChart.AddPoint = AddPoint
     lineChart.Data = Data
+    lineChart.SetHeight = SetHeight
     return lineChart
 end
 
@@ -586,6 +595,14 @@ function NewProcessCircleUi()
         return processCircle
     end
 
+    -- SetHeight 添加动作
+    ---@param height number 高度
+    ---@return ProcessCircleUi
+    local function SetHeight(height)
+        processCircle.processCircleUiData.height = height
+        return processCircle
+    end
+
     ---@return ProcessCircleUiData
     local function Data()
         return processCircle.processCircleUiData
@@ -596,6 +613,7 @@ function NewProcessCircleUi()
     processCircle.SetTitle = SetTitle
     processCircle.Data = Data
     processCircle.AddAction = AddAction
+    processCircle.SetHeight = SetHeight
     return processCircle
 end
 
@@ -655,6 +673,14 @@ function NewProcessLineUi()
         return processLine
     end
 
+    -- SetHeight 添加动作
+    ---@param height number 高度
+    ---@return ProcessCircleUi
+    local function SetHeight(height)
+        processLine.processLineUiData.height = height
+        return processLine
+    end
+
     ---@return ProcessCircleUiData
     local function Data()
         return processLine.processLineUiData
@@ -665,6 +691,7 @@ function NewProcessLineUi()
     processLine.SetTitle = SetTitle
     processLine.Data = Data
     processLine.AddAction = AddAction
+    processLine.SetHeight = SetHeight
     return processLine
 end
 
@@ -700,6 +727,14 @@ function NewTextUi()
         return textUi
     end
 
+    -- SetHeight 添加动作
+    ---@param height number 高度
+    ---@return TextUi
+    local function SetHeight(height)
+        textUi.uiTextData.height = height
+        return textUi
+    end
+
     ---@return TextUiData
     local function Data()
         return textUi.uiTextData
@@ -708,6 +743,7 @@ function NewTextUi()
     textUi.SetText   = SetText
     textUi.Data      = Data
     textUi.AddAction = AddAction
+    textUi.SetHeight = SetHeight
     return textUi
 end
 
@@ -748,6 +784,14 @@ function NewIconButtonUi()
         return iconButtonUi
     end
 
+    -- SetHeight 添加动作
+    ---@param height number 高度
+    ---@return IconButtonUi
+    local function SetHeight(height)
+        iconButtonUi.data.height = height
+        return iconButtonUi
+    end
+
     ---@return IconButtonUiData
     local function Data()
         return iconButtonUi.data
@@ -755,6 +799,7 @@ function NewIconButtonUi()
     iconButtonUi.SetIconButton = SetIconButton
     iconButtonUi.Data = Data
     iconButtonUi.AddAction = AddAction
+    iconButtonUi.SetHeight = SetHeight
     return iconButtonUi
 end
 

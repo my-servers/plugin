@@ -1,15 +1,49 @@
+local http = require("http")
+local json = require("json")
+local time = require("time")
+local strings = require("strings")
+local httpClient = http.client({
+    timeout = 2, -- 超时1s
+})
+local backendHttpClient = http.client({
+    timeout = 300, -- 超时300s
+    headers = {["Content-Type"]="application/x-www-form-urlencoded"},
+    --headers = {["Content-Type"]="application/json"},
+})
 
 local global = {
     api = {
         containersList = "/containers/json?all=1",
         containersStatsFormat = "/containers/%s/stats?stream=false&one-shot=true",
-        stopContainer = "/containers/%s/stop",
-        restartContainer = "/containers/%s/restart",
-        startContainer = "/containers/%s/start",
+        stopContainer = "/containers/%s/stop?t=1",
+        restartContainer = "/containers/%s/restart?t=1",
+        startContainer = "/containers/%s/start?t=1",
+        deleteContainer = "/containers/%s",
+        deleteImage = "/images/%s",
+        imageList = "/images/json?all=true",
+        searchImage = "/images/search?term=%s",
+        pullImage = "/images/create",
     },
     containerState = {},
     updateStateTs = 0,
+    menu = 0, -- 0 容器 1 镜像
+    searchKey = "",
+    searchResult = {},
 }
+
+function string.split(input, delimiter)
+    input = tostring(input)
+    delimiter = tostring(delimiter)
+    if (delimiter=='') then return false end
+    local pos,arr = 0, {}
+    for st,sp in function() return string.find(input, delimiter, pos, true) end do
+        table.insert(arr, string.sub(input, pos, st - 1))
+        pos = sp + 1
+    end
+    table.insert(arr, string.sub(input, pos))
+    return arr
+end
+
 ---@param ctx Ctx
 ---@return Docker
 function NewDocker(ctx)
@@ -21,49 +55,42 @@ function NewDocker(ctx)
         runCtx = ctx.ctx,
     }
 
-
-    local function fetch_all(containers)
-        if os.time() - global.updateStateTs <= 3 then
-            return
-        end
-        print("update---------")
-        global.updateStateTs = os.time()
-        local coroutines = {}
-        local result = {}
-        for i = 1, #containers do
-            coroutines[i] = function()
-                stats = getStats(containers[i])
-                global.containerState[containers[i].Id] = stats
-            end
-        end
-        go(coroutines)
-        return result
-    end
-
     function getStats(c)
-        local data = net.Get(string.format(self.config.HostPort..global.api.containersStatsFormat,c.Id),{},{})
-        return data.data
+        req = http.request("GET",string.format(self.config.HostPort..global.api.containersStatsFormat,c.Id))
+        local stateRsp,err = httpClient:do_request(req)
+        if err then
+            error(err)
+        end
+        return json.decode(stateRsp.body)
     end
 
     ---@param app AppUI
     function getContainersStats(app)
-        local data = net.Get(self.config.HostPort..global.api.containersList,{},{})
+        req = http.request("GET",self.config.HostPort..global.api.containersList)
+        local stateRsp,err = httpClient:do_request(req)
+        if err then
+            error(err)
+        end
+
+        local data = json.decode(stateRsp.body)
         index = 0
         text = NewText("leading").AddString(1,NewString("状态").SetFontSize(10).SetOpacity(0.5))
-        app.AddUi(index,NewTextUi().SetText(text))
+        app.AddUi(index,NewTextUi().SetText(text).SetHeight(8))
         text = NewText("leading").AddString(1,NewString("名字").SetFontSize(10).SetOpacity(0.5))
-        app.AddUi(index,NewTextUi().SetText(text))
-        index = 1
-        for i = 1, #data.data do
-            c = data.data[i]
+        app.AddUi(index,NewTextUi().SetText(text).SetHeight(8))
+        local index = 1
+        local height = 35
+        for i = 1, #data do
+            local c = data[i]
             color = "#000"
             if c.State ~= "running" then
                 color = "#F00"
             end
-
             state = NewString(c.State).SetFontSize(12).SetColor(color)
             status = NewString(c.Status).SetFontSize(8).SetColor(color).SetOpacity(0.5)
-            app.AddUi(index,NewTextUi().SetText(NewText("").AddString(1,state).AddString(2,status)))
+            app.AddUi(index,NewTextUi()
+                    .SetText(NewText("").AddString(1,state).AddString(2,status))
+                    .SetHeight(height))
             name = NewString(string.sub(c.Names[1],2,string.len(c.Names[1])))
                     .SetFontSize(12)
                     .SetColor(color)
@@ -72,8 +99,10 @@ function NewDocker(ctx)
             nameAndOp = NewTextUi()
                     .SetText(nameText)
                     .AddAction(NewAction("restart",{id=c.Id},"重启"))
+                    .SetHeight(height)
             if c.State ~= "running" then
                 nameAndOp.AddAction(NewAction("start",{id=c.Id},"启动"))
+                nameAndOp.AddAction(NewAction("deleteContainer",{id=c.Id},"删除").SetCheck(true))
             else
                 nameAndOp.AddAction(NewAction("stop",{id=c.Id},"停止"))
             end
@@ -84,10 +113,48 @@ function NewDocker(ctx)
         end
     end
 
+    ---@param app AppUI
+    function getImageList(app)
+        req = http.request("GET",self.config.HostPort..global.api.imageList)
+        local stateRsp,err = httpClient:do_request(req)
+        if err then
+            error(err)
+        end
+        local height = 35
+        local data = json.decode(stateRsp.body)
+        index = 1
+        for i = 1, #data do
+            local c = data[i]
+            size = NewString(ByteToUiString(c.Size)).SetFontSize(8).SetOpacity(0.5)
+            nameAndVersion = string.split("name:none",":")
+            if type(c.RepoTags) == "table" then
+                nameAndVersion = string.split(c.RepoTags[1],":")
+            end
+            nameText = NewText("")
+                    .AddString(1,NewString(nameAndVersion[1]).SetFontSize(12))
+                    .AddString(2,NewString(nameAndVersion[2].."/"..ByteToUiString(c.Size)).SetFontSize(9).SetOpacity(0.5))
+            nameAndOp = NewTextUi()
+                    .SetText(nameText)
+                    .AddAction(NewAction("delete",{id=c.Id},"删除")
+                        .SetCheck(true)
+                    )
+                    .SetHeight(height)
+
+            app.AddUi(index,nameAndOp)
+            if i%2 == 0 then
+                index = index+1
+            end
+        end
+    end
+
     function self:Stop()
         local handle = {}
         handle.restart = function()
-            net.Post(string.format(self.config.HostPort..global.api.stopContainer,self.arg.id),{},{})
+            req = http.request("POST",string.format(self.config.HostPort..global.api.stopContainer,self.arg.id))
+            local _,err = httpClient:do_request(req)
+            if err then
+                error(err)
+            end
         end
         go(handle)
     end
@@ -95,7 +162,15 @@ function NewDocker(ctx)
     function self:Restart()
         local handle = {}
         handle.restart = function()
-            net.Post(string.format(self.config.HostPort..global.api.restartContainer,self.arg.id),{},{})
+            local url = string.format(
+                    self.config.HostPort..global.api.restartContainer,
+                    self.arg.id)
+            print("restart--------",url)
+            req = http.request("POST",url)
+            local _,err = httpClient:do_request(req)
+            if err then
+                error(err)
+            end
         end
         go(handle)
     end
@@ -103,20 +178,149 @@ function NewDocker(ctx)
     function self:Start()
         local handle = {}
         handle.restart = function()
-            net.Post(string.format(self.config.HostPort..global.api.startContainer,self.arg.id),{},{})
+            local url = string.format(self.config.HostPort..global.api.startContainer,self.arg.id)
+            print("restart--------",url)
+            req = http.request("POST",url)
+            local _,err = httpClient:do_request(req)
+            if err then
+                error(err)
+            end
         end
         go(handle)
     end
 
-
-
+    -- @param app: AppUI
+    function getSearchResult(app)
+        local index = 1
+        for i = 1, #global.searchResult do
+            local s = global.searchResult[i]
+            nameText = NewText("")
+                    .AddString(1,NewString(s.name).SetFontSize(12))
+                    .AddString(2,NewString(tostring(s.star_count).." star").SetFontSize(10).SetOpacity(0.8))
+                    --.AddString(3,NewString(tostring(s.description)).SetFontSize(10).SetOpacity(0.8))
+            descriptionText = NewText("")
+                    .AddString(1,NewString(s.description).SetFontSize(10).SetOpacity(0.8))
+            app.AddUi(index,NewTextUi()
+                    .SetText(descriptionText).SetHeight(50))
+            app.AddUi(index,NewTextUi()
+                    .SetText(nameText).SetHeight(50).AddAction(NewAction("pull",{name=s.name},"拉取镜像")))
+            if i%1 == 0 then
+                index = index+1
+            end
+        end
+    end
 
     function self:GetUi()
-        app = NewApp()
-        getContainersStats(app)
+        local app = NewApp()
+        local buttonSize = 17
+        imageMenu = NewIconButton().SetIcon("shippingbox.circle")
+                                          .SetAction(NewAction("changeMenu", {id=1}, ""))
+                                          .SetSize(buttonSize)
+        containerMenu = NewIconButton().SetIcon("play.circle")
+                                    .SetAction(NewAction("changeMenu", {id=0}, ""))
+                                    .SetSize(buttonSize)
+        searchButton = NewIconButton().SetIcon("magnifyingglass.circle")
+                                      .SetAction(NewAction("search", {}, "").AddInput("Key", NewInput("镜像关键字", 1)))
+                                      .SetSize(buttonSize)
+        if global.searchKey ~= "" then
+            searchButton.SetIcon("stop.circle").SetAction(NewAction("stopSearch", {}, ""))
+            .SetColor("#F00")
+        end
+        app.AddMenu(searchButton)
+        app.AddMenu(imageMenu)
+        app.AddMenu(containerMenu)
+        if global.searchKey ~= "" then
+            getSearchResult(app)
+            -- 搜索优先级高，提前返回
+            return app.Data()
+        end
+
+        if global.menu == 0 then
+            containerMenu.SetColor("#F00")
+            getContainersStats(app)
+        else
+            imageMenu.SetColor("#F00")
+            getImageList(app)
+        end
+
         return app.Data()
     end
 
+    function self:ChangeMenu()
+        global.menu = tonumber(self.arg.id)
+    end
+
+    function self:DeleteImage()
+        local handle = {}
+        handle.restart = function()
+            req = http.request("DELETE",string.format(self.config.HostPort..global.api.deleteImage,self.arg.id))
+            local _,err = httpClient:do_request(req)
+            if err then
+                error(err)
+            end
+        end
+        go(handle)
+        print("delete image ------",self.arg.id)
+    end
+
+    function self:DeleteContainer()
+        print("delete Container ------",self.arg.id)
+        local handle = {}
+        handle.restart = function()
+            req = http.request("DELETE",string.format(self.config.HostPort..global.api.deleteContainer,self.arg.id))
+            local _,err = httpClient:do_request(req)
+            if err then
+                error(err)
+            end
+        end
+        go(handle)
+    end
+
+    function self:Search()
+        print("search-----",self.input.Key)
+        global.searchKey = self.input.Key
+        local handle = {}
+        handle.restart = function()
+            ::continue::
+            if global.searchKey == "" then
+                return
+            end
+            local url = string.format(self.config.HostPort..global.api.searchImage,strings.trim_space(global.searchKey))
+            req = http.request("GET",url)
+            local rsp,err = backendHttpClient:do_request(req)
+            if err or rsp.code ~= 200 then
+                print("search retry",url,";")
+                time.sleep(1)
+                goto continue
+            end
+            print("search result---",url,json.encode(rsp))
+            global.searchResult = json.decode(rsp.body)
+            table.sort(global.searchResult,function(a, b)
+                return a.star_count > b.star_count
+            end)
+        end
+        go(handle)
+    end
+
+    function self:StopSearch()
+        global.searchKey = ""
+        global.searchResult = {}
+    end
+
+    function self:Pull()
+        local handle = {}
+        handle.restart = function()
+            data = string.format("fromImage=%s:latest",self.arg.name)
+            req = http.request("POST",self.config.HostPort .. global.api.pullImage,data)
+            loginRsp,err = backendHttpClient:do_request(req)
+            if err then
+                error(err)
+            end
+            print("pull---",json.encode(loginRsp))
+        end
+        go(handle)
+        return {}
+    end
 
     return self
 end
@@ -143,4 +347,28 @@ end
 
 function start(ctx)
     return NewDocker(ctx):Start()
+end
+
+function changeMenu(ctx)
+    return NewDocker(ctx):ChangeMenu()
+end
+
+function delete(ctx)
+    return NewDocker(ctx):DeleteImage()
+end
+
+function deleteContainer(ctx)
+    return NewDocker(ctx):DeleteContainer()
+end
+
+function search(ctx)
+    return NewDocker(ctx):Search()
+end
+
+function stopSearch(ctx)
+    return NewDocker(ctx):StopSearch()
+end
+
+function pull(ctx)
+    return NewDocker(ctx):Pull()
 end
