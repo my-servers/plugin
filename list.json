@@ -41,6 +41,16 @@
             "download_url":"https://raw.githubusercontent.com/service-house/plugin/feature/dev/frp",
             "img":[
             ]
+        },
+        {
+            "id" : "aria2",
+            "name": "aria2",
+            "introduce" : "aria2下载工具",
+            "author" : "admin",
+            "home_url": "",
+            "download_url":"https://raw.githubusercontent.com/service-house/plugin/feature/dev/aria2",
+            "img":[
+            ]
         }
     ]
 }

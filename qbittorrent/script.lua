@@ -203,7 +203,7 @@ local function NewQBittorrent(ctx)
 
 
     local function Choice()
-        arg = self.arg
+        local arg = self.arg
         global.choiceButton = tostring(arg.id)
         if global.choiceButton == "1" then
             global.urlArg = "?filter=all"
@@ -218,11 +218,11 @@ local function NewQBittorrent(ctx)
     end
 
     local function Pause()
-        arg = self.arg
-        cfg = self.config
+        local arg = self.arg
+        local cfg = self.config
 
-        data = string.format("hashes=%s",arg.hash )
-        req = http.request("POST",self.config.HostPort .. global.api.PauseUrl,data)
+        local data = string.format("hashes=%s",arg.hash )
+        local req = http.request("POST",self.config.HostPort .. global.api.PauseUrl,data)
         local pauseRsp,err = httpClient:do_request(req)
         if err then
             error(err)
@@ -232,11 +232,11 @@ local function NewQBittorrent(ctx)
     end
 
     local function Resume()
-        arg = self.arg
-        cfg = self.config
+        local arg = self.arg
+        local cfg = self.config
 
-        data = string.format("hashes=%s",arg.hash )
-        req = http.request("POST",self.config.HostPort .. global.api.ResumeUrl,data)
+        local data = string.format("hashes=%s",arg.hash )
+        local req = http.request("POST",self.config.HostPort .. global.api.ResumeUrl,data)
         local pauseRsp,err = httpClient:do_request(req)
         if err then
             error(err)
@@ -246,11 +246,11 @@ local function NewQBittorrent(ctx)
     end
 
     local function Delete()
-        arg = self.arg
-        cfg = self.config
+        local arg = self.arg
+        local cfg = self.config
 
-        data = string.format("hashes=%s&deleteFiles=false",arg.hash )
-        req = http.request("POST",self.config.HostPort .. global.api.DeleteUrl,data)
+        local data = string.format("hashes=%s&deleteFiles=false",arg.hash )
+        local req = http.request("POST",self.config.HostPort .. global.api.DeleteUrl,data)
         local pauseRsp,err = httpClient:do_request(req)
         if err then
             error(err)
@@ -260,10 +260,10 @@ local function NewQBittorrent(ctx)
     end
 
     local function Search()
-        input = self.input
-        cfg = self.config
-        data = string.format("pattern=%s&plugins=enabled&category=all",input.Key )
-        req = http.request("POST",self.config.HostPort .. global.api.SearchUrl,data)
+        local input = self.input
+        local cfg = self.config
+        local data = string.format("pattern=%s&plugins=enabled&category=all",input.Key )
+        local req = http.request("POST",self.config.HostPort .. global.api.SearchUrl,data)
         local searchRsp,err = httpClient:do_request(req)
         if err then
             error(err)
@@ -273,11 +273,11 @@ local function NewQBittorrent(ctx)
     end
 
     local function StopSearch()
-        arg = self.arg
-        cfg = self.config
+        local arg = self.arg
+        local cfg = self.config
 
-        data = string.format("id=%s",tostring(global.searchTaskId))
-        req = http.request("POST",self.config.HostPort .. global.api.StopSearchUrl,data)
+        local data = string.format("id=%s",tostring(global.searchTaskId))
+        local req = http.request("POST",self.config.HostPort .. global.api.StopSearchUrl,data)
         local searchRsp,err = httpClient:do_request(req)
         if err then
             error(err)
@@ -288,10 +288,10 @@ local function NewQBittorrent(ctx)
     end
 
     local function Add()
-        input = self.input
-        cfg = self.config
-        data = string.format("urls=%s&savepath=/downloads", input.Url)
-        req = http.request("POST",self.config.HostPort .. global.api.AddUrl,data)
+        local input = self.input
+        local cfg = self.config
+        local data = string.format("urls=%s&savepath=/downloads", input.Url)
+        local req = http.request("POST",self.config.HostPort .. global.api.AddUrl,data)
         local addRsp,err = httpClient:do_request(req)
         if err then
             error(err)
@@ -300,11 +300,11 @@ local function NewQBittorrent(ctx)
     end
 
     local function Download()
-        arg = self.arg
-        cfg = self.config
+        local arg = self.arg
+        local cfg = self.config
 
-        data = string.format("urls=%s&savepath=/downloads", arg.Url)
-        req = http.request("POST",self.config.HostPort .. global.api.AddUrl,data)
+        local data = string.format("urls=%s&savepath=/downloads", arg.Url)
+        local req = http.request("POST",self.config.HostPort .. global.api.AddUrl,data)
         local addRsp,err = httpClient:do_request(req)
         if err then
             error(err)

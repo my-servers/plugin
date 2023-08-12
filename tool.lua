@@ -2,7 +2,8 @@ local json = require("json")
 local black = "#000"
 
 local ByteToOther = { "B", "K", "M", "G", "T", "P" }
-function ByteToUiString(num)
+function ByteToUiString(number)
+   local  num = tonumber(number)
     if num <= 0 then
         return "0B"
     end
@@ -293,7 +294,7 @@ function NewProcessData(cur, total)
 end
 
 -- NewText 文本
----@param alignment string 对齐方式，leading左，center中，trailing右
+---@param alignment string 对齐方式，leading 左，center 中，trailing 右
 ---@return Text 多段文本
 function NewText(alignment)
     ---@class Text

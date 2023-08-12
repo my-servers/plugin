@@ -1,4 +1,4 @@
-local json = require("json")
+local strings = require("strings")
 local global = {
     allPort = {},
     checkTime = 0,
@@ -17,13 +17,13 @@ local function NewFrp(ctx)
     function checkHealthy(data)
         local handle = {}
         handle.restart = function()
-            lock()
             local now = os.time()
-            if now - global.checkTime < 10 then
+            lock()
+            if now - global.checkTime < 2 then
                 unlock()
                 return
             end
-            global.checkTime = now
+            unlock()
 
             local checkResult = {}
             for k, v in pairs(data) do
@@ -36,6 +36,8 @@ local function NewFrp(ctx)
                 checkResult[v.local_port] = testPort("127.0.0.1:"..v.local_port)
                 ::continueCheck::
             end
+            lock()
+            global.checkTime = now
             global.allPort = checkResult
             unlock()
         end
@@ -77,6 +79,17 @@ local function NewFrp(ctx)
         table.sort(arr,function(a, b)
             return a.type..a.local_port > b.type..b.local_port
         end)
+
+        local add = NewIconButton().SetIcon("plus.circle")
+                       .SetAction(NewAction("add", {}, "")
+                                .AddInput("Name", NewInput("名字", 1))
+                                .AddInput("Type",NewInput("tcp/udp",2).SetVal("tcp"))
+                                .AddInput("LocalPort",NewInput("本地端口",3))
+                                .AddInput("LocalIp",NewInput("本地ip",4).SetVal("127.0.0.1"))
+                                .AddInput("RemotePort",NewInput("远端端口",5))
+                        )
+                       .SetSize(17)
+        app.AddMenu(add)
         lock()--global.allPort
         for i = 1, #arr do
             local v = arr[i]
@@ -107,19 +120,23 @@ local function NewFrp(ctx)
         return app.Data()
     end
 
-    function self:Change()
-        local data = config.LoadIni(self.config.ConfigPath)
-        data[self.arg.id] = {
-            type = self.input.type,
-            local_ip = self.input.local_ip,
-            local_port = self.input.local_port,
-            remote_port = self.input.remote_port,
-        }
-        config.SaveIni(self.config.ConfigPath,data)
+    function restart()
         go({restart=function()
             os.execute(self.config.RestartScript)
         end
         })
+    end
+
+    function self:Change()
+        local data = config.LoadIni(self.config.ConfigPath)
+        data[self.arg.id] = {
+            type = strings.trim_space(self.input.type),
+            local_ip = strings.trim_space(self.input.local_ip),
+            local_port = strings.trim_space(self.input.local_port),
+            remote_port = strings.trim_space(self.input.remote_port),
+        }
+        config.SaveIni(self.config.ConfigPath,data)
+        restart()
         return {}
     end
 
@@ -128,6 +145,19 @@ local function NewFrp(ctx)
         local data = config.LoadIni(self.config.ConfigPath)
         data[self.arg.id] = nil
         config.SaveIni(self.config.ConfigPath,data)
+        restart()
+    end
+
+    function self:Add()
+        local data = config.LoadIni(self.config.ConfigPath)
+        data[self.input.Name] = {
+            type = strings.trim_space(self.input.Type),
+            local_ip = strings.trim_space(self.input.LocalIp),
+            local_port = strings.trim_space(self.input.LocalPort),
+            remote_port = strings.trim_space(self.input.RemotePort),
+        }
+        config.SaveIni(self.config.ConfigPath,data)
+        restart()
     end
 
     return self
@@ -149,4 +179,8 @@ end
 
 function delete(ctx)
     return NewFrp(ctx):Delete()
+end
+
+function add(ctx)
+    return NewFrp(ctx):Add()
 end
