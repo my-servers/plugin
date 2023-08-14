@@ -3,7 +3,7 @@
         {
             "id" : "qbittorrent",
             "name": "qbittorrent",
-            "introduce" : "qbittorrent下载管理，支持指定链接下载，搜索，暂停，下载，删除。",
+            "introduce" : "qbittorrent下载管理，支持:\n1.指定链接下载\n2.搜索\n3.下载\n4.删除。",
             "author" : "admin",
             "home_url": "",
             "download_url":"https://raw.githubusercontent.com/service-house/plugin/feature/dev/qbittorrent",

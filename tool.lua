@@ -239,6 +239,15 @@ function NewString(str)
         return s
     end
 
+
+    -- SetBackendColor 设置背景颜色
+    ---@param color string 颜色
+    ---@return String
+    local function SetBackendColor(color)
+        s.strData.backend_color = tostring(color)
+        return s
+    end
+
     -- SetOpacity 设置透明度
     ---@param opacity number 透明度
     ---@return String
@@ -261,6 +270,7 @@ function NewString(str)
     end
     s.SetContent  = SetContent
     s.SetColor    = SetColor
+    s.SetBackendColor    = SetBackendColor
     s.SetOpacity  = SetOpacity
     s.SetFontSize = SetFontSize
     s.Data        = Data

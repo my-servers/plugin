@@ -31,6 +31,24 @@ local global = {
     searchResult = {},
 }
 
+function asyncDoRequest(method,url,data)
+    req = http.request(method,url,data)
+    local rsp,err = httpClient:do_request(req)
+    if err then
+        error(err)
+    end
+    return rsp
+end
+
+function asyncDoRequestWithBackendClient(method,url,data)
+    req = http.request(method,url,data)
+    local rsp,err = backendHttpClient:do_request(req)
+    if err then
+        error(err)
+    end
+    return rsp
+end
+
 function string.split(input, delimiter)
     input = tostring(input)
     delimiter = tostring(delimiter)
@@ -79,12 +97,15 @@ function NewDocker(ctx)
         text = NewText("leading").AddString(1,NewString("名字").SetFontSize(10).SetOpacity(0.5))
         app.AddUi(index,NewTextUi().SetText(text).SetHeight(8))
         local index = 1
-        local height = 35
+        local height = 50
         for i = 1, #data do
             local c = data[i]
+            image = NewString(c.Image).SetFontSize(8).SetBackendColor("#339999").SetColor("#FFF")
+
             color = "#000"
             if c.State ~= "running" then
                 color = "#F00"
+                image.SetBackendColor("#F00")
             end
             state = NewString(c.State).SetFontSize(12).SetColor(color)
             status = NewString(c.Status).SetFontSize(8).SetColor(color).SetOpacity(0.5)
@@ -94,7 +115,6 @@ function NewDocker(ctx)
             name = NewString(string.sub(c.Names[1],2,string.len(c.Names[1])))
                     .SetFontSize(12)
                     .SetColor(color)
-            image = NewString(c.Image).SetFontSize(8).SetOpacity(0.5)
             nameText = NewText("").AddString(1,name).AddString(2,image)
             nameAndOp = NewTextUi()
                     .SetText(nameText)
@@ -131,62 +151,43 @@ function NewDocker(ctx)
                 nameAndVersion = string.split(c.RepoTags[1],":")
             end
             nameText = NewText("")
-                    .AddString(1,NewString(nameAndVersion[1]).SetFontSize(12))
-                    .AddString(2,NewString(nameAndVersion[2].."/"..ByteToUiString(c.Size)).SetFontSize(9).SetOpacity(0.5))
+                    .AddString(1,NewString(nameAndVersion[1]).SetFontSize(10))
+                    .AddString(2,NewString(nameAndVersion[2]).SetFontSize(8)
+                    .SetBackendColor("#336699").SetColor("#FFF"))
+                    .AddString(2,NewString(ByteToUiString(c.Size)).SetFontSize(8).SetBackendColor("#339999").SetColor("#FFF"))
             nameAndOp = NewTextUi()
                     .SetText(nameText)
                     .AddAction(NewAction("delete",{id=c.Id},"删除")
                         .SetCheck(true)
                     )
-                    .SetHeight(height)
+                   -- .SetHeight(height)
 
             app.AddUi(index,nameAndOp)
-            if i%2 == 0 then
+            if i%3 == 0 then
                 index = index+1
             end
         end
     end
 
     function self:Stop()
-        local handle = {}
-        handle.restart = function()
-            req = http.request("POST",string.format(self.config.HostPort..global.api.stopContainer,self.arg.id))
-            local _,err = httpClient:do_request(req)
-            if err then
-                error(err)
-            end
-        end
-        go(handle)
+        local url = string.format(self.config.HostPort..global.api.stopContainer,self.arg.id)
+        go("asyncDoRequest",function()
+
+        end,"POST",url,"")
     end
 
     function self:Restart()
-        local handle = {}
-        handle.restart = function()
-            local url = string.format(
-                    self.config.HostPort..global.api.restartContainer,
-                    self.arg.id)
-            print("restart--------",url)
-            req = http.request("POST",url)
-            local _,err = httpClient:do_request(req)
-            if err then
-                error(err)
-            end
-        end
-        go(handle)
+        local url = string.format(self.config.HostPort..global.api.restartContainer, self.arg.id)
+        go("asyncDoRequest",function()
+
+        end,"POST",url,"")
     end
 
     function self:Start()
-        local handle = {}
-        handle.restart = function()
-            local url = string.format(self.config.HostPort..global.api.startContainer,self.arg.id)
-            print("restart--------",url)
-            req = http.request("POST",url)
-            local _,err = httpClient:do_request(req)
-            if err then
-                error(err)
-            end
-        end
-        go(handle)
+        local url = string.format(self.config.HostPort..global.api.startContainer,self.arg.id)
+        go("asyncDoRequest",function()
+
+        end,"POST",url,"")
     end
 
     -- @param app: AppUI
@@ -251,47 +252,31 @@ function NewDocker(ctx)
     end
 
     function self:DeleteImage()
-        local handle = {}
-        handle.restart = function()
-            req = http.request("DELETE",string.format(self.config.HostPort..global.api.deleteImage,self.arg.id))
-            local _,err = httpClient:do_request(req)
-            if err then
-                error(err)
-            end
-        end
-        go(handle)
+        local url = string.format(self.config.HostPort..global.api.deleteImage,self.arg.id)
+        go("asyncDoRequest",function()
+        end,"DELETE",url,"")
         print("delete image ------",self.arg.id)
     end
 
     function self:DeleteContainer()
         print("delete Container ------",self.arg.id)
-        local handle = {}
-        handle.restart = function()
-            req = http.request("DELETE",string.format(self.config.HostPort..global.api.deleteContainer,self.arg.id))
-            local _,err = httpClient:do_request(req)
-            if err then
-                error(err)
-            end
-        end
-        go(handle)
+        local url = string.format(self.config.HostPort..global.api.deleteContainer,self.arg.id)
+        go("asyncDoRequest",function()
+        end,"DELETE",url,"")
     end
 
     function self:Search()
         print("search-----",self.input.Key)
         global.searchKey = self.input.Key
-        local handle = {}
-        handle.restart = function()
-            ::continue::
-            if global.searchKey == "" then
-                return
-            end
-            local url = string.format(self.config.HostPort..global.api.searchImage,strings.trim_space(global.searchKey))
-            req = http.request("GET",url)
-            local rsp,err = backendHttpClient:do_request(req)
-            if err or rsp.code ~= 200 then
+        ::continue::
+        if global.searchKey == "" then
+            return
+        end
+
+        function callback(rsp)
+            if rsp.code ~= 200 then
                 print("search retry",url,";")
-                time.sleep(1)
-                goto continue
+                return
             end
             print("search result---",url,json.encode(rsp))
             global.searchResult = json.decode(rsp.body)
@@ -299,7 +284,9 @@ function NewDocker(ctx)
                 return a.star_count > b.star_count
             end)
         end
-        go(handle)
+
+        local url = string.format(self.config.HostPort..global.api.searchImage,strings.trim_space(global.searchKey))
+        go("asyncDoRequestWithBackendClient",callback,"GET",url,"")
     end
 
     function self:StopSearch()
@@ -308,17 +295,10 @@ function NewDocker(ctx)
     end
 
     function self:Pull()
-        local handle = {}
-        handle.restart = function()
-            data = string.format("fromImage=%s:latest",self.arg.name)
-            req = http.request("POST",self.config.HostPort .. global.api.pullImage,data)
-            loginRsp,err = backendHttpClient:do_request(req)
-            if err then
-                error(err)
-            end
-            print("pull---",json.encode(loginRsp))
-        end
-        go(handle)
+        local url = self.config.HostPort .. global.api.pullImage
+        local data = string.format("fromImage=%s:latest",self.arg.name)
+        go("asyncDoRequestWithBackendClient",function()
+        end,"POST",url,data)
         return {}
     end
 

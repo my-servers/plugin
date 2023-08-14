@@ -1,6 +1,6 @@
 name: qBittorrent
 enable: true
-priority: 6
+priority: 90
 height: 6
 padding: 3
 extend:

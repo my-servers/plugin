@@ -1,6 +1,6 @@
 name: docker
 enable: true
-priority: 5
+priority: 80
 height: 6
 padding: 3
 extend:

@@ -92,18 +92,21 @@ local function NewQBittorrent(ctx)
 
     local function getSearchResult()
         cfg = self.config
-
         data = string.format("id=%s&limit=%d",global.searchTaskId,tonumber(cfg.SearchNum) )
         req = http.request("POST",self.config.HostPort .. global.api.SearchResultUrl,data)
         loginRsp,err = httpClient:do_request(req)
         if err then
             error(err)
         end
+        if loginRsp.code ~= 200 then
+            global.searchTaskId = 0
+            return {},loginRsp.code
+        end
         results = json.decode(loginRsp.body)
         table.sort(results.results, function(a, b)
             return a.nbSeeders * 1000000000000 + a.fileSize > b.nbSeeders * 1000000000000 + b.fileSize
         end)
-        return results
+        return results,loginRsp.code
     end
 
 
@@ -111,10 +114,10 @@ local function NewQBittorrent(ctx)
     local function handleSearchList(app)
         -- 周期获取数据
         -- 周期获取数据
-        local data = getSearchResult()
-        if data.code == 403 then
+        local data,code = getSearchResult()
+        if code == 403 then
             updateCookie()
-            data = getSearchResult()
+            data,code = getSearchResult()
         end
         list = data.results
         row = 1000
@@ -128,9 +131,18 @@ local function NewQBittorrent(ctx)
             if string.len(list[i].fileName) == 0 then
                 goto continue
             end
-            text = NewText("").SetAlignment("leading")
-            text.AddString(1, NewString(string.sub(list[i].fileName, 0, 100)).SetFontSize(10))
-            text.AddString(1, NewString(ByteToUiString(list[i].fileSize)).SetFontSize(10))
+            text = NewText("leading")
+            text.AddString(1, NewString(string.sub(list[i].fileName, 0, 100))
+                    .SetFontSize(10))
+            text.AddString(2, NewString(ByteToUiString(list[i].fileSize))
+                    .SetFontSize(8)
+                    .SetBackendColor("#66cccc")
+                    .SetColor("#FFF"))
+                 .AddString(2,
+                    NewString(tostring(list[i].nbSeeders).." 做种")
+                            .SetFontSize(8)
+                            .SetBackendColor("#66cccc")
+                            .SetColor("#FFF"))
             ui = NewTextUi().SetText(text)
                             .AddAction(NewAction("download", { Url = list[i].fileUrl }, "下载"))
             app.AddUi(row, ui)
@@ -154,28 +166,36 @@ local function NewQBittorrent(ctx)
     local function handleBittorrentList(app)
         -- 周期获取数据
         local config = self.config
-        data = getBittorrentList()
+        local data = getBittorrentList()
         if data.code == 403 then
             updateCookie(config)
             data = getBittorrentList()
         end
-        list = json.decode(data.body)
+        local list = json.decode(data.body)
         local index = 2
         local col = 0
         for i = 1, #list do
-            d = list[i]
-            state = NewString(string.format("↓%s/S ↑%s/S", ByteToUiString(d.dlspeed), ByteToUiString(d.upspeed)))
-                    .SetFontSize(10)
+            local d = list[i]
+            local state = NewString(string.format("↓%s/S ↑%s/S", ByteToUiString(d.dlspeed), ByteToUiString(d.upspeed)))
+                    .SetFontSize(8)
             if global.stateMsg[d.state] ~= nil then
                 state.SetContent(global.stateMsg[d.state])
             end
-            line = NewProcessLineUi().SetDesc(NewText("leading").AddString(1,
-                    NewString(string.sub(d.name, 0, tonumber(config.NameLen))).SetFontSize(10).SetOpacity(0.5))
-                                                                .AddString(2, NewString(string.format("%s", ByteToUiString(d.total_size))).SetFontSize(10))
-                                                                .AddString(3, state))
-                                     .SetTitle(NewText("").AddString(1,
-                    NewString(string.format("%.2f%%", d.completed * 100 / d.total_size)).SetFontSize(8)))
-                                     .SetProcessData(NewProcessData(d.completed, d.total_size))
+            line = NewProcessLineUi()
+                    .SetDesc(NewText("leading")
+                            .AddString(1, NewString(string.sub(d.name, 0, tonumber(config.NameLen)))
+                                .SetFontSize(10))
+                            .AddString(2, NewString(string.format("%s", ByteToUiString(d.total_size)))
+                                .SetFontSize(8)
+                                .SetBackendColor("#663366")
+                                .SetColor("#FFF")
+                            )
+                            .AddString(2, state.SetBackendColor("#333366")
+                                               .SetColor("#FFF")))
+                    .SetTitle(NewText("")
+                            .AddString(1, NewString(string.format("%.2f%%", d.completed * 100 / d.total_size))
+                                .SetFontSize(8)))
+                    .SetProcessData(NewProcessData(d.completed, d.total_size))
             if d.state == "pausedDL" or d.state == "pausedUP" then
                 line.AddAction(NewAction("resume", { hash = d.hash }, "继续").SetIcon("play.circle"))
             else

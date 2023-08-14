@@ -3,6 +3,36 @@ local global = {
     allPort = {},
     checkTime = 0,
 }
+
+function testPort(port)
+    local tcp = require("tcp")
+    local conn, err = tcp.open(port)
+    if err then
+        return false
+    end
+    conn:close()
+    return true
+end
+
+function asyncUpdatePortStatus(data)
+    local checkResult = {}
+    for k, v in pairs(data) do
+        if k == "common" then
+            goto continueCheck
+        end
+        if v.type ~= "tcp" then
+            goto continueCheck
+        end
+        checkResult[v.local_port] = testPort("127.0.0.1:"..v.local_port)
+        ::continueCheck::
+    end
+    return {result=checkResult}
+end
+
+function asyncRestart(cmd)
+    os.execute(cmd)
+end
+
 ---@param ctx Ctx
 ---@return Frp
 local function NewFrp(ctx)
@@ -15,44 +45,17 @@ local function NewFrp(ctx)
     }
 
     function checkHealthy(data)
-        local handle = {}
-        handle.restart = function()
-            local now = os.time()
-            lock()
-            if now - global.checkTime < 2 then
-                unlock()
-                return
-            end
-            unlock()
-
-            local checkResult = {}
-            for k, v in pairs(data) do
-                if k == "common" then
-                    goto continueCheck
-                end
-                if v.type ~= "tcp" then
-                    goto continueCheck
-                end
-                checkResult[v.local_port] = testPort("127.0.0.1:"..v.local_port)
-                ::continueCheck::
-            end
-            lock()
-            global.checkTime = now
-            global.allPort = checkResult
-            unlock()
+        local now = os.time()
+        if now - global.checkTime < 10 then
+            return
         end
-        go(handle)
+        global.checkTime = now
+        go("asyncUpdatePortStatus", function(arg)
+            global.allPort = arg.result
+        end,data)
     end
 
-    function testPort(port)
-        local tcp = require("tcp")
-        local conn, err = tcp.open(port)
-        if err then
-            return false
-        end
-        conn:close()
-        return true
-    end
+
 
     function self:Update()
         local data = config.LoadIni(self.config.ConfigPath)
@@ -90,18 +93,21 @@ local function NewFrp(ctx)
                         )
                        .SetSize(17)
         app.AddMenu(add)
-        lock()--global.allPort
         for i = 1, #arr do
             local v = arr[i]
-            local name = NewString(v.name).SetFontSize(10)
-            local portInfo = NewString(string.format("%s/%s:%s",v.type,v.local_port,v.remote_port))
-                    .SetFontSize(10).SetOpacity(0.8)
+            local name = NewString(v.name).SetFontSize(12)
+            local typeInfo = NewString(v.type).SetFontSize(8).SetBackendColor("#336699")
+                                                              .SetColor("#FFF")
+            local portInfo = NewString(string.format("%s:%s",v.local_port,v.remote_port))
+                    .SetFontSize(8).SetBackendColor("#339999").SetColor("#FFF")
             if v.type == "tcp" and global.allPort[v.local_port] == false then
                 name.SetColor("#F00")
-                portInfo.SetColor("#F00")
+                typeInfo.SetBackendColor("#F00")
+                portInfo.SetBackendColor("#F00")
             end
             app.AddUi(row,NewTextUi().SetText(NewText("")
                     .AddString(1,name)
+                    .AddString(2,typeInfo)
                     .AddString(2,portInfo))
                     .AddAction(NewAction("delete",{id=v.name},"删除").SetCheck(true).SetIcon("trash.circle"))
                     .AddAction(NewAction("change",{id=v.name},"更新")
@@ -115,16 +121,13 @@ local function NewFrp(ctx)
                 row = row+1
             end
         end
-        unlock()
-
         return app.Data()
     end
 
     function restart()
-        go({restart=function()
-            os.execute(self.config.RestartScript)
-        end
-        })
+        go("asyncRestart", function()
+        end, self.config.RestartScript)
+        return {}
     end
 
     function self:Change()
