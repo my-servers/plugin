@@ -45,7 +45,7 @@
         {
             "id" : "aria2",
             "name": "aria2",
-            "introduce" : "aria2下载工具",
+            "introduce" : "aria2下载工具：\n1.新增下载\n2.暂停/删除下载任务\n3.查看下载进度",
             "author" : "admin",
             "home_url": "",
             "download_url":"https://raw.githubusercontent.com/service-house/plugin/feature/dev/aria2",
