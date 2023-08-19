@@ -8,3 +8,7 @@ extend:
     val: http://test:test@192.168.100.4:9091
     desc: ip和端口（含用户密码）
     priority: 180
+  DownloadPath:
+    val: /downloads
+    desc: 下载路径
+    priority: 170
