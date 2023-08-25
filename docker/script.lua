@@ -174,6 +174,7 @@ function NewDocker(ctx)
         go("asyncDoRequest",function()
 
         end,"POST",url,"")
+        return NewToast("暂停成功","info.circle","#000")
     end
 
     function self:Restart()
@@ -181,6 +182,7 @@ function NewDocker(ctx)
         go("asyncDoRequest",function()
 
         end,"POST",url,"")
+        return NewToast("重启成功","info.circle","#000")
     end
 
     function self:Start()
@@ -188,6 +190,7 @@ function NewDocker(ctx)
         go("asyncDoRequest",function()
 
         end,"POST",url,"")
+        return NewToast("启动成功","info.circle","#000")
     end
 
     -- @param app: AppUI

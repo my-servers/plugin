@@ -879,3 +879,12 @@ function NewApp()
     app.Data    = Data
     return app
 end
+
+function NewToast(text,icon,color)
+    return {
+        text = tostring(text),
+        color = tostring(color),
+        icon = tostring(icon),
+        show_toast = true,
+    }
+end
