@@ -252,6 +252,11 @@ function NewDocker(ctx)
 
     function self:ChangeMenu()
         global.menu = tonumber(self.arg.id)
+        local text = "容器"
+        if global.menu == 1 then
+            text = "镜像"
+        end
+        return NewToast(text,"info.circle","#000")
     end
 
     function self:DeleteImage()
