@@ -236,7 +236,7 @@ function NewAria2(ctx)
         elseif global.menu == 3 then
             print("get finisted info----------")
             finished.SetColor("#F00")
-            getFinishedInfo(app)
+            --getFinishedInfo(app)
         end
         app.AddMenu(plus).AddMenu(play).AddMenu(pause).AddMenu(finished)
         return app.Data()
