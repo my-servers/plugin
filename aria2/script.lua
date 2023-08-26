@@ -29,6 +29,7 @@ local global = {
     deleteUrl = "aria2.forceRemove",
     stopUrl = "aria2.tellStopped",
     waitingUrl = "aria2.tellWaiting",
+    deleteDownloadResult= "aria2.removeDownloadResult",
     menu = 1,
 }
 
@@ -59,7 +60,7 @@ function NewAria2(ctx)
     ---@param app AppUI
     function getDownloadingInfo(app)
         local dataJson = getApi(global.getDownloading,global.getDownloadDingArg)
-        req = http.request("POST",self.config.HostPort,json.encode(dataJson))
+        local req = http.request("POST",self.config.HostPort,json.encode(dataJson))
         local stateRsp,err = httpClient:do_request(req)
         if err then
             error(err)
@@ -112,13 +113,12 @@ function NewAria2(ctx)
         end
     end
 
-
+    ---@param app AppUI
     function getFinishedInfo(app)
         local dataJson = getApi(global.stopUrl,-1,1000,global.getDownloadDingArg)
-        req = http.request("POST",self.config.HostPort,json.encode(dataJson))
+        local req = http.request("POST",self.config.HostPort,json.encode(dataJson))
         local stateRsp,err = httpClient:do_request(req)
         if err then
-            print("get finished list err:",err)
             error(err)
         end
         local data = json.decode(stateRsp.body)
@@ -126,25 +126,25 @@ function NewAria2(ctx)
         local fontSize = 10
         for i = 1, #data.result do
             local info = data.result[i]
-            print("get finished list success:",json.encode(info))
+            local name = "unknown"
+            if #info.files > 0 then
+                name = info.files[1].path
+            end
+            if info.bittorrent and info.bittorrent.info and info.bittorrent.info.name then
+                name = info.bittorrent.info.name
+            end
             app.AddUi(
                     index,
                     NewProcessLineUi()
                             .SetDesc(NewText("leading")
                             .AddString(1,
-                            NewString(info.bittorrent.info.name)
+                            NewString(name)
                                     .SetFontSize(fontSize)
                     )
                             .AddString(2,
                             NewString(ByteToUiString(info.totalLength))
                                     .SetFontSize(8)
                                     .SetBackendColor("#333366")
-                                    .SetColor("#FFF")
-                    )
-                            .AddString(2,
-                            NewString(string.format("↓%s/S ↑%s/S", ByteToUiString(info.downloadSpeed), ByteToUiString(info.uploadSpeed)))
-                                    .SetFontSize(8)
-                                    .SetBackendColor("#663366")
                                     .SetColor("#FFF")
                     )
                     )
@@ -155,8 +155,8 @@ function NewAria2(ctx)
                                     .SetOpacity(0.5)
                     )
                     )
-                            .SetProcessData(NewProcessData(info.completedLength,info.totalLength))
-                            .AddAction(NewAction("delete",{gid=info.gid},"删除").SetCheck(true))
+                            .SetProcessData(NewProcessData(tonumber(info.completedLength),tonumber(info.totalLength)))
+                            .AddAction(NewAction("deleteDownloadResult",{gid=info.gid},"删除任务").SetCheck(true))
 
             )
 
@@ -166,9 +166,10 @@ function NewAria2(ctx)
         end
     end
 
+    ---@param app AppUI
     function getWaitingInfo(app)
         local dataJson = getApi(global.waitingUrl,0,1000,global.getDownloadDingArg)
-        req = http.request("POST",self.config.HostPort,json.encode(dataJson))
+        local req = http.request("POST",self.config.HostPort,json.encode(dataJson))
         local stateRsp,err = httpClient:do_request(req)
         if err then
             error(err)
@@ -219,7 +220,7 @@ function NewAria2(ctx)
     end
 
     function self:Update()
-        local app =NewApp()
+        local app = NewApp()
         local buttonSize = 17
         local play = NewIconButton().SetIcon("play.circle").SetAction(NewAction("changeMenu",{id=1},"")).SetSize(buttonSize)
         local pause = NewIconButton().SetIcon("pause.circle").SetAction(NewAction("changeMenu",{id=2},"")).SetSize(buttonSize)
@@ -236,12 +237,11 @@ function NewAria2(ctx)
             pause.SetColor("#F00")
             getWaitingInfo(app)
         elseif global.menu == 3 then
-            finished.SetColor("#F00")
-            --print("get finisted info----------")
+            --getWaitingInfo(app)
             getFinishedInfo(app)
+            finished.SetColor("#F00")
         end
-        app.AddMenu(plus).AddMenu(play).AddMenu(pause).AddMenu(finished)
-        return app.Data()
+        return app.AddMenu(plus).AddMenu(play).AddMenu(pause).AddMenu(finished).Data()
     end
 
 
@@ -271,6 +271,17 @@ function NewAria2(ctx)
 
     function self:Delete()
         local data = getApi(global.deleteUrl,self.arg.gid)
+        req = http.request("POST",self.config.HostPort,json.encode(data))
+        local stateRsp,err = httpClient:do_request(req)
+        if err then
+            error(err)
+        end
+        print("delete---",json.encode(data),json.encode(stateRsp))
+        return NewToast("删除成功","trash","#F00")
+    end
+
+    function self:DeleteDownloadResult()
+        local data = getApi(global.deleteDownloadResult,self.arg.gid)
         req = http.request("POST",self.config.HostPort,json.encode(data))
         local stateRsp,err = httpClient:do_request(req)
         if err then
@@ -328,4 +339,8 @@ end
 
 function add(ctx)
     return NewAria2(ctx):Add()
+end
+
+function deleteDownloadResult(ctx)
+    return NewAria2(ctx):DeleteDownloadResult()
 end
