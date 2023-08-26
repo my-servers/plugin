@@ -121,12 +121,12 @@ function NewAria2(ctx)
             print("get finished list err:",err)
             error(err)
         end
-        print("get finished list success:",json.encode(json.decode(stateRsp.body)))
         local data = json.decode(stateRsp.body)
         local index = 1
         local fontSize = 10
         for i = 1, #data.result do
             local info = data.result[i]
+            print("get finished list success:",json.encode(info))
             app.AddUi(
                     index,
                     NewProcessLineUi()
