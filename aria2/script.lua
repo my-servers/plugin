@@ -118,8 +118,10 @@ function NewAria2(ctx)
         req = http.request("POST",self.config.HostPort,json.encode(dataJson))
         local stateRsp,err = httpClient:do_request(req)
         if err then
+            print("get finished list err:",err)
             error(err)
         end
+        print("get finished list success:",stateRsp)
         local data  = json.decode(stateRsp.body)
         local index = 1
         local fontSize = 10
@@ -235,8 +237,8 @@ function NewAria2(ctx)
             getWaitingInfo(app)
         elseif global.menu == 3 then
             finished.SetColor("#F00")
-            print("get finisted info----------")
-            --getFinishedInfo(app)
+            --print("get finisted info----------")
+            getFinishedInfo(app)
         end
         app.AddMenu(plus).AddMenu(play).AddMenu(pause).AddMenu(finished)
         return app.Data()
