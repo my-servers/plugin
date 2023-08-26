@@ -29,7 +29,6 @@ local global = {
     deleteUrl = "aria2.forceRemove",
     stopUrl = "aria2.tellStopped",
     waitingUrl = "aria2.tellWaiting",
-
     menu = 1,
 }
 
@@ -113,6 +112,58 @@ function NewAria2(ctx)
         end
     end
 
+
+    function getFinishedInfo(app)
+        local dataJson = getApi(global.stopUrl,0,1000,global.getDownloadDingArg)
+        req = http.request("POST",self.config.HostPort,json.encode(dataJson))
+        local stateRsp,err = httpClient:do_request(req)
+        if err then
+            error(err)
+        end
+        local data  = json.decode(stateRsp.body)
+        local index = 1
+        local fontSize = 10
+        for i = 1, #data.result do
+            local info = data.result[i]
+            app.AddUi(
+                    index,
+                    NewProcessLineUi()
+                            .SetDesc(NewText("leading")
+                            .AddString(1,
+                            NewString(info.bittorrent.info.name)
+                                    .SetFontSize(fontSize)
+                    )
+                            .AddString(2,
+                            NewString(ByteToUiString(info.totalLength))
+                                    .SetFontSize(8)
+                                    .SetBackendColor("#333366")
+                                    .SetColor("#FFF")
+                    )
+                            .AddString(2,
+                            NewString(string.format("↓%s/S ↑%s/S", ByteToUiString(info.downloadSpeed), ByteToUiString(info.uploadSpeed)))
+                                    .SetFontSize(8)
+                                    .SetBackendColor("#663366")
+                                    .SetColor("#FFF")
+                    )
+                    )
+                            .SetTitle(NewText("trailing")
+                            .AddString(1,
+                            NewString(string.format("%.2f%%", info.completedLength * 100 / info.totalLength))
+                                    .SetFontSize(8)
+                                    .SetOpacity(0.5)
+                    )
+                    )
+                            .SetProcessData(NewProcessData(info.completedLength,info.totalLength))
+                            .AddAction(NewAction("delete",{gid=info.gid},"删除").SetCheck(true))
+
+            )
+
+            if i%2 == 0 then
+                index = index+1
+            end
+        end
+    end
+
     function getWaitingInfo(app)
         local dataJson = getApi(global.waitingUrl,0,1000,global.getDownloadDingArg)
         req = http.request("POST",self.config.HostPort,json.encode(dataJson))
@@ -170,6 +221,7 @@ function NewAria2(ctx)
         local buttonSize = 17
         local play = NewIconButton().SetIcon("play.circle").SetAction(NewAction("changeMenu",{id=1},"")).SetSize(buttonSize)
         local pause = NewIconButton().SetIcon("pause.circle").SetAction(NewAction("changeMenu",{id=2},"")).SetSize(buttonSize)
+        local finished = NewIconButton().SetIcon("list.bullet.circle").SetAction(NewAction("changeMenu",{id=3},"")).SetSize(buttonSize)
         local plus = NewIconButton().SetIcon("plus.circle")
                 .SetAction(
                     NewAction("add",{},"").AddInput("Url",NewInput("下载url",1))
@@ -181,8 +233,11 @@ function NewAria2(ctx)
         elseif global.menu == 2 then
             pause.SetColor("#F00")
             getWaitingInfo(app)
+        elseif global.menu == 3 then
+            finished.SetColor("#F00")
+            getFinishedInfo(app)
         end
-        app.AddMenu(plus).AddMenu(play).AddMenu(pause)
+        app.AddMenu(plus).AddMenu(play).AddMenu(pause).AddMenu(finished)
         return app.Data()
     end
 
