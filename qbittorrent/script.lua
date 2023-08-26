@@ -276,7 +276,7 @@ local function NewQBittorrent(ctx)
             error(err)
         end
 
-        return {}
+        return NewToast("删除成功","trash","#F00")
     end
 
     local function Search()
@@ -303,8 +303,7 @@ local function NewQBittorrent(ctx)
             error(err)
         end
         global.searchTaskId = 0
-        print("stop--------------", json.encode(searchRsp))
-        return {}
+        return NewToast("停止搜索","stop.circle","#000")
     end
 
     local function Add()
@@ -316,7 +315,7 @@ local function NewQBittorrent(ctx)
         if err then
             error(err)
         end
-        return {}
+        return NewToast("添加下载成功","info.circle","#000")
     end
 
     local function Download()
@@ -329,7 +328,7 @@ local function NewQBittorrent(ctx)
         if err then
             error(err)
         end
-        return {}
+        return NewToast("添加下载成功","info.circle","#000")
     end
 
 
