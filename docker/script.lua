@@ -302,7 +302,7 @@ function NewDocker(ctx)
         local data = string.format("fromImage=%s:latest",self.arg.name)
         go("asyncDoRequestWithBackendClient",function()
         end,"POST",url,data)
-        return {}
+        return NewToast("拉取镜像中："..self.arg.name,"info.circle","#000")
     end
 
     return self
