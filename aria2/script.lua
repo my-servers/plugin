@@ -234,8 +234,8 @@ function NewAria2(ctx)
             pause.SetColor("#F00")
             getWaitingInfo(app)
         elseif global.menu == 3 then
-            print("get finisted info----------")
             finished.SetColor("#F00")
+            print("get finisted info----------")
             --getFinishedInfo(app)
         end
         app.AddMenu(plus).AddMenu(play).AddMenu(pause).AddMenu(finished)
