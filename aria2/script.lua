@@ -114,7 +114,7 @@ function NewAria2(ctx)
 
 
     function getFinishedInfo(app)
-        local dataJson = getApi(global.stopUrl,0,1000,global.getDownloadDingArg)
+        local dataJson = getApi(global.stopUrl,-1,1000,global.getDownloadDingArg)
         req = http.request("POST",self.config.HostPort,json.encode(dataJson))
         local stateRsp,err = httpClient:do_request(req)
         if err then
