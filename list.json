@@ -31,9 +31,9 @@
             "introduce" : "系统监控：\n1.监控cpu，内存，网络，磁盘\n2.监控cpu的走势\n3.执行shell命令",
             "author" : "admin",
             "home_url": "",
-            "download_url":"https://plugin.codeloverme.cn/system/system.jpg",
+            "download_url":"https://plugin.codeloverme.cn/system",
             "img":[
-                "https://plugin.codeloverme.cn/system"
+                "https://plugin.codeloverme.cn/system/system.jpg"
             ],
             "min_server_version": "1.0",
             "min_client_version": "1.0"
