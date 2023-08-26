@@ -8,7 +8,7 @@
             "home_url": "",
             "download_url":"https://plugin.codeloverme.cn/qbittorrent",
             "img":[
-                "https://plugin.codeloverme.cn/qbittorren/qbittorrent.jpg"
+                "https://plugin.codeloverme.cn/qbittorrent/qbittorrent.jpg"
             ],
             "min_server_version": "1.0",
             "min_client_version": "1.0"
