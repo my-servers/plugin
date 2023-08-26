@@ -195,6 +195,7 @@ function NewAria2(ctx)
             error(err)
         end
         print("pause---",json.encode(data),json.encode(stateRsp))
+        return NewToast("暂停","stop.circle","#000")
     end
 
 
@@ -207,6 +208,7 @@ function NewAria2(ctx)
             error(err)
         end
         print("unpause---",json.encode(data),json.encode(stateRsp))
+        return NewToast("继续","info.circle","#000")
     end
 
     function self:Delete()
@@ -217,6 +219,7 @@ function NewAria2(ctx)
             error(err)
         end
         print("delete---",json.encode(data),json.encode(stateRsp))
+        return NewToast("删除成功","trash","#F00")
     end
 
     function self:Add()
@@ -227,6 +230,7 @@ function NewAria2(ctx)
             error(err)
         end
         print("add---",json.encode(data),json.encode(stateRsp))
+        return NewToast("添加下载成功","info.circle","#000")
     end
 
     function self:ChangeMenu()

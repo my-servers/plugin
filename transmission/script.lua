@@ -192,26 +192,31 @@ local function NewTransmission(ctx)
     function self:Start()
         local url = string.format(global.urlFormat,self.config.HostPort)
         doRequest("POST",url,getStartArg(self.arg.id))
+        return NewToast("启动下载","info.circle","#000")
     end
 
     function self:Stop()
         local url = string.format(global.urlFormat,self.config.HostPort)
         doRequest("POST",url,getStopArg(self.arg.id))
+        return NewToast("暂停","stop.circle","#000")
     end
 
     function self:Delete()
         local url = string.format(global.urlFormat,self.config.HostPort)
         doRequest("POST",url,getDeleteArg(self.arg.id))
+        return NewToast("删除成功","trash","#F00")
     end
 
     function self:DeleteFile()
         local url = string.format(global.urlFormat,self.config.HostPort)
         doRequest("POST",url,getDeleteFileArg(self.arg.id))
+        return NewToast("删除成功","trash","#F00")
     end
 
     function self:Download()
         local url = string.format(global.urlFormat,self.config.HostPort)
         doRequest("POST",url,getDownloadFileArg(self.input.Url,self.input.Path))
+        return NewToast("下载","info.circle","#000")
     end
 
     return self
