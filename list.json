@@ -8,7 +8,7 @@
             "home_url": "",
             "download_url":"https://plugin.codeloverme.cn/qbittorrent",
             "img":[
-                "https://i.mji.rip/2023/07/26/555b35fd548fc76c711356af584b2d14.jpeg"
+                "https://plugin.codeloverme.cn/qbittorren/qbittorrent.jpg"
             ],
             "min_server_version": "1.0",
             "min_client_version": "1.0"
@@ -31,9 +31,9 @@
             "introduce" : "系统监控：\n1.监控cpu，内存，网络，磁盘\n2.监控cpu的走势\n3.执行shell命令",
             "author" : "admin",
             "home_url": "",
-            "download_url":"https://plugin.codeloverme.cn/system",
+            "download_url":"https://plugin.codeloverme.cn/system/system.jpg",
             "img":[
-                "https://i.mji.rip/2023/07/26/c7bcfd98cc3c773f0b9fbf14fad04528.jpeg"
+                "https://plugin.codeloverme.cn/system"
             ],
             "min_server_version": "1.0",
             "min_client_version": "1.0"
