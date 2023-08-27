@@ -706,6 +706,58 @@ function NewProcessLineUi()
     return processLine
 end
 
+-- NewMarkdownUi markdown
+---@return MarkdownUi 文本ui
+function NewMarkdownUi()
+    ---@class MarkdownUi
+    local markdownUi = {
+        ---@class NewMarkdownUiData
+        uiMarkdownData = {
+            ui_type = 5,
+            ui_markdown = nil,
+            actions = nil
+        }
+    }
+
+    -- SetText 添加markdown
+    ---@param text string 文本段
+    ---@return MarkdownUi
+    local function SetMarkdown(text)
+        markdownUi.uiMarkdownData.ui_markdown = text
+        return markdownUi
+    end
+
+    -- AddAction 添加动作
+    ---@param action Action 动作
+    ---@return MarkdownUi
+    local function AddAction(action)
+        if markdownUi.uiMarkdownData.actions == nil then
+            markdownUi.uiMarkdownData.actions = {}
+        end
+        table.insert(markdownUi.uiMarkdownData.actions, action.Data())
+        return markdownUi
+    end
+
+    -- SetHeight 添加动作
+    ---@param height number 高度
+    ---@return TextUi
+    local function SetHeight(height)
+        markdownUi.uiMarkdownData.height = height
+        return markdownUi
+    end
+
+    ---@return TextUiData
+    local function Data()
+        return markdownUi.uiMarkdownData
+    end
+
+    markdownUi.SetMarkdown   = SetMarkdown
+    markdownUi.Data      = Data
+    markdownUi.AddAction = AddAction
+    markdownUi.SetHeight = SetHeight
+    return markdownUi
+end
+
 -- NewTextUi textui
 ---@return TextUi 文本ui
 function NewTextUi()
@@ -844,7 +896,7 @@ function NewApp()
 
     -- AddIconButtonUi
     ---@param row string 行
-    ---@param ui TextUi|ProcessLineUi|ProcessCircleUi|IconButtonUi|LineChartUi ui
+    ---@param ui TextUi|ProcessLineUi|ProcessCircleUi|IconButtonUi|LineChartUi|MarkdownUi ui
     ---@return AppUI
     local function AddUi(row, ui)
         if app.rowColIndex[row] == nil then
