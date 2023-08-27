@@ -12,7 +12,7 @@ extend:
     desc: 网络接口
     priority: 90
   Disk:
-    val: /home/data/disk400G/data
+    val: /
     desc: nas挂载点
     priority: 100
 
