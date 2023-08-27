@@ -141,7 +141,7 @@ local function NewSystem(ctx)
         updateNetWin()
         if global.execResult ~= "" then
             local result = string.format("```\n%s```",global.execResult)
-            app.AddUi(3,NewMarkdownUi().SetMarkdown(results))
+            app.AddUi(3,NewMarkdownUi().SetMarkdown(results).SetHeight(300))
             --index = 3
             --text = NewText("")
             --allLine = string.split(global.execResult,"\n")
