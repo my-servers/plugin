@@ -277,7 +277,7 @@ extend:
 
 ![img](https://plugin.codeloverme.cn/qbittorrent/qbittorrent.jpg)
         ]]
-        app.AddUi(100,NewMarkdownUi().SetMarkdown(markdown))
+        app.AddUi(100,NewMarkdownUi().SetMarkdown(markdown).SetHeight(300))
 
         return app.Data()
     end
