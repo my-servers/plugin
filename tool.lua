@@ -723,7 +723,7 @@ function NewMarkdownUi()
     ---@param text string 文本段
     ---@return MarkdownUi
     local function SetMarkdown(text)
-        markdownUi.uiMarkdownData.ui_markdown = text
+        markdownUi.uiMarkdownData.ui_markdown.markdown = text
         return markdownUi
     end
 
