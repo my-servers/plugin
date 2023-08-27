@@ -6,7 +6,6 @@ local global = {
         send = 0,
         ts = 0,
     },
-    execResult = ""
 }
 
 ---@param ctx Ctx
@@ -119,15 +118,6 @@ local function NewSystem(ctx)
                 .SetIcon("terminal")
                 .SetSize(14)
         app.AddMenu(button)
-
-        if global.execResult ~= "" then
-            local buttonClear = NewIconButton()
-                    .SetAction(NewAction("clear",{},""))
-                    .SetIcon("stop.circle")
-                    .SetSize(14)
-                    .SetColor("#F00")
-            app.AddMenu(buttonClear)
-        end
     end
 
     function self:GetUi()
@@ -139,22 +129,6 @@ local function NewSystem(ctx)
         app.AddUi(1, getNasUi())
         app.AddUi(2, getCpuLineChart())
         updateNetWin()
-        if global.execResult ~= "" then
-            local result = string.format("```\n%s```",global.execResult)
-            app.AddUi(3,NewMarkdownUi().SetMarkdown(result).SetHeight(300))
-            --index = 3
-            --text = NewText("")
-            --allLine = string.split(global.execResult,"\n")
-            --for i = 1, #allLine do
-            --    local allCol = string.split(allLine[i],"\t")
-            --    text = NewText("")
-            --    for j = 1, #allCol do
-            --        text.AddString(1,NewString(allCol[j]).SetFontSize(8))
-            --    end
-            --    app.AddUi(index,NewTextUi().SetText(text).SetHeight(10))
-            --    index = index+1
-            --end
-        end
         return app.Data()
     end
 
@@ -162,12 +136,10 @@ local function NewSystem(ctx)
         local handle = io.popen(self.input.Cmd)
         local result = handle:read("*a")
         handle:close()
-        global.execResult = result
-        return {}
+        return NewMarkdown(string.format("### 运行结果:\n```\n%s```",result))
     end
 
     function self:Clear()
-        global.execResult = ""
         return {}
     end
 

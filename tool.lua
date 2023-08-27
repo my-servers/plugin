@@ -717,7 +717,8 @@ function NewMarkdownUi()
             ui_markdown = {
                 markdown = ""
             },
-            actions = nil
+            actions = nil,
+            height = 0,
         }
     }
 
@@ -742,13 +743,13 @@ function NewMarkdownUi()
 
     -- SetHeight 添加动作
     ---@param height number 高度
-    ---@return TextUi
+    ---@return MarkdownUi
     local function SetHeight(height)
         markdownUi.uiMarkdownData.height = height
         return markdownUi
     end
 
-    ---@return TextUiData
+    ---@return NewMarkdownUiData
     local function Data()
         return markdownUi.uiMarkdownData
     end
@@ -939,6 +940,13 @@ function NewToast(text,icon,color)
         text = tostring(text),
         color = tostring(color),
         icon = tostring(icon),
-        show_toast = true,
+        show_result_type = 1,
+    }
+end
+
+function NewMarkdown(text)
+    return {
+        text = tostring(text),
+        show_result_type = 2,
     }
 end
