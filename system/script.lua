@@ -140,18 +140,20 @@ local function NewSystem(ctx)
         app.AddUi(2, getCpuLineChart())
         updateNetWin()
         if global.execResult ~= "" then
-            index = 3
-            text = NewText("")
-            allLine = string.split(global.execResult,"\n")
-            for i = 1, #allLine do
-                local allCol = string.split(allLine[i],"\t")
-                text = NewText("")
-                for j = 1, #allCol do
-                    text.AddString(1,NewString(allCol[j]).SetFontSize(8))
-                end
-                app.AddUi(index,NewTextUi().SetText(text).SetHeight(10))
-                index = index+1
-            end
+            local result = string.format("```\n%s```",global.execResult)
+            app.AddUi(3,NewMarkdownUi().SetMarkdown(results))
+            --index = 3
+            --text = NewText("")
+            --allLine = string.split(global.execResult,"\n")
+            --for i = 1, #allLine do
+            --    local allCol = string.split(allLine[i],"\t")
+            --    text = NewText("")
+            --    for j = 1, #allCol do
+            --        text.AddString(1,NewString(allCol[j]).SetFontSize(8))
+            --    end
+            --    app.AddUi(index,NewTextUi().SetText(text).SetHeight(10))
+            --    index = index+1
+            --end
         end
         return app.Data()
     end
