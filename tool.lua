@@ -714,7 +714,9 @@ function NewMarkdownUi()
         ---@class NewMarkdownUiData
         uiMarkdownData = {
             ui_type = 5,
-            ui_markdown = nil,
+            ui_markdown = {
+                markdown = ""
+            },
             actions = nil
         }
     }
