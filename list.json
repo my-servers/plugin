@@ -24,7 +24,7 @@
             ],
             "min_server_version": "1.0",
             "min_client_version": "1.0",
-            "version": "1.1"
+            "version": "1.2"
         },
         {
             "id" : "system",
