@@ -493,6 +493,8 @@ function NewLineChartUi()
             ui_type = 3,
             actions = nil,
             ui_line_chart = {},
+            detail = "",
+            height = 0,
         }
     }
 
@@ -537,6 +539,14 @@ function NewLineChartUi()
         return lineChart
     end
 
+    -- SetDetail 添加详情
+    ---@param detail string 详情 markdown
+    ---@return LineChartUi
+    local function SetDetail(detail)
+        lineChart.data.detail = detail
+        return lineChart
+    end
+
     ---@return LineChartUiData
     local function Data()
         return lineChart.data
@@ -547,6 +557,7 @@ function NewLineChartUi()
     lineChart.AddPoint = AddPoint
     lineChart.Data = Data
     lineChart.SetHeight = SetHeight
+    lineChart.SetDetail = SetDetail
     return lineChart
 end
 
@@ -614,6 +625,15 @@ function NewProcessCircleUi()
         return processCircle
     end
 
+    -- SetDetail 添加详情
+    ---@param detail string 详情 markdown
+    ---@return ProcessCircleUi
+    local function SetDetail(detail)
+        processCircle.processCircleUiData.detail = detail
+        return processCircle
+    end
+
+
     ---@return ProcessCircleUiData
     local function Data()
         return processCircle.processCircleUiData
@@ -625,6 +645,7 @@ function NewProcessCircleUi()
     processCircle.Data = Data
     processCircle.AddAction = AddAction
     processCircle.SetHeight = SetHeight
+    processCircle.SetDetail = SetDetail
     return processCircle
 end
 
@@ -637,6 +658,8 @@ function NewProcessLineUi()
             ui_type = 2,
             actions = nil,
             ui_process_line = {},
+            detail = "",
+            height = 0,
         }
     }
 
@@ -653,7 +676,7 @@ function NewProcessLineUi()
 
     -- SetProcessData 设置进度数据
     ---@param data ProcessData 文本段
-    ---@return ProcessCircleUi
+    ---@return ProcessLineUi
     local function SetProcessData(data)
         if processLine.processLineUiData.ui_process_line.process_data == nil then
             processLine.processLineUiData.ui_process_line.process_data = {}
@@ -664,7 +687,7 @@ function NewProcessLineUi()
 
     -- SetDesc 设置描述
     ---@param data Text 文本段
-    ---@return ProcessCircleUi
+    ---@return ProcessLineUi
     local function SetDesc(data)
         if processLine.processLineUiData.ui_process_line.process_desc == nil then
             processLine.processLineUiData.ui_process_line.process_desc = {}
@@ -675,7 +698,7 @@ function NewProcessLineUi()
 
     -- SetTitle 设置标题
     ---@param data Text 文本段
-    ---@return ProcessCircleUi
+    ---@return ProcessLineUi
     local function SetTitle(data)
         if processLine.processLineUiData.ui_process_line.title == nil then
             processLine.processLineUiData.ui_process_line.title = {}
@@ -686,13 +709,21 @@ function NewProcessLineUi()
 
     -- SetHeight 添加动作
     ---@param height number 高度
-    ---@return ProcessCircleUi
+    ---@return ProcessLineUi
     local function SetHeight(height)
         processLine.processLineUiData.height = height
         return processLine
     end
 
-    ---@return ProcessCircleUiData
+    -- SetDetail 添加详情
+    ---@param detail string 详情 markdown
+    ---@return ProcessLineUi
+    local function SetDetail(detail)
+        processLine.processLineUiData.detail = detail
+        return processLine
+    end
+
+    ---@return ProcessLineUiData
     local function Data()
         return processLine.processLineUiData
     end
@@ -703,6 +734,7 @@ function NewProcessLineUi()
     processLine.Data = Data
     processLine.AddAction = AddAction
     processLine.SetHeight = SetHeight
+    processLine.SetDetail = SetDetail
     return processLine
 end
 
@@ -719,6 +751,7 @@ function NewMarkdownUi()
             },
             actions = nil,
             height = 0,
+            detail = ""
         }
     }
 
@@ -749,6 +782,14 @@ function NewMarkdownUi()
         return markdownUi
     end
 
+    -- SetDetail 添加详情
+    ---@param detail string 详情 markdown
+    ---@return MarkdownUi
+    local function SetDetail(detail)
+        markdownUi.uiMarkdownData.detail = detail
+        return markdownUi
+    end
+
     ---@return NewMarkdownUiData
     local function Data()
         return markdownUi.uiMarkdownData
@@ -758,6 +799,7 @@ function NewMarkdownUi()
     markdownUi.Data      = Data
     markdownUi.AddAction = AddAction
     markdownUi.SetHeight = SetHeight
+    markdownUi.SetDetail = SetDetail
     return markdownUi
 end
 
@@ -770,7 +812,9 @@ function NewTextUi()
         uiTextData = {
             ui_type = 0,
             ui_text = nil,
-            actions = nil
+            actions = nil,
+            height = 0,
+            detail = "",
         }
     }
 
@@ -801,11 +845,20 @@ function NewTextUi()
         return textUi
     end
 
+    -- SetDetail 添加详情
+    ---@param detail string 详情 markdown
+    ---@return TextUi
+    local function SetDetail(detail)
+        textUi.uiTextData.detail = detail
+        return textUi
+    end
+
     ---@return TextUiData
     local function Data()
         return textUi.uiTextData
     end
 
+    textUi.SetDetail = SetDetail
     textUi.SetText   = SetText
     textUi.Data      = Data
     textUi.AddAction = AddAction
