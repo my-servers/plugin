@@ -163,6 +163,18 @@ local function NewQBittorrent(ctx)
         return loginRsp
     end
 
+    local function genDetail(d)
+        return string.format([[
+#### %s
+|  项   | 值  |
+|  ----  | ----  |
+| 下载目录  | %s |
+| 已下载  | %s |
+| 总大小  | %s |
+        ]],d.name,d.content_path,
+                ByteToUiString(d.downloaded),ByteToUiString(d.total_size))
+    end
+
     local function handleBittorrentList(app)
         -- 周期获取数据
         local config = self.config
@@ -202,7 +214,7 @@ local function NewQBittorrent(ctx)
                 line.AddAction(NewAction("pause", { hash = d.hash }, "暂停").SetIcon("pause.circle"))
             end
             line.AddAction(NewAction("delete", { hash = d.hash }, "删除").SetIcon("trash.circle").SetCheck(true))
-            line.SetDetail(string.format("```\n%s```",json.encode(d)))
+            line.SetDetail(genDetail(d))
             app.AddUi(index, line)
             col = col + 1
             if col % tonumber(config.ColNum) == 0 then
