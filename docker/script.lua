@@ -258,6 +258,7 @@ function NewDocker(ctx)
         go("asyncDoRequest",function()
         end,"DELETE",url,"")
         print("delete image ------",self.arg.id)
+        return NewToast("删除镜像","info.circle","#000")
     end
 
     function self:DeleteContainer()
@@ -265,6 +266,7 @@ function NewDocker(ctx)
         local url = string.format(self.config.HostPort..global.api.deleteContainer,self.arg.id)
         go("asyncDoRequest",function()
         end,"DELETE",url,"")
+        return NewToast("删除容器","info.circle","#000")
     end
 
     function self:Search()
@@ -301,7 +303,7 @@ function NewDocker(ctx)
         local data = string.format("fromImage=%s:latest",self.arg.name)
         go("asyncDoRequestWithBackendClient",function()
         end,"POST",url,data)
-        return {}
+        return NewToast("拉取镜像","info.circle","#000")
     end
 
     return self
