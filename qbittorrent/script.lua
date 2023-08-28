@@ -202,6 +202,7 @@ local function NewQBittorrent(ctx)
                 line.AddAction(NewAction("pause", { hash = d.hash }, "暂停").SetIcon("pause.circle"))
             end
             line.AddAction(NewAction("delete", { hash = d.hash }, "删除").SetIcon("trash.circle").SetCheck(true))
+            line.SetDetail(string.format("```\n%s```",json.encode(d)))
             app.AddUi(index, line)
             col = col + 1
             if col % tonumber(config.ColNum) == 0 then
