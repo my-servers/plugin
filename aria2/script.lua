@@ -66,7 +66,7 @@ function NewAria2(ctx)
 | 大小  | %s |
 | 下载速度  | %s |
 | 发送者/总数  | %s/%s |
-        ]],
+]],
                 getName(info),
                 ByteToUiString(tonumber(info.completedLength)),
                 ByteToUiString(tonumber(info.totalLength)),
