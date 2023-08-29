@@ -74,6 +74,22 @@ local function NewSystem(ctx)
         return memUi
     end
 
+    local function getCpuDetail(cpus)
+        local detail = [[
+### cpu
+|  VendorID   | Family  | Model | PhysicalID | CoreID | ModelName | Mhz | CacheSize |
+|  ----  | ----  | ----  | ----  | ----  | ----  | ----  | ----  |
+]]
+        if type(cpus) == "table" then
+            for i = 1, #cpus do
+                local c = cpus[i]
+                detail = detail .. string.format([[|%s|%s|%s|%s|%s|%s|%s|%s|
+]],c.vendorId,c.family,c.model,c.physicalId,c.coreId,c.modelName,ByteToUiString(c.mhz),ByteToUiString(c.cacheSize))
+            end
+        end
+        return detail
+    end
+
     ---@return ProcessCircleUi
     local function getCpuUi()
         local cpuTitle = NewText("").AddString(1, NewString("cpu").SetFontSize(10))
@@ -82,6 +98,7 @@ local function NewSystem(ctx)
         local cpuUi = NewProcessCircleUi().SetTitle(cpuTitle)
             .SetDesc(cpuDesc)
             .SetProcessData(NewProcessData(self.runCtx.cpuPercent[1], 100))
+        cpuUi.SetDetail(getCpuDetail(self.runCtx.cpuInfo))
         return cpuUi
     end
 
