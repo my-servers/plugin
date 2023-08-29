@@ -91,7 +91,7 @@ function NewDocker(ctx)
 | 镜像  | %s |
 | 命令  | `%s` |
 | 状态  | `%s` |
-[百度](https://www.baidu.com)
+
         ]],
                 c.Id,
                 string.join(c.Names,"<br>"),
@@ -99,6 +99,20 @@ function NewDocker(ctx)
                 c.Command,
                 c.State
         )
+        for i = 1, #c.Ports do
+            local p = c.Ports[i]
+            detail = detail + string.format([[
+| 端口  | `%s`:`%s`->`%s` |
+
+            ]],p.Type,tostring(p.PrivatePort),tostring(p.PublicPort))
+        end
+        for i = 1, #c.Mounts do
+            local m = c.Mounts[i]
+            detail = detail + string.format([[
+| 目录映射  | `%s`->`%s` |
+
+            ]],m.Source,m.Destination)
+        end
         return detail
     end
 
