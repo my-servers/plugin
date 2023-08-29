@@ -169,11 +169,10 @@ local function NewQBittorrent(ctx)
 |  项   | 值  |
 |  ----  | ----  |
 | 下载目录  | %s |
-| 下载链接  | %s |
 | hash  | %s |
 | 已下载  | %s |
 | 总大小  | %s |
-        ]],d.name,d.content_path,d.magnet_uri,d.infohash_v1,
+        ]],d.name,d.content_path,d.infohash_v1,
                 ByteToUiString(d.downloaded),ByteToUiString(d.total_size))
     end
 
