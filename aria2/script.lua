@@ -66,12 +66,13 @@ function NewAria2(ctx)
 | 大小  | %s |
 | 下载速度  | %s |
 | 发送者/总数  | %s/%s |
+| 状态  | %s |
 ]],
                 getName(info),
                 ByteToUiString(tonumber(info.completedLength)),
                 ByteToUiString(tonumber(info.totalLength)),
                 ByteToUiString(tonumber(info.downloadSpeed)),
-                info.numSeeders,info.connections
+                info.numSeeders,info.connections,info.status
         )
         if type(info.files) == "table" then
             for i = 1, #info.files do
