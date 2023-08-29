@@ -83,7 +83,9 @@ local function NewSystem(ctx)
         for i = 1, #cpus do
             local c = cpus[i]
             detail = detail .. string.format([[|%s|%s|%s|%s|%s|%s|%s|%s|
-]],c.vendorId,c.family,c.model,c.physicalId,c.coreId,c.modelName,ByteToUiString(c.mhz),ByteToUiString(c.cacheSize))
+]],c.vendorId,c.family,c.model,c.physicalId,c.coreId,c.modelName,
+                    ByteToUiString(Tonumber(c.mhz)),
+                    ByteToUiString(Tonumber(c.cacheSize)))
         end
         return detail
     end
