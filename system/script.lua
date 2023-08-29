@@ -80,12 +80,10 @@ local function NewSystem(ctx)
 |  VendorID   | Family  | Model | PhysicalID | CoreID | ModelName | Mhz | CacheSize |
 |  ----  | ----  | ----  | ----  | ----  | ----  | ----  | ----  |
 ]]
-        if type(cpus) == "table" then
-            for i = 1, #cpus do
-                local c = cpus[i]
-                detail = detail .. string.format([[|%s|%s|%s|%s|%s|%s|%s|%s|
+        for i = 1, #cpus do
+            local c = cpus[i]
+            detail = detail .. string.format([[|%s|%s|%s|%s|%s|%s|%s|%s|
 ]],c.vendorId,c.family,c.model,c.physicalId,c.coreId,c.modelName,ByteToUiString(c.mhz),ByteToUiString(c.cacheSize))
-            end
         end
         return detail
     end
