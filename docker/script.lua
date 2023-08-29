@@ -178,10 +178,13 @@ function NewDocker(ctx)
                 ByteToUiString(c.Size),
                 tostring(c.Containers)
         )
-        for i = 1, #c.RepoTags do
-            detail = detail .. string.format([[| 层  | `%s` |
+        if type(c.RepoTags) == "table" then
+            for i = 1, #c.RepoTags do
+                detail = detail .. string.format([[| 层  | `%s` |
 ]], c.RepoTags[i])
+            end
         end
+
         return detail
     end
 
@@ -212,7 +215,6 @@ function NewDocker(ctx)
                     .AddAction(NewAction("delete",{id=c.Id},"删除")
                     .SetCheck(true)
             )
-            -- .SetHeight(height)
             nameAndOp.SetDetail(getImageDetail(c))
             app.AddUi(index,nameAndOp)
             if i%3 == 0 then
