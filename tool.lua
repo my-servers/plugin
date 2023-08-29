@@ -42,7 +42,11 @@ end
 function string.join(input, delimiter)
    local res = ""
     for i = 1, #input do
-        res = res .. tostring(input[i]) .. delimiter
+        if i == #input then
+            res = res .. tostring(input[i])
+        else
+            res = res .. tostring(input[i]) .. delimiter
+        end
     end
     return res
 end
