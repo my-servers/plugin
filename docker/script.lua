@@ -170,18 +170,20 @@ function NewDocker(ctx)
 | 父id  | %s |
 | 创建于  | %s |
 | 大小  | `%s` |
-| 容器数量  | <font color="#660000">%s</font> |
+| 容器数量  | `%s` |
+| tags  | %s |
 ]],
                 c.Id,
                 c.ParentId,
                 os.date("%Y/%m/%d %H:%M:%S", tonumber(c.Created)),
                 ByteToUiString(c.Size),
-                tostring(c.Containers)
+                tostring(c.Containers),
+                string.join(c.RepoTags,"<br>")
         )
-        if type(c.RepoTags) == "table" then
-            for i = 1, #c.RepoTags do
+        if type(c.RepoDigests) == "table" then
+            for i = 1, #c.RepoDigests do
                 detail = detail .. string.format([[| 层  | `%s` |
-]], c.RepoTags[i])
+]], c.RepoDigests[i])
             end
         end
 

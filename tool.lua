@@ -40,7 +40,10 @@ function string.split(input, delimiter)
 end
 
 function string.join(input, delimiter)
-   local res = ""
+    if type(c.RepoDigests) ~= "table" then
+        return ""
+    end
+    local res = ""
     for i = 1, #input do
         if i == #input then
             res = res .. tostring(input[i])
