@@ -64,7 +64,7 @@ local function NewSystem(ctx)
 
     local function getMemDetail(m)
         local detail = string.format([[
-### 内存
+#### 内存
 
 - 总内存： `%s`
 - 可用：`%s`
