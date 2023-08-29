@@ -220,7 +220,8 @@ local function NewQBittorrent(ctx)
             else
                 line.AddAction(NewAction("pause", { hash = d.hash }, "暂停").SetIcon("pause.circle"))
             end
-            line.AddAction(NewAction("delete", { hash = d.hash }, "删除").SetIcon("trash.circle").SetCheck(true))
+            line.AddAction(NewAction("delete", { hash = d.hash,clean = "false" }, "删除").SetIcon("trash.circle").SetCheck(true))
+            line.AddAction(NewAction("delete", { hash = d.hash,clean = "true" }, "删除并清理文件").SetIcon("trash.circle").SetCheck(true))
             line.SetDetail(genDetail(d))
             app.AddUi(index, line)
             col = col + 1
@@ -289,7 +290,7 @@ local function NewQBittorrent(ctx)
         local arg = self.arg
         local cfg = self.config
 
-        local data = string.format("hashes=%s&deleteFiles=false",arg.hash )
+        local data = string.format("hashes=%s&deleteFiles=%s",arg.hash,arg.clean)
         local req = http.request("POST",self.config.HostPort .. global.api.DeleteUrl,data)
         local pauseRsp,err = httpClient:do_request(req)
         if err then
