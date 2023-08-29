@@ -64,16 +64,13 @@ local function NewSystem(ctx)
 
     local function getMemDetail(m)
         local detail = string.format([[
-#### 内存
-
-- 总内存： `%s`
-- 可用：`%s`
-- 已使用：`%s`
-
-]],ByteToUiString(m.Total),
-            ByteToUiString(m.Available),
-             ByteToUiString(m.Used)
-        )
+### 内存
+|  项   | 值  |
+|  ----  | ----  |
+| 总内存 | %s |
+| 可用  | %s |
+| 已使用  | %s |
+]],ByteToUiString(m.Total),ByteToUiString(m.Available),ByteToUiString(m.Used))
         return detail
     end
 
