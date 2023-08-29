@@ -57,6 +57,38 @@ function NewAria2(ctx)
         }
     end
 
+    function getDetail(info)
+        local detail = string.format([[
+|  项   | 值  |
+|  ----  | ----  |
+| 名字  | %s |
+| 已下载 | %s |
+| 大小  | %s |
+| 下载速度  | %s |
+| 发送者/总数  | %s/%s |
+        ]],
+                getName(info),
+                ByteToUiString(tonumber(info.completedLength)),
+                ByteToUiString(tonumber(info.totalLength)),
+                ByteToUiString(tonumber(info.downloadSpeed)),
+                info.connections,info.numSeeders
+        )
+        if type(info.files) == "table" then
+            for i = 1, #info.files do
+                local f = info.files[i]
+                detail = detail .. string.format([[| 文件  | %s<br>已下载: %s |
+]], f.path,ByteToUiString(f.completedLength))
+            end
+        end
+        return detail
+    end
+    function getName(info)
+        local name = "unknown"
+        if info.bittorrent and info.bittorrent.info then
+            name = info.bittorrent.info.name
+        end
+        return name
+    end
     ---@param app AppUI
     function getDownloadingInfo(app)
         local dataJson = getApi(global.getDownloading,global.getDownloadDingArg)
@@ -70,16 +102,12 @@ function NewAria2(ctx)
         local fontSize = 10
         for i = 1, #data.result do
             local info = data.result[i]
-            local name = "unknown"
-            if info.bittorrent and info.bittorrent.info then
-                name = info.bittorrent.info.name
-            end
             app.AddUi(
                     index,
                     NewProcessLineUi()
                             .SetDesc(NewText("leading")
                             .AddString(1,
-                            NewString(name)
+                            NewString(getName(info))
                                     .SetFontSize(fontSize)
                     )
                             .AddString(2,
@@ -105,6 +133,7 @@ function NewAria2(ctx)
                             .SetProcessData(NewProcessData(info.completedLength,info.totalLength))
                             .AddAction(NewAction("pause",{gid=info.gid},"暂停"))
                             .AddAction(NewAction("delete",{gid=info.gid},"删除").SetCheck(true))
+                            .SetDetail(getDetail(info))
             )
 
             if i%2 == 0 then
@@ -157,7 +186,7 @@ function NewAria2(ctx)
                     )
                             .SetProcessData(NewProcessData(tonumber(info.completedLength),tonumber(info.totalLength)))
                             .AddAction(NewAction("deleteDownloadResult",{gid=info.gid},"删除任务").SetCheck(true))
-
+                            .SetDetail(getDetail(info))
             )
 
             if i%2 == 0 then
@@ -210,7 +239,7 @@ function NewAria2(ctx)
                             .SetProcessData(NewProcessData(info.completedLength,info.totalLength))
                             .AddAction(NewAction("unpause",{gid=info.gid},"继续"))
                             .AddAction(NewAction("delete",{gid=info.gid},"删除").SetCheck(true))
-
+                            .SetDetail(getDetail(info))
             )
 
             if i%2 == 0 then
