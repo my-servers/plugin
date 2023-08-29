@@ -90,8 +90,7 @@ function NewDocker(ctx)
 | 容器名  | %s |
 | 镜像  | %s |
 | 命令  | `%s` |
-| 状态  | `%s` |\n
-        ]],
+| 状态  | `%s` |\n]],
                 c.Id,
                 string.join(c.Names,"<br>"),
                 c.Image,
@@ -100,15 +99,11 @@ function NewDocker(ctx)
         )
         for i = 1, #c.Ports do
             local p = c.Ports[i]
-            detail = detail .. string.format([[
-| 端口  | `%s`:`%s`->`%s` |\n
-            ]],p.Type,tostring(p.PrivatePort),tostring(p.PublicPort))
+            detail = detail .. string.format([[| 端口  | `%s`:`%s`->`%s` |\n]],p.Type,tostring(p.PrivatePort),tostring(p.PublicPort))
         end
         for i = 1, #c.Mounts do
             local m = c.Mounts[i]
-            detail = detail .. string.format([[
-| 目录映射  | `%s`->`%s` |\n
-            ]],m.Source,m.Destination)
+            detail = detail .. string.format([[| 目录映射  | `%s`->`%s` |\n]],m.Source,m.Destination)
         end
         return detail
     end
