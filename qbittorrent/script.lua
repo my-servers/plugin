@@ -172,8 +172,9 @@ local function NewQBittorrent(ctx)
 | hash  | %s |
 | 已下载  | %s |
 | 总大小  | %s |
+| 创建时间  | %s |
         ]],d.name,d.content_path,d.infohash_v1,
-                ByteToUiString(d.downloaded),ByteToUiString(d.total_size))
+                ByteToUiString(d.downloaded),ByteToUiString(d.total_size),os.date("%Y/%m/%d %H:%M:%S", d.added_on))
     end
 
     local function handleBittorrentList(app)
