@@ -16,7 +16,13 @@ local global = {
                 "status",
                 "percentDone",
                 "labels",
-                "percentComplete"
+                "percentComplete",
+                "downloadDir",
+                "addedDate",
+                "doneDate",
+                "comment",
+                "peers",
+                "files"
             },
             format = "json"
         },
@@ -113,6 +119,29 @@ local function NewTransmission(ctx)
         runCtx = ctx.ctx     -- 运行上下文
     }
 
+    function getDetail(d)
+        local detail = string.format([[
+### %s
+|  项   | 值  |
+|  ----  | ----  |
+| 大小  | %s |
+| 下载进度  | %s |
+| 状态  | %s |
+]],
+                d.name,ByteToUiString(d.totalSize),
+                string.format("%.2f%%", d.percentDone * 100 ),
+                global.statusName[d.status]
+        )
+        if type(d.files) == "table" then
+            for i = 1, #d.files do
+                local f = d.files[i]
+                detail = detail .. string.format([[| 文件  | %s<br><br>已下载/总大小: %s/%s |
+]], f.name,ByteToUiString(f.bytesCompleted),ByteToUiString(f.length))
+            end
+        end
+        return detail
+    end
+
     function self:Update()
         local app = NewApp()
         local url = string.format(global.urlFormat,self.config.HostPort)
@@ -170,9 +199,8 @@ local function NewTransmission(ctx)
             end
             line.AddAction(NewAction("delete",{id=d.id},"删除").SetCheck(true))
                 .AddAction(NewAction("deleteFile",{id=d.id},"删除并清理文件").SetCheck(true))
+            .SetDetail(getDetail(d))
             app.AddUi(index,line)
-
-
             if i%2 == 0 then
                 index = index+1
             end
