@@ -76,8 +76,8 @@ function NewAria2(ctx)
         if type(info.files) == "table" then
             for i = 1, #info.files do
                 local f = info.files[i]
-                detail = detail .. string.format([[| 文件  | %s<br>已下载: %s |
-]], f.path,ByteToUiString(f.completedLength))
+                detail = detail .. string.format([[| 文件  | %s<br><br>已下载/总大小: %s/%s |
+]], f.path,ByteToUiString(f.completedLength),ByteToUiString(f.length))
             end
         end
         return detail
