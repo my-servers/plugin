@@ -40,7 +40,7 @@ function string.split(input, delimiter)
 end
 
 function string.join(input, delimiter)
-    if type(c.RepoDigests) ~= "table" then
+    if type(input) ~= "table" then
         return ""
     end
     local res = ""
