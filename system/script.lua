@@ -62,6 +62,19 @@ local function NewSystem(ctx)
         return netUi
     end
 
+    local function getMemDetail(m)
+        local detail = string.format([[
+### 内存
+- 总内存： `%s`
+- 可用：`%s`
+- 已使用：`%s`
+]],ByteToUiString(m.Total),
+            ByteToUiString(m.Available),
+             ByteToUiString(m.Used)
+        )
+        return detail
+    end
+
     ---@return ProcessCircleUi
     local function getMemUi()
         local memTitle = NewText("").AddString(1, NewString("内存").SetFontSize(10))
@@ -71,6 +84,7 @@ local function NewSystem(ctx)
         local memUi = NewProcessCircleUi().SetTitle(memTitle)
             .SetDesc(memDesc)
             .SetProcessData(NewProcessData(self.runCtx.memInfo.Used, self.runCtx.memInfo.Total))
+        .SetDetail(getMemDetail(self.runCtx.memInfo))
         return memUi
     end
 
