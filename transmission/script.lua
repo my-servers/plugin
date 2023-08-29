@@ -119,7 +119,7 @@ local function NewTransmission(ctx)
         runCtx = ctx.ctx     -- 运行上下文
     }
 
-    function getDetail(d)
+    local function getDetail(d)
         local detail = string.format([[
 ### %s
 |  项   | 值  |

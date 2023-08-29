@@ -57,11 +57,11 @@ function NewAria2(ctx)
         }
     end
 
-    function getDetail(info)
+    local function getDetail(info)
         local detail = string.format([[
+### %s
 |  项   | 值  |
 |  ----  | ----  |
-| 名字  | %s |
 | 已下载 | %s |
 | 大小  | %s |
 | 下载速度  | %s |

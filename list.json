@@ -64,7 +64,7 @@
             ],
             "min_server_version": "1.0",
             "min_client_version": "1.0",
-            "version": "1.0"
+            "version": "1.1"
         },
         {
             "id" : "transmission",
@@ -77,7 +77,7 @@
             ],
             "min_server_version": "1.0",
             "min_client_version": "1.0",
-            "version": "1.0"
+            "version": "1.1"
         }
     ]
 }
