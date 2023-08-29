@@ -91,7 +91,7 @@ local function NewSystem(ctx)
 - Mhz: `%s`
 - CacheSize: `%s`
 ]],i,c.VendorID,c.Family,c.Model,c.PhysicalID,c.CoreID,c.ModelName,
-                    ByteToUiString(Tonumber(c.Mhz)),
+                    tostring(c.Mhz),
                     ByteToUiString(Tonumber(c.CacheSize)))
         end
         return detail
