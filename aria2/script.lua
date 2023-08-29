@@ -71,7 +71,7 @@ function NewAria2(ctx)
                 ByteToUiString(tonumber(info.completedLength)),
                 ByteToUiString(tonumber(info.totalLength)),
                 ByteToUiString(tonumber(info.downloadSpeed)),
-                info.connections,info.numSeeders
+                info.numSeeders,info.connections
         )
         if type(info.files) == "table" then
             for i = 1, #info.files do
