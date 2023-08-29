@@ -82,6 +82,26 @@ function NewDocker(ctx)
         return json.decode(stateRsp.body)
     end
 
+    function getContainersDetail(c)
+        local detail = string.format([[
+|  项   | 值  |
+|  ----  | ----  |
+| 容器id  | %s |
+| 容器名  | %s |
+| 镜像  | %s |
+| 命令  | `%s` |
+| 状态  | `%s` |
+
+        ]],
+                c.Id,
+                string.join(c.Names,"\n"),
+                c.Image,
+                c.Command,
+                c.State
+        )
+        return detail
+    end
+
     ---@param app AppUI
     function getContainersStats(app)
         req = http.request("GET",self.config.HostPort..global.api.containersList)
@@ -126,7 +146,7 @@ function NewDocker(ctx)
             else
                 nameAndOp.AddAction(NewAction("stop",{id=c.Id},"停止"))
             end
-            app.AddUi(index,nameAndOp)
+            app.AddUi(index,nameAndOp.SetDetail(getContainersDetail(c)))
             if i%1 == 0 then
                 index = index+1
             end

@@ -39,6 +39,14 @@ function string.split(input, delimiter)
     return arr
 end
 
+function string.join(input, delimiter)
+   local res = ""
+    for i = 1, #input do
+        res = res .. tostring(input[i]) .. delimiter
+    end
+    return res
+end
+
 ---@class CpuInfo
 local cpuInfo = {
     CPU        = "",
