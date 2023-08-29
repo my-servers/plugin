@@ -77,13 +77,20 @@ local function NewSystem(ctx)
     local function getCpuDetail(cpus)
         local detail = [[
 ### cpu
-|  VendorID   | Family  | Model | PhysicalID | CoreID | ModelName | Mhz | CacheSize |
-|  ----  | ----  | ----  | ----  | ----  | ----  | ----  | ----  |
 ]]
         for i = 1, #cpus do
             local c = cpus[i]
-            detail = detail .. string.format([[|%s|%s|%s|%s|%s|%s|%s|%s|
-]],c.VendorID,c.Family,c.Model,c.PhysicalID,c.CoreID,c.ModelName,
+            detail = detail .. string.format([[
+#### 核%d
+- VendorID: `%s`
+- Family: `%s`
+- Model: `%s`
+- PhysicalID: `%s`
+- CoreID: `%s`
+- ModelName: `%s`
+- Mhz: `%s`
+- CacheSize: `%s`
+]],i,c.VendorID,c.Family,c.Model,c.PhysicalID,c.CoreID,c.ModelName,
                     ByteToUiString(Tonumber(c.Mhz)),
                     ByteToUiString(Tonumber(c.CacheSize)))
         end
