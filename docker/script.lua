@@ -162,6 +162,29 @@ function NewDocker(ctx)
         end
     end
 
+    function getImageDetail(c)
+        local detail = string.format([[
+|  项   | 值  |
+|  ----  | ----  |
+| id  | %s |
+| 父id  | %s |
+| 创建于  | %s |
+| 大小  | `%s` |
+| 容器数量  | <font color="#660000">%s</font> |
+]],
+                c.Id,
+                c.ParentId,
+                os.date("%Y/%m/%d %H:%M:%S", tonumber(c.Created)),
+                ByteToUiString(c.Size),
+                tostring(c.Containers)
+        )
+        for i = 1, #c.RepoTags do
+            detail = detail .. string.format([[| 层  | `%s` |
+]], c.RepoTags[i])
+        end
+        return detail
+    end
+
     ---@param app AppUI
     function getImageList(app)
         req = http.request("GET",self.config.HostPort..global.api.imageList)
@@ -190,7 +213,7 @@ function NewDocker(ctx)
                     .SetCheck(true)
             )
             -- .SetHeight(height)
-
+            nameAndOp.SetDetail(getImageDetail(c))
             app.AddUi(index,nameAndOp)
             if i%3 == 0 then
                 index = index+1
