@@ -91,12 +91,14 @@ function NewDocker(ctx)
 | 镜像  | %s |
 | 命令  | `%s` |
 | 状态  | `%s` |
+| 网络模式  | %s |
 ]],
                 c.Id,
                 string.join(c.Names,"<br>"),
                 c.Image,
                 c.Command,
-                c.State
+                c.State,
+                c.HostConfig.NetworkMode
         )
         for i = 1, #c.Ports do
             local p = c.Ports[i]
