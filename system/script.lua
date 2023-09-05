@@ -66,7 +66,7 @@ local function NewSystem(ctx)
         local detail = string.format([[
 ### 内存
 |  项   | 值  |
-|  ----  | ----  |
+| -- | -- |
 | 总内存 | %s |
 | 可用  | %s |
 | 已使用  | %s |
