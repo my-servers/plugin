@@ -26,12 +26,8 @@ RestConfig:
   Log:
     Stat: false
     Level: error
-SecretKey: e8edf0cd4c5d49694c39edf7a879a92e
-PluginUrl: https://plugin.codeloverme.cn/
-MarkdownPage:
-  About: https://plugin.codeloverme.cn/about.md
-  Feedback: https://plugin.codeloverme.cn/feedback.md
-  Private_Policy: https://plugin.codeloverme.cn/private_policy.md
+SecretKey: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+PluginUrl: https://services.codeloverme.cn/
 AppDir: apps
 Name: codelover
 
