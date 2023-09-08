@@ -39,3 +39,5 @@ Name: codelover
 - `SecretKey`是app和服务端通信的密钥，app和服务端保持一致，否则无法通信
 - `PluginUrl`支持的服务地址，可以自定义，但是具体协议请参考 todo
 - `AppDir`服务端脚本保存的目录
+
+更多特性请访问[MyServers官网](https://myservers.codeloverme.cn)
