@@ -6,7 +6,7 @@
 ### docker运行
 docker运行，方便快捷，一行命令就能run起来
 ```shell
-docker run -it -d myServers/myServers
+docker run -it -d --network=host --name=myServers  myservers/my_servers
 ```
 
 ### 直接进程运行
