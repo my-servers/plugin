@@ -9,7 +9,8 @@
             "download_url":"https://plugin.codeloverme.cn/qbittorrent",
             "min_server_version": "1.0",
             "min_client_version": "1.0",
-            "version": "1.0"
+            "version": "1.0",
+            "is_finished": true
         },
         {
             "id" : "docker",
@@ -20,7 +21,8 @@
             "download_url":"https://plugin.codeloverme.cn/docker",
             "min_server_version": "1.0",
             "min_client_version": "1.0",
-            "version": "1.0"
+            "version": "1.0",
+            "is_finished": true
         },
         {
             "id" : "system",
@@ -31,7 +33,8 @@
             "download_url":"https://plugin.codeloverme.cn/system",
             "min_server_version": "1.0",
             "min_client_version": "1.0",
-            "version": "1.1"
+            "version": "1.1",
+            "is_finished": true
         },
         {
             "id" : "frp",
@@ -43,7 +46,9 @@
             "img":[
             ],
             "min_server_version": "1.0",
-            "min_client_version": "1.0"
+            "min_client_version": "1.0",
+            "version": "1.1",
+            "is_finished": true
         },
         {
             "id" : "aria2",
@@ -54,7 +59,8 @@
             "download_url":"https://plugin.codeloverme.cn/aria2",
             "min_server_version": "1.0",
             "min_client_version": "1.0",
-            "version": "1.1"
+            "version": "1.1",
+            "is_finished": true
         },
         {
             "id" : "transmission",
@@ -65,7 +71,8 @@
             "download_url":"https://plugin.codeloverme.cn/transmission",
             "min_server_version": "1.0",
             "min_client_version": "1.0",
-            "version": "1.1"
+            "version": "1.1",
+            "is_finished": true
         }
     ]
 }
