@@ -1,10 +1,3 @@
----
-layout: page
-title: 快速开始
-include_in_header: true
-icon: play
----
-
 
 # 快速开始
 
