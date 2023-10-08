@@ -45,6 +45,7 @@ extend:
 
 
 -  `HostPort` aria2的管理地址
+  - `http://127.0.0.1:6800/jsonrpc`
 - `Token` 密钥，对应参数`RPC_SECRET`
 
 

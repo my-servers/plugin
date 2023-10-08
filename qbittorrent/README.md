@@ -52,6 +52,8 @@ extend:
     priority: 170
 ```
 
+- `HostPort` ip和端口
+  - `http://127.0.0.1:18080`
 - `Username` 上面设置的用户名
 - `Password`上面设置的密码
 

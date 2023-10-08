@@ -39,6 +39,7 @@ docker run -d \
 ```
 
 - `HostPort` 用户名密码和地址
+  - `http://username:password@127.0.0.1:9091`
 
 
 ## 功能
