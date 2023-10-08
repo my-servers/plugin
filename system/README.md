@@ -2,10 +2,6 @@
 
 ## 配置
 ```yaml
-name: 系统监控
-enable: true
-priority: 100
-padding: 3
 extend:
   CpuWin:
     val: "100"
@@ -20,13 +16,12 @@ extend:
     desc: nas挂载点
     priority: 100
 
-height: 4
 ``` 
 
 - `CpuWin`
   - `cpu`走势图监控的窗口大小(最大记录点的个数)
 - `Interface`
-  - 网络接口名，用来统计上传下载网速大小
+  - 网络接口名，用来统计上传下载网速大小，如 `eth0`
 - `Disk`
   - 监控的磁盘使用情况，填任意该磁盘下的目录
 

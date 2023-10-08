@@ -9,31 +9,31 @@ docker运行，方便快捷，一行命令就能run起来
 docker run -it -d --network=host --name=myServers  myservers/my_servers
 ```
 
-### 直接进程运行
-- 下载编译好的二进制文件，或者直接源码编译（2选1）
-  1. 下载地址：
-  2. 源码地址：
-  3. 编译命令：
-- 运行命令
+- 默认端口`18612`
+
+### ~~直接进程运行~~(待完善)
+
 
 
 ### 配置文件
 ```yaml
 RestConfig:
-  Name: MyServer
+  Name: MyServers
   Host: 0.0.0.0
-  Port: 8888
+  Port: 18612
   Log:
     Stat: false
     Level: error
-SecretKey: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-PluginUrl: https://services.codeloverme.cn/
+SecretKey: e8edf0cd4c5d49694c39edf7a879a92e
+PluginUrl: https://plugin.codeloverme.cn/
+MarkdownPage:
+  About: https://plugin.codeloverme.cn/about.md
 AppDir: apps
 Name: codelover
 
 ```
 - `SecretKey`是app和服务端通信的密钥，app和服务端保持一致，否则无法通信
-- `PluginUrl`支持的服务地址，可以自定义，但是具体协议请参考 todo
+- `PluginUrl`支持的服务地址，可以自定义
 - `AppDir`服务端脚本保存的目录
 
 更多特性请访问[MyServers官网](https://myservers.codeloverme.cn)

@@ -201,6 +201,9 @@ function NewDocker(ctx)
         end
         local height = 35
         local data = json.decode(stateRsp.body)
+        table.sort(data,function(a, b)
+            return tonumber(a.Created) > tonumber(b.Created)
+        end)
         index = 1
         for i = 1, #data do
             local c = data[i]

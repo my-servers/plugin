@@ -16,7 +16,7 @@
             "id" : "docker",
             "name": "docker",
             "introduce" : "docker管理:\n1.容器的停止/重启/删除\n2.镜像的搜索/拉取/删除",
-            "author" : "other",
+            "author" : "admin",
             "home_url": "",
             "download_url":"https://plugin.codeloverme.cn/docker",
             "min_server_version": "1.0",
@@ -33,7 +33,7 @@
             "download_url":"https://plugin.codeloverme.cn/system",
             "min_server_version": "1.0",
             "min_client_version": "1.0",
-            "version": "1.1",
+            "version": "1.0",
             "is_finished": true
         },
         {
@@ -47,7 +47,7 @@
             ],
             "min_server_version": "1.0",
             "min_client_version": "1.0",
-            "version": "1.1",
+            "version": "1.0",
             "is_finished": true
         },
         {
@@ -59,7 +59,7 @@
             "download_url":"https://plugin.codeloverme.cn/aria2",
             "min_server_version": "1.0",
             "min_client_version": "1.0",
-            "version": "1.1",
+            "version": "1.0",
             "is_finished": true
         },
         {
@@ -71,7 +71,7 @@
             "download_url":"https://plugin.codeloverme.cn/transmission",
             "min_server_version": "1.0",
             "min_client_version": "1.0",
-            "version": "1.1",
+            "version": "1.0",
             "is_finished": true
         }
     ]
