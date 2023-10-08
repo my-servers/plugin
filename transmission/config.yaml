@@ -5,7 +5,7 @@ padding: 3
 height: 4
 extend:
   HostPort:
-    val: http://test:test@192.168.100.4:9091
+    val: http://username:password@127.0.0.1:9091
     desc: ip和端口（含用户密码）
     priority: 180
   DownloadPath:

@@ -8,7 +8,7 @@ extend:
     desc: cpu走势图窗口大小
     priority: 0
   Interface:
-    val: enp7s0f1
+    val: eth0
     desc: 网络接口
     priority: 90
   Disk:
