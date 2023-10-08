@@ -1,0 +1,14 @@
+name: transmission
+enable: true
+priority: 60
+padding: 3
+height: 4
+extend:
+  HostPort:
+    val: http://username:password@127.0.0.1:9091
+    desc: ip和端口（含用户密码）
+    priority: 180
+  DownloadPath:
+    val: /downloads
+    desc: 下载路径
+    priority: 170
