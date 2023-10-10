@@ -1,1 +1,2 @@
 - 🎉🎉欢迎[提出意见](mailto:codeloverql@gmail.com)，会在有价值的邮件里面挑选一些送出年度或者终身会员！
+- 🎉🎉如果有希望我们支持的插件建议，欢迎[提出](mailto:codeloverql@gmail.com)
