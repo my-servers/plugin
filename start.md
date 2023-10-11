@@ -6,11 +6,42 @@
 
 ### 服务端程序运行
 提供两种运行方式，建议选择第一种
-1. docker
+#### docker
+
+1. 宿主机准备插件目录，为了防止后续升级服务端后插件丢失，建议插件存放在宿主机上，通过文件目录映射共享给容器`mkdir /xx/to/apps`
+2. 准备配置文件
+`touch /xx/to/config.yaml`
+`vim /xx/to/config.yaml`
+```
+RestConfig:
+  Name: MyServers
+  Host: 0.0.0.0
+  Port: 18612
+  Log:
+    Stat: false
+    Level: error
+SecretKey: 修改我（echo -n "test" | md5）
+PluginUrl: https://plugin.codeloverme.cn/
+MarkdownPage:
+  About: https://plugin.codeloverme.cn/about.md
+AppDir: apps
+Name: codelover
+```
+3. 运行容器，指定参数
+- 映射插件目录 `-v /xx/to/apps:/apps`
+- 指定插件目录，如果不指定则使用配置文件中的 `-e AppDir=/apps`
+- 指定密钥，如果不指定则使用配置文件中的 `-e SecretKey=e8edf0cd4c5d49694c39edf7a879a92e`
 
 ```shell
-docker run -it -d --network=host --name=myServers  myservers/my_servers
+docker run -it -d --network=host --name=myServers -v /xx/to/apps:/apps  -e AppDir=/apps -e SecretKey=e8edf0cd4c5d49694c39edf7a879a92e myservers/my_servers
 ```
+
+4. 登录容器修改和查看
+```shell
+docker run -it {id} sh
+```
+
+
 2. 直接运行服务端进程（待完善）
 
 
