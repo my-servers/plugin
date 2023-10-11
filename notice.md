@@ -1,2 +1,2 @@
-- 🎉🎉欢迎[提出意见](mailto:codeloverql@gmail.com)，会在有价值的邮件里面挑选一些送出年度或者终身会员！
-- 🎉🎉如果有希望我们支持的插件建议，欢迎[提出](mailto:codeloverql@gmail.com)
+- 🎉🎉如果有任何使用疑问或者需要我们支持的插件建议，请随时[联系我们](mailto:codeloverql@gmail.com)
+- ❕❕对于无法登陆服务端容器的问题，我们优化了镜像，并更新了文档，有类似问题可以[参考文档](https://myservers.codeloverme.cn/app/)升级服务端体验
