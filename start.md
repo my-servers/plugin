@@ -42,8 +42,7 @@ docker run -it -d --network=host --name=myServers -v /xx/to/apps:/apps  -e AppDi
 docker run -it {id} sh
 ```
 
-
-2. 直接运行服务端进程（待完善）
+#### 直接运行服务端进程（待完善）
 
 
 ### 配置文件
