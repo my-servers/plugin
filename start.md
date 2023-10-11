@@ -29,6 +29,7 @@ Name: codelover
 ```
 3. 运行容器，指定参数
 - 映射插件目录 `-v /xx/to/apps:/apps`
+- 映射配置文件 `-v /xx/to/config.yaml:/app/config/config.yaml`(可选)
 - 指定插件目录，如果不指定则使用配置文件中的 `-e AppDir=/apps`
 - 指定密钥，如果不指定则使用配置文件中的 `-e SecretKey=e8edf0cd4c5d49694c39edf7a879a92e`
 
