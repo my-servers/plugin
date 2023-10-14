@@ -43,7 +43,7 @@ docker run -it -d --network=host --name=myServers -v /xx/to/apps:/apps  -e AppDi
 
 4. 登录容器修改和查看
 ```shell
-docker run -it {id} sh
+docker exec -it {id} sh
 ```
 
 5. 修改后重启容器
