@@ -2,7 +2,7 @@
     "plugin":[
         {
             "id" : "qbittorrent",
-            "name": "qbittorrent",
+            "name": "Qbittorrent",
             "introduce" : "qbittorrent下载工具:\n1.指定链接下载\n2.搜索/下载\n3.暂停/删除",
             "author" : "admin",
             "home_url": "",
@@ -14,7 +14,7 @@
         },
         {
             "id" : "docker",
-            "name": "docker",
+            "name": "Docker",
             "introduce" : "docker管理:\n1.容器的停止/重启/删除\n2.镜像的搜索/拉取/删除",
             "author" : "admin",
             "home_url": "",
@@ -26,7 +26,7 @@
         },
         {
             "id" : "system",
-            "name": "system",
+            "name": "System",
             "introduce" : "系统监控：\n1.监控cpu，内存，网络，磁盘\n2.监控cpu的走势\n3.执行shell命令",
             "author" : "admin",
             "home_url": "",
@@ -38,7 +38,7 @@
         },
         {
             "id" : "frp",
-            "name": "frp",
+            "name": "Frp",
             "introduce" : "frp内网穿透：\n1.检查端口存活状态\n2.增加/删除/修改端口",
             "author" : "admin",
             "home_url": "",
@@ -52,7 +52,7 @@
         },
         {
             "id" : "aria2",
-            "name": "aria2",
+            "name": "Aria2",
             "introduce" : "aria2下载工具：\n1.新增下载\n2.暂停/删除下载任务\n3.查看下载进度",
             "author" : "admin",
             "home_url": "",
@@ -64,7 +64,7 @@
         },
         {
             "id" : "transmission",
-            "name": "transmission",
+            "name": "Transmission",
             "introduce" : "transmission下载工具：\n1.新增下载\n2.暂停/删除下载任务\n3.查看下载进度",
             "author" : "admin",
             "home_url": "",
