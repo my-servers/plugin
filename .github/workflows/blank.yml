@@ -1,0 +1,24 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: push到腾讯云
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Upload files to server
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.SERVER_SSH_HOST }} # 服务器域名
+        username: ${{ secrets.SERVER_SSH_USER }} # 腾讯云默认用户名为root
+        key: ${{ secrets.SERVER_SSH_KEY }} # 本地.ssh文件下的私钥id_rsa，存在secrets中
+        source: './' # 源目录，相对于$GITHUB_WORKSPACE根目录的路径
+        target: ${{ secrets.SERVER_SSH_TARGET }} # 目标目录
