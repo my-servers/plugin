@@ -6,7 +6,8 @@ name: push到腾讯云
 on:
   push:
     branches: [ "main" ]
-
+  pull_request:
+    branches: [ "main" ]
 jobs:
   build:
     runs-on: ubuntu-latest
