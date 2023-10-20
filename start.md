@@ -56,10 +56,20 @@ docker restart {id}
 
 ## 客户端
 
-1. 切换到服务器
-2. 点击`+`添加
-3. 主要关注ip和端口，密钥（需要和上面服务端一致）
+1. 添加服务器
+- 先到**服务器**界面，点击`+`添加
+- ![](https://myservers.codeloverme.cn/img/add_server.jpeg)
+- 填写名字（随意），ip端口，密钥（和服务端对齐），提交
+- 填写后点击选中
 
+2. 安装插件到服务器
+- 到**服务**界面
+- ![](https://myservers.codeloverme.cn/img/add_plugin.png)
+- **长按**想要安装的插件，点击**启用**
+
+3. 再到应用界面
+- **长按**已经启用的应用进行配置，每个插件有不同的配置，具体**点击**应用会有说明
+- ![](https://myservers.codeloverme.cn/img/config_app.png)
 
 更多特性请访问[MyServers官网](https://myservers.codeloverme.cn)
 
