@@ -1,5 +1,6 @@
 # qbittorrent 管理
 
+
 ## 先在服务端运行qbittorrent
 
 ```shell
@@ -16,8 +17,33 @@ docker run -d \
 - 配置登录用户和密码
 - 具体配置请参考qbittorrent的官方文档
 
+------------
 
-## 配置
+## 插件界面
+
+![](https://plugin.codeloverme.cn/qbittorrent/all.png)
+
+
+## 插件配置
+
+- 长按展示界面
+- ![](https://plugin.codeloverme.cn/qbittorrent/config.png)
+- 根据后端服务器配置的来填写，主要关心用户名，密码，ip和端口
+
+
+
+## 功能
+- 新增下载（添加磁链接）
+- 管理下载任务，**长按**每个下载任务可以拉起菜单
+  - ![](https://plugin.codeloverme.cn/qbittorrent/menu.jpg)
+- 查看下载进度，详情等，**点击**任务查看详情
+  - ![](https://plugin.codeloverme.cn/qbittorrent/detail.png)
+
+
+-------------------
+
+> 下面的内容是上面配置界面对应的配置文件，可以不用关心，App上修改就行，无需手动在服务端修改。
+## 配置文件
 
 ```yaml
 name: qBittorrent
@@ -57,8 +83,3 @@ extend:
 - `Username` 上面设置的用户名
 - `Password`上面设置的密码
 
-
-## 功能
-- 新增下载
-- 管理下载任务
-- 查看下载进度，详情等
