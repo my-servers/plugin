@@ -6,7 +6,7 @@
 
 ## 插件配置
 - 长按展示界面
-![](https://plugin.codeloverme.cn/docker/config.png)
+- ![](https://plugin.codeloverme.cn/docker/config.png)
 - 需要docker服务开启http端口
   - 修改 `/lib/systemd/system/docker.service` 项 `ExecStart`新增监听`http`
   - 示例：`ExecStart=/usr/bin/dockerd -H tcp://127.0.0.1:6666 -H fd:// --containerd=/run/containerd/containerd.sock`
@@ -23,7 +23,7 @@
 - 删除
 
 ### 容器
-![](https://plugin.codeloverme.cn/docker/menu.png)
+- ![](https://plugin.codeloverme.cn/docker/menu.png)
 - 启动
 - 运行
 - 停止
