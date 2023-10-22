@@ -38,6 +38,8 @@ docker run -d \
   - ![](https://plugin.codeloverme.cn/qbittorrent/menu.jpg)
 - 查看下载进度，详情等，**点击**任务查看详情
   - ![](https://plugin.codeloverme.cn/qbittorrent/detail.png)
+- 搜索下载
+  - 需要在服务端安装好搜索插件
 
 
 -------------------
