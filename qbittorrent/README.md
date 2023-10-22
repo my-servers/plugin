@@ -27,7 +27,7 @@ docker run -d \
 ## 插件配置
 
 - 长按展示界面
-- ![](https://plugin.codeloverme.cn/qbittorrent/config.png)
+  - ![](https://plugin.codeloverme.cn/qbittorrent/config.png)
 - 根据后端服务器配置的来填写，主要关心用户名，密码，ip和端口
 
 
