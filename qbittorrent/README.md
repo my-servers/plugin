@@ -27,7 +27,7 @@ docker run -d \
 ## 插件配置
 
 - 长按展示界面
-  - ![](https://plugin.codeloverme.cn/qbittorrent/config.png)
+- ![](https://plugin.codeloverme.cn/qbittorrent/config.png)
 - 根据后端服务器配置的来填写，主要关心用户名，密码，ip和端口
 
 
@@ -35,9 +35,9 @@ docker run -d \
 ## 功能
 - 新增下载（添加磁链接）
 - 管理下载任务，**长按**每个下载任务可以拉起菜单
-  - ![](https://plugin.codeloverme.cn/qbittorrent/menu.jpg)
+- ![](https://plugin.codeloverme.cn/qbittorrent/menu.jpg)
 - 查看下载进度，详情等，**点击**任务查看详情
-  - ![](https://plugin.codeloverme.cn/qbittorrent/detail.png)
+- ![](https://plugin.codeloverme.cn/qbittorrent/detail.png)
 - 搜索下载
   - 需要在服务端安装好搜索插件
 

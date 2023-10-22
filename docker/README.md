@@ -25,7 +25,7 @@
 ### 容器
 - ![](https://plugin.codeloverme.cn/docker/menu.jpg)
 - 查看详情
-  - ![](https://plugin.codeloverme.cn/docker/detail.png)
+- ![](https://plugin.codeloverme.cn/docker/detail.png)
 - 启动
 - 运行
 - 停止
