@@ -23,8 +23,9 @@
 - 删除
 
 ### 容器
+- **长按**拉起菜单
 - ![](https://plugin.codeloverme.cn/docker/menu.jpg)
-- 查看详情
+- **点击**查看详情
 - ![](https://plugin.codeloverme.cn/docker/detail.png)
 - 启动
 - 运行
