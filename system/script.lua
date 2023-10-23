@@ -1,4 +1,5 @@
 local json = require("json")
+local lfs = require("lfs")
 local global = {
     cpuPoints = {},
     netState = {
@@ -6,6 +7,13 @@ local global = {
         send = 0,
         ts = 0,
     },
+    menuInfo = "info",
+    menuFile = "file",
+    menu = "info",
+    curDir = "/",
+    pageStart = 1,
+    page = 0,
+    pageSize = 20,
 }
 
 ---@param ctx Ctx
@@ -51,14 +59,14 @@ local function NewSystem(ctx)
     local function getNetUi()
         local recvSpeed, sendSpeed = calNetSpeed()
         local title = NewText("").AddString(1, NewString("网络")
-            .SetFontSize(10))
+                .SetFontSize(10))
 
         local desc = NewText("").AddString(1, NewString("↑" .. ByteToUiString(sendSpeed)).SetFontSize(9))
-            .AddString(2, NewString("↓" .. ByteToUiString(recvSpeed)).SetFontSize(9))
+                                .AddString(2, NewString("↓" .. ByteToUiString(recvSpeed)).SetFontSize(9))
 
         local netUi = NewProcessCircleUi().SetTitle(title)
-            .SetDesc(desc)
-            .SetProcessData(NewProcessData(recvSpeed, recvSpeed + sendSpeed))
+                                          .SetDesc(desc)
+                                          .SetProcessData(NewProcessData(recvSpeed, recvSpeed + sendSpeed))
         return netUi
     end
 
@@ -78,12 +86,12 @@ local function NewSystem(ctx)
     local function getMemUi()
         local memTitle = NewText("").AddString(1, NewString("内存").SetFontSize(10))
         local memDesc = NewText("").AddString(1, NewString(ByteToUiString(self.runCtx.memInfo.Total)).SetFontSize(9))
-            .AddString(2, NewString(string.format("%.0f%%", self.runCtx.memInfo.UsedPercent)).SetFontSize(9))
+                                   .AddString(2, NewString(string.format("%.0f%%", self.runCtx.memInfo.UsedPercent)).SetFontSize(9))
 
         local memUi = NewProcessCircleUi().SetTitle(memTitle)
-            .SetDesc(memDesc)
-            .SetProcessData(NewProcessData(self.runCtx.memInfo.Used, self.runCtx.memInfo.Total))
-        .SetDetail(getMemDetail(self.runCtx.memInfo))
+                                          .SetDesc(memDesc)
+                                          .SetProcessData(NewProcessData(self.runCtx.memInfo.Used, self.runCtx.memInfo.Total))
+                                          .SetDetail(getMemDetail(self.runCtx.memInfo))
         return memUi
     end
 
@@ -114,10 +122,10 @@ local function NewSystem(ctx)
     local function getCpuUi()
         local cpuTitle = NewText("").AddString(1, NewString("cpu").SetFontSize(10))
         local cpuDesc = NewText("").AddString(1, NewString(tostring(#self.runCtx.cpuInfo) .. "核").SetFontSize(9))
-            .AddString(2, NewString(string.format("%.0f%%", self.runCtx.cpuPercent[1])).SetFontSize(9))
+                                   .AddString(2, NewString(string.format("%.0f%%", self.runCtx.cpuPercent[1])).SetFontSize(9))
         local cpuUi = NewProcessCircleUi().SetTitle(cpuTitle)
-            .SetDesc(cpuDesc)
-            .SetProcessData(NewProcessData(self.runCtx.cpuPercent[1], 100))
+                                          .SetDesc(cpuDesc)
+                                          .SetProcessData(NewProcessData(self.runCtx.cpuPercent[1], 100))
         cpuUi.SetDetail(getCpuDetail(self.runCtx.cpuInfo))
         return cpuUi
     end
@@ -128,11 +136,11 @@ local function NewSystem(ctx)
         local nasTitle = NewText("").AddString(1, NewString("nas").SetFontSize(10))
         local nasDesc = NewText("").AddString(1,
                 NewString(ByteToUiString(self.runCtx.diskInfo[diskName].Total)).SetFontSize(9))
-            .AddString(2, NewString(string.format("%.0f%%", self.runCtx.diskInfo[diskName].UsedPercent)).SetFontSize(9))
+                                   .AddString(2, NewString(string.format("%.0f%%", self.runCtx.diskInfo[diskName].UsedPercent)).SetFontSize(9))
 
         local nasUi = NewProcessCircleUi().SetTitle(nasTitle)
-            .SetDesc(nasDesc)
-            .SetProcessData(NewProcessData(self.runCtx.diskInfo[diskName].Used, self.runCtx.diskInfo[diskName].Total))
+                                          .SetDesc(nasDesc)
+                                          .SetProcessData(NewProcessData(self.runCtx.diskInfo[diskName].Used, self.runCtx.diskInfo[diskName].Total))
         return nasUi
     end
 
@@ -149,23 +157,156 @@ local function NewSystem(ctx)
 
     ---@param app AppUI
     local function getAllMenu(app)
+        -- 文件
+        local fileButton = NewIconButton()
+                .SetAction(NewAction("changeMenu",{},"").SetArg({id=global.menuFile}))
+                .SetIcon("folder.circle")
+                .SetSize(17)
+        if global.menu == global.menuFile then
+            fileButton.SetColor("#F00")
+        end
+        app.AddMenu(fileButton)
+
+        -- 信息
+        local infoButton = NewIconButton()
+                .SetAction(NewAction("changeMenu",{},"").SetArg({id=global.menuInfo}))
+                .SetIcon("chart.line.uptrend.xyaxis.circle")
+                .SetSize(17)
+        if global.menu == global.menuInfo then
+            infoButton.SetColor("#F00")
+        end
+        app.AddMenu(infoButton)
+
         --  运行命令
         local button = NewIconButton()
                 .SetAction(NewAction("exec",{},"").AddInput("Cmd",NewInput("命令",1)))
                 .SetIcon("terminal")
-                .SetSize(14)
+                .SetSize(15)
         app.AddMenu(button)
+    end
+
+
+    function  self:ChangeMenu()
+        global.menu = self.arg.id
+    end
+
+    function  self:ChoiceDir()
+        if  self.arg["mode"] == "file" then
+            return
+        end
+        global.curDir = self.arg["path"].."/"
+        global.pageStart = 1
+    end
+
+    function  self:Back()
+        local arr = string.split(global.curDir,"/")
+        local res = {}
+        for i = 1, #arr do
+            if i < #arr-1 then
+                res[i] = arr[i]
+            end
+        end
+        global.curDir = string.join(res,"/").."/"
+        global.pageStart = 1
+        print("path-------", global.curDir )
+
+    end
+
+    function  self:Next()
+        global.pageStart = global.pageStart+global.pageSize
+    end
+
+    function  self:Pre()
+        global.pageStart = global.pageStart-global.pageSize
+        if global.pageStart <= 0 then
+            global.pageStart = 1
+        end
+    end
+
+    ---@return table
+    function self:getAllFiles(dir)
+        local allFiles = {}
+        for file in lfs.dir(dir) do
+            if file ~= "." and file ~= ".." then
+                local path = dir .. file
+                local attr = lfs.attributes(path)
+                if (attr["mode"] == "file" or attr["mode"] == "directory") then
+                    attr["path"] = path
+                    attr["name"] = file
+                    -- print("file:-------",json.encode(attr))
+                    table.insert(allFiles, attr)
+                end
+            end
+        end
+        return allFiles
+    end
+
+    ---@param app AppUI
+    function self:addAllFileUi(app)
+        local allFile = self:getAllFiles(global.curDir)
+        local row = 101
+
+        local pageStart = global.pageStart
+        local pageEnd =  global.pageStart + global.pageSize
+        if pageStart > #allFile then
+            pageStart = 1
+            pageEnd = global.pageSize
+        end
+        if pageEnd > #allFile then
+            pageEnd = #allFile
+        end
+        if global.pageStart > 1 then
+            local pre = NewIconButton()
+                    .SetAction(NewAction("pre",{},""))
+                    .SetIcon("chevron.left.circle")
+                    .SetSize(17)
+            app.AddMenu(pre)
+        end
+        local back = NewIconButton()
+                .SetAction(NewAction("back",{},""))
+                .SetIcon("arrowshape.turn.up.backward.circle")
+                .SetSize(17)
+        app.AddMenu(back)
+        if pageEnd < #allFile then
+            local next = NewIconButton()
+                    .SetAction(NewAction("next",{},""))
+                    .SetIcon("chevron.right.circle")
+                    .SetSize(17)
+            app.AddMenu(next)
+        end
+
+
+
+        for i = pageStart, pageEnd do
+            local value  = allFile[i]
+            local fontColor = "#000"
+            if value["mode"] == "directory" then
+                fontColor = "#00F"
+            end
+            local fileNameText = NewText("center").AddString(0, NewString(value["name"]).SetFontSize(12).SetColor(fontColor))
+                                                  .AddString(1, NewString(ByteToUiString(value["size"])).SetBackendColor("#339999").SetFontSize(8).SetColor("#FFF"))
+            local iconButton = NewIconButtonUi().SetIconButton(NewIconButton().SetDesc(fileNameText).SetAction(NewAction("choiceDir",value,""))).SetHeight(50)
+            local textUi = NewTextUi().SetText(fileNameText).SetHeight(50)
+            app.AddUi(row, iconButton)
+            if i%4 == 0 then
+                row = row+1
+            end
+        end
     end
 
     function self:GetUi()
         local app = NewApp()
+        if global.menu == global.menuInfo then
+            app.AddUi(1, getNetUi())
+            app.AddUi(1, getMemUi())
+            app.AddUi(1, getCpuUi())
+            app.AddUi(1, getNasUi())
+            app.AddUi(2, getCpuLineChart())
+            updateNetWin()
+        else
+            self:addAllFileUi(app)
+        end
         getAllMenu(app)
-        app.AddUi(1, getNetUi())
-        app.AddUi(1, getMemUi())
-        app.AddUi(1, getCpuUi())
-        app.AddUi(1, getNasUi())
-        app.AddUi(2, getCpuLineChart())
-        updateNetWin()
         return app.Data()
     end
 
@@ -190,6 +331,7 @@ function register()
     }
 end
 
+
 ---@param ctx Ctx
 ---@return AppUIData
 function update(ctx)
@@ -206,4 +348,25 @@ end
 function clear(ctx)
     print("clear start----")
     return NewSystem(ctx):Clear()
+end
+
+
+function changeMenu(ctx)
+    return NewSystem(ctx):ChangeMenu()
+end
+
+function choiceDir(ctx)
+    return NewSystem(ctx):ChoiceDir()
+end
+
+function back(ctx)
+    return NewSystem(ctx):Back()
+end
+
+function next(ctx)
+    return NewSystem(ctx):Next()
+end
+
+function pre(ctx)
+    return NewSystem(ctx):Pre()
 end
