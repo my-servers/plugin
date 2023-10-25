@@ -223,6 +223,31 @@ local function NewSystem(ctx)
         end
     end
 
+
+    function self:remove_dir(path)
+        for entry in lfs.dir(path) do
+            if entry ~= "." and entry ~= ".." then
+                local entry_path = path .. "/" .. entry
+                local attr = lfs.attributes(entry_path)
+
+                if attr.mode == "directory" then
+                    self:remove_dir(entry_path) -- 递归删除子目录
+                else
+                    os.remove(entry_path) -- 删除文件
+                end
+            end
+        end
+
+        local result, err = os.remove(path) -- 删除空目录
+    end
+
+    function  self:Delete()
+        if self.arg["mode"] == "file" then
+            os.remove(self.arg["path"])
+            return
+        end
+        self:remove_dir(self.arg["path"])
+    end
     ---@return table
     function self:getAllFiles(dir)
         local allFiles = {}
@@ -285,8 +310,9 @@ local function NewSystem(ctx)
             end
             local fileNameText = NewText("center").AddString(0, NewString(value["name"]).SetFontSize(12).SetColor(fontColor))
                                                   .AddString(1, NewString(ByteToUiString(value["size"])).SetBackendColor("#339999").SetFontSize(8).SetColor("#FFF"))
-            local iconButton = NewIconButtonUi().SetIconButton(NewIconButton().SetDesc(fileNameText).SetAction(NewAction("choiceDir",value,""))).SetHeight(50)
-            local textUi = NewTextUi().SetText(fileNameText).SetHeight(50)
+            local iconButton = NewIconButtonUi().SetIconButton(NewIconButton().SetDesc(fileNameText).SetAction(NewAction("choiceDir",value,"")))
+                                                .SetHeight(50)
+                                                .AddAction(NewAction("delete",value,"删除").SetCheck(true))
             app.AddUi(row, iconButton)
             if i%4 == 0 then
                 row = row+1
@@ -369,4 +395,8 @@ end
 
 function pre(ctx)
     return NewSystem(ctx):Pre()
+end
+
+function delete(ctx)
+    return NewSystem(ctx):Delete()
 end
