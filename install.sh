@@ -1,5 +1,5 @@
-#!/bin/bash
-
+#!/bin/sh
+set -e
 blue_bg="\033[44m"
 reset_color="\033[0m"
 
@@ -20,7 +20,7 @@ read app_dir
 if ! command -v docker &> /dev/null; then
     echo "Docker未安装，开始安装Docker..."
     # 安装Docker
-    curl -fsSL https://get.docker.com | bash
+    curl -fsSL https://get.docker.com | sh
 else
     echo "Docker已安装，跳过安装步骤。"
 fi
