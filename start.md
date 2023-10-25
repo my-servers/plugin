@@ -51,6 +51,16 @@ docker exec -it {id} sh
 docker restart {id} 
 ```
 
+6. 升级服务端
+- 拉取最新的服务端，重新运行
+```
+# 拉取最新的服务端
+docker pull myservers/my_servers
+# 重新运行
+docker run -it -d --network=host --name=myServers -v /xx/to/apps:/apps  -e AppDir=/apps -e SecretKey=e8edf0cd4c5d49694c39edf7a879a92e myservers/my_servers
+```
+
+
 ### 直接运行服务端进程（待完善）
 
 
