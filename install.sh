@@ -1,5 +1,24 @@
 #!/bin/sh
 set -e
+# 检查Docker是否已经安装
+if ! command -v docker &> /dev/null; then
+    echo "Docker未安装，开始安装Docker..."
+    # 安装Docker
+    curl -fsSL https://get.docker.com | sh
+else
+    echo "Docker已安装，跳过安装步骤。"
+fi
+clear
+cat << "EOF"
+ ____    ____             ______
+|_   \  /   _|          .' ____ \
+  |   \/   |    _   __  | (___ \_| .---.  _ .--.  _   __  .---.  _ .--.  .--.
+  | |\  /| |   [ \ [  ]  _.____`. / /__\\[ `/'`\][ \ [  ]/ /__\\[ `/'`\]( (`\]
+ _| |_\/_| |_   \ '/ /  | \____) || \__., | |     \ \/ / | \__., | |     `'.'.
+|_____||_____|[\_:  /    \______.' '.__.'[___]     \__/   '.__.'[___]   [\__) )
+               \__.'
+EOF
+
 blue_bg="\033[44m"
 reset_color="\033[0m"
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -12,23 +31,7 @@ echo -e "${blue_bg}请输入密钥（长度32，不足的会根据输入算出md
 read secret_key
 echo -e "${blue_bg}请输入插件保存的目录（宿主机目录）:  ${reset_color}"
 read app_dir
-# 检查Docker是否已经安装
-if ! command -v docker &> /dev/null; then
-    echo "Docker未安装，开始安装Docker..."
-    # 安装Docker
-    curl -fsSL https://get.docker.com | sh
-else
-    echo "Docker已安装，跳过安装步骤。"
-fi
-cat << "EOF"
- ____    ____             ______
-|_   \  /   _|          .' ____ \
-  |   \/   |    _   __  | (___ \_| .---.  _ .--.  _   __  .---.  _ .--.  .--.
-  | |\  /| |   [ \ [  ]  _.____`. / /__\\[ `/'`\][ \ [  ]/ /__\\[ `/'`\]( (`\]
- _| |_\/_| |_   \ '/ /  | \____) || \__., | |     \ \/ / | \__., | |     `'.'.
-|_____||_____|[\_:  /    \______.' '.__.'[___]     \__/   '.__.'[___]   [\__) )
-               \__.'
-EOF
+
 # 检查密钥长度是否为32
 if [ ${#secret_key} -ne 32 ]; then
     echo "密钥长度不足32，将根据输入计算md5作为密钥。"
