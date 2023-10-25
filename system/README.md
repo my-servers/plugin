@@ -1,5 +1,9 @@
 # system 管理
 
+> 🎉🎉🎉新增文件管理功能，升级客户端和服务端体验，版本要求服务端v1.1，客户端v1.4
+![](https://plugin.codeloverme.cn/system/file.png)
+
+
 ## 插件界面
 ![](https://plugin.codeloverme.cn/system/all.png)
 
