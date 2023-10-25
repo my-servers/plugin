@@ -1,5 +1,21 @@
 #!/bin/bash
 
+blue_bg="\033[44m"
+reset_color="\033[0m"
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS系统
+    blue_bg=$(tput setab 4)
+    reset_color=$(tput sgr0)
+fi
+
+# 收集用户参数
+echo -e "${blue_bg}请输入密钥（长度32，不足的会根据输入算出md5作为密钥）: ${reset_color}"
+read secret_key
+echo -e "${blue_bg}请输入插件保存的目录（宿主机目录）:  ${reset_color}"
+read app_dir
+
+
 # 检查Docker是否已经安装
 if ! command -v docker &> /dev/null; then
     echo "Docker未安装，开始安装Docker..."
@@ -18,20 +34,6 @@ cat << "EOF"
                \__.'
 EOF
 
-blue_bg="\033[44m"
-reset_color="\033[0m"
-
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # macOS系统
-    blue_bg=$(tput setab 4)
-    reset_color=$(tput sgr0)
-fi
-
-# 收集用户参数
-echo -e "${blue_bg}请输入密钥（长度32，不足的会根据输入算出md5作为密钥）: ${reset_color}"
-read secret_key
-echo -e "${blue_bg}请输入插件保存的目录（宿主机目录）:  ${reset_color}"
-read app_dir
 
 # 检查密钥长度是否为32
 if [ ${#secret_key} -ne 32 ]; then
