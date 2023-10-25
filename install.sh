@@ -28,8 +28,10 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 fi
 
 # 收集用户参数
-read -p "${blue_bg}请输入密钥（长度32，不足的会根据输入算出md5作为密钥）: ${reset_color}" secret_key
-read -p "${blue_bg}请输入插件保存的目录（宿主机目录）:  ${reset_color}" app_dir
+echo -e "${blue_bg}请输入密钥（长度32，不足的会根据输入算出md5作为密钥）: ${reset_color}"
+read secret_key
+echo -e "${blue_bg}请输入插件保存的目录（宿主机目录）:  ${reset_color}"
+read app_dir
 
 # 检查密钥长度是否为32
 if [ ${#secret_key} -ne 32 ]; then
