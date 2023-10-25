@@ -2,20 +2,16 @@
 set -e
 blue_bg="\033[44m"
 reset_color="\033[0m"
-
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # macOS系统
     blue_bg=$(tput setab 4)
     reset_color=$(tput sgr0)
 fi
-
 # 收集用户参数
 echo -e "${blue_bg}请输入密钥（长度32，不足的会根据输入算出md5作为密钥）: ${reset_color}"
 read secret_key
 echo -e "${blue_bg}请输入插件保存的目录（宿主机目录）:  ${reset_color}"
 read app_dir
-
-
 # 检查Docker是否已经安装
 if ! command -v docker &> /dev/null; then
     echo "Docker未安装，开始安装Docker..."
@@ -33,8 +29,6 @@ cat << "EOF"
 |_____||_____|[\_:  /    \______.' '.__.'[___]     \__/   '.__.'[___]   [\__) )
                \__.'
 EOF
-
-
 # 检查密钥长度是否为32
 if [ ${#secret_key} -ne 32 ]; then
     echo "密钥长度不足32，将根据输入计算md5作为密钥。"
@@ -49,7 +43,6 @@ if [ ${#secret_key} -ne 32 ]; then
 else
     echo "密钥长度满足32。"
 fi
-
 while true; do
     # 检查输入的是否是目录
     if [ -d "$app_dir" ]; then
@@ -60,15 +53,10 @@ while true; do
         read -p "${blue_bg}请输入插件保存的目录（宿主机目录）:${reset_color} " app_dir
     fi
 done
-
-
 # 拉取Docker镜像（替换为你的Docker镜像名称）
 docker pull myservers/my_servers
-
 # 运行Docker容器（替换为你的Docker镜像名称和需要的环境变量）
 docker run -d --network=host -v $app_dir:/apps -e AppDir=/apps -e SecretKey=$secret_key --name myServers myservers/my_servers
-
 # 输出运行状态
 docker ps | grep myServers
-
 echo -e "\n\n服务器程序已成功部署！\n${blue_bg}密钥：${reset_color}$secret_key \n${blue_bg}插件目录：${reset_color}$app_dir \n${blue_bg}默认端口：${reset_color}18612"
