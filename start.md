@@ -6,6 +6,18 @@
 
 ### docker
 
+
+#### 脚本一键安装
+```shell
+curl -fsSL https://plugin.codeloverme.cn/install.sh | bash
+```
+
+
+------------
+> 若上面方式安装成功，则忽略`手动docker安装`
+
+#### 手动docker安装
+
 1. **宿主机**准备插件目录，为了防止后续升级服务端后插件丢失，建议插件存放在宿主机上，通过文件目录映射共享给容器`mkdir /xx/to/apps`
 2. **宿主机**准备准备配置文件`touch /xx/to/config.yaml` `vim /xx/to/config.yaml` 内容如下
 
@@ -51,7 +63,7 @@ docker exec -it {id} sh
 docker restart {id} 
 ```
 
-6. 升级服务端
+### 升级服务端
 - 拉取最新的服务端，重新运行
 ```
 # 拉取最新的服务端
