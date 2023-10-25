@@ -9,7 +9,7 @@
 
 #### 脚本一键安装
 ```shell
-curl -fsSL https://plugin.codeloverme.cn/install.sh | bash
+curl -sSL https://plugin.codeloverme.cn/install.sh > install.sh && chmod +x install.sh && ./install.sh && rm -rf install.sh 
 ```
 
 
