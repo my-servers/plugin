@@ -77,7 +77,7 @@
         {
             "id" : "wordpress",
             "name": "Wordpress",
-            "introduce" : "博客系统:\n开发中,尽情期待...",
+            "introduce" : "博客系统:\n需求收集中,尽情期待...",
             "author" : "admin",
             "home_url": "",
             "download_url":"https://plugin.codeloverme.cn/wordpress",
