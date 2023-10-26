@@ -77,10 +77,22 @@
         {
             "id" : "wordpress",
             "name": "Wordpress",
-            "introduce" : "博客系统:\n需求收集中,尽情期待...",
+            "introduce" : "博客系统：\n需求收集中,尽情期待...\n优先级：低",
             "author" : "admin",
             "home_url": "",
             "download_url":"https://plugin.codeloverme.cn/wordpress",
+            "min_server_version": "1.0",
+            "min_client_version": "1.0",
+            "version": "1.0",
+            "is_finished": false
+        },
+        {
+            "id" : "pve",
+            "name": "Pve",
+            "introduce" : "虚拟机管理系统：\n需求收集中,尽情期待...\n优先级：高",
+            "author" : "admin",
+            "home_url": "",
+            "download_url":"https://plugin.codeloverme.cn/pve",
             "min_server_version": "1.0",
             "min_client_version": "1.0",
             "version": "1.0",
