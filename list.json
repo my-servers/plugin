@@ -87,12 +87,12 @@
             "is_finished": false
         },
         {
-            "id" : "pve",
-            "name": "Pve",
+            "id" : "proxmox",
+            "name": "Proxmox",
             "introduce" : "虚拟机管理系统：\n需求收集中,尽情期待...\n优先级：高",
             "author" : "admin",
             "home_url": "",
-            "download_url":"https://plugin.codeloverme.cn/pve",
+            "download_url":"https://plugin.codeloverme.cn/proxmox",
             "min_server_version": "1.0",
             "min_client_version": "1.0",
             "version": "1.0",
