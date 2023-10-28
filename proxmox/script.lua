@@ -298,7 +298,6 @@ end
 
 
 function register(ctx)
-    NewPve(ctx):updateCookie()
     return {
     }
 end
