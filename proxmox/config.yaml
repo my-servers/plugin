@@ -1,0 +1,17 @@
+name: proxmox
+enable: true
+priority: 91
+height: 6
+extend:
+  HostPort:
+    val: http://127.0.0.1:8006
+    desc: ip和端口
+    priority: 180
+  Password:
+    val: root
+    desc: 密码
+    priority: 190
+  Username:
+    val: root@pam
+    desc: 用户名
+    priority: 200

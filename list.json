@@ -89,7 +89,7 @@
         {
             "id" : "proxmox",
             "name": "Proxmox",
-            "introduce" : "虚拟机管理系统：\n需求收集中,尽情期待...\n优先级：高",
+            "introduce" : "虚拟机管理系统：\n1.监控节点，存储，虚拟机\n2.管理虚拟机",
             "author" : "admin",
             "home_url": "",
             "download_url":"https://plugin.codeloverme.cn/proxmox",

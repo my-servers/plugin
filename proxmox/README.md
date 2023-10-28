@@ -1,5 +1,11 @@
-#  pve 虚拟机管理系统
+#  proxmox 虚拟机管理系统
 
-开发中，敬请期待 >>>>>
+## 插件界面
 
-可以加微信反馈，需要支持的功能：`codelover_`
+![](https://plugin.codeloverme.cn/proxmox/all.jpeg)
+
+## 插件配置
+
+- 长按展示界面
+- ![](https://plugin.codeloverme.cn/proxmox/config.png)
+- 用户名不指定`@pam`，会自动添加
