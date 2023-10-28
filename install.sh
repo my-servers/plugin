@@ -59,7 +59,7 @@ done
 # 拉取Docker镜像（替换为你的Docker镜像名称）
 docker pull myservers/my_servers
 # 运行Docker容器（替换为你的Docker镜像名称和需要的环境变量）
-docker run -d --network=host -v $app_dir:/apps -e AppDir=/apps -e SecretKey=$secret_key --name myServers myservers/my_servers
+docker run -d --network=host -v $app_dir:/apps -e AppDir=/apps -e SecretKey=$secret_key --name myServers --restart=always myservers/my_servers
 # 输出运行状态
 docker ps | grep myServers
 echo -e "\n\n服务器程序已成功部署！\n${blue_bg}密钥：${reset_color}$secret_key \n${blue_bg}插件目录：${reset_color}$app_dir \n${blue_bg}默认端口：${reset_color}18612"
