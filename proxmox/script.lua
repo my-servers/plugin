@@ -2,7 +2,13 @@ local http = require("http")
 local json = require("json")
 local strings = require("strings")
 local httpClient = http.client({
-    timeout = 2, -- 超时1s
+    timeout = 1, -- 超时1s
+    headers = {["Content-Type"]="application/x-www-form-urlencoded"},
+    insecure_ssl=true,
+})
+
+local httpClientForLogin = http.client({
+    timeout = 5, -- 超时1s
     headers = {["Content-Type"]="application/x-www-form-urlencoded"},
     insecure_ssl=true,
 })
@@ -45,7 +51,7 @@ local function NewPve(ctx)
         end
         local data = string.format("username=%s&password=%s", username,self.config.Password)
         local req = http.request("POST",self.config.HostPort .. global.api.login, data)
-        local loginRsp,err = httpClient:do_request(req)
+        local loginRsp,err = httpClientForLogin:do_request(req)
         if err then
             error(err)
         end
