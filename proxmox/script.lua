@@ -2,7 +2,7 @@ local http = require("http")
 local json = require("json")
 local strings = require("strings")
 local httpClient = http.client({
-    timeout = 2, -- 超时1s
+    timeout = 4, -- 超时1s
     headers = {["Content-Type"]="application/x-www-form-urlencoded"},
     insecure_ssl=true,
 })
