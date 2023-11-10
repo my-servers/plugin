@@ -1,5 +1,4 @@
 #!/bin/sh
-set -e
 # 检查Docker是否已经安装
 if ! command -v docker &> /dev/null; then
     echo "Docker未安装，开始安装Docker..."
@@ -26,15 +25,22 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     blue_bg=$(tput setab 4)
     reset_color=$(tput sgr0)
 fi
-# 收集用户参数
-echo -e "${blue_bg}请输入密钥（长度32，不足的会根据输入算出md5作为密钥）: ${reset_color}"
-read secret_key
-echo -e "${blue_bg}请输入插件保存的目录（宿主机目录）:  ${reset_color}"
-read app_dir
+secret_key=$1
+app_dir=$2
+
+if [[ "$secret_key" == "" ]]; then
+  # 收集用户参数
+  echo  "${blue_bg}请输入密钥（长度32，不足的会根据输入算出md5作为密钥）: ${reset_color}"
+  read secret_key
+fi
+
+if [[ "$app_dir" == "" ]]; then
+  echo "${blue_bg}请输入插件保存的目录（宿主机目录）:  ${reset_color}"
+  read app_dir
+fi
 
 # 检查密钥长度是否为32
 if [ ${#secret_key} -ne 32 ]; then
-    echo "密钥长度不足32，将根据输入计算md5作为密钥。"
     # 判断系统类型，选择合适的md5命令
     if [[ "$OSTYPE" == "darwin"* ]]; then
         # macOS系统
@@ -43,6 +49,7 @@ if [ ${#secret_key} -ne 32 ]; then
         # 其他系统，如Linux
         secret_key=$(echo -n "$secret_key" | md5sum | awk '{print $1}')
     fi
+    echo "密钥长度不足32，将根据输入计算md5作为密钥: ${secret_key}"
 else
     echo "密钥长度满足32。"
 fi
