@@ -15,7 +15,7 @@ if [[ "$app_dir" == "" ]]; then
   app_dir=~/.myservers
 fi
 
-if ![ -d "$app_dir" ]; then
+if ! [ -d "$app_dir" ]; then
   mkdir ~/.myservers
 fi
 
