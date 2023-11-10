@@ -12,8 +12,13 @@ clear
 secret_key=$1
 app_dir=$2
 if [[ "$app_dir" == "" ]]; then
-  mkdir ~/.myservers
   app_dir=~/.myservers
+fi
+
+if [ -d "$app_dir" ]; then
+
+else
+    mkdir ~/.myservers
 fi
 
 # 检查密钥长度是否为32
