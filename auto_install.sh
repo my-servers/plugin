@@ -15,10 +15,8 @@ if [[ "$app_dir" == "" ]]; then
   app_dir=~/.myservers
 fi
 
-if [ -d "$app_dir" ]; then
-
-else
-    mkdir ~/.myservers
+if ![ -d "$app_dir" ]; then
+  mkdir ~/.myservers
 fi
 
 # 检查密钥长度是否为32
