@@ -9,6 +9,8 @@ else
 fi
 clear
 
+docker stop myServers && docker rm myServers
+
 secret_key=$1
 app_dir=$2
 if [[ "$app_dir" == "" ]]; then
@@ -36,6 +38,8 @@ docker pull myservers/my_servers
 # 运行Docker容器（替换为你的Docker镜像名称和需要的环境变量）
 docker run -d --network=host -v $app_dir:/apps -e AppDir=/apps -e SecretKey=$secret_key --name myServers --restart=always myservers/my_servers
 # 输出运行状态
+
+clear
 docker ps | grep myServers
 echo -e "服务器程序已成功部署！"
 echo "密钥：$secret_key"
