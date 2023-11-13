@@ -21,14 +21,14 @@ jobs:
         key: ${{ secrets.SSH_KEY }} # 本地.ssh文件下的私钥id_rsa，存在secrets中
         source: './' # 源目录，相对于$GITHUB_WORKSPACE根目录的路径
         target: '/home/myservers/conf.d/plugin/web' # 目标目录
-    - name: 上传到硅谷
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ secrets.GG_HOST }} # 服务器域名
-        username: ${{ secrets.SSH_USER }} # 腾讯云默认用户名为root
-        key: ${{ secrets.SSH_KEY }} # 本地.ssh文件下的私钥id_rsa，存在secrets中
-        source: './' # 源目录，相对于$GITHUB_WORKSPACE根目录的路径
-        target: '/home/myservers/conf.d/plugin/web' # 目标目录
+    # - name: 上传到硅谷
+    #   uses: appleboy/scp-action@master
+    #   with:
+    #     host: ${{ secrets.GG_HOST }} # 服务器域名
+    #     username: ${{ secrets.SSH_USER }} # 腾讯云默认用户名为root
+    #     key: ${{ secrets.SSH_KEY }} # 本地.ssh文件下的私钥id_rsa，存在secrets中
+    #     source: './' # 源目录，相对于$GITHUB_WORKSPACE根目录的路径
+    #     target: '/home/myservers/conf.d/plugin/web' # 目标目录
     - name: 上传到广州
       uses: appleboy/scp-action@master
       with:
