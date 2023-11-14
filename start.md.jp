@@ -1,0 +1,60 @@
+# クイックスタート
+
+## サーバー
+まず、サーバープログラムをインストールします。Dockerを使用して実行するか、直接プロセスを実行する方法を選択できます。
+
+### Docker
+
+#### スクリプトを使用したインストール
+```shell
+curl -sSL https://plugin.codeloverme.cn/install.sh > install.sh && chmod +x install.sh && ./install.sh && rm -rf install.sh 
+```
+
+------------
+> 上記の方法でのインストールが成功した場合は、「手動のDockerインストール」を無視してください。
+
+#### 手動のDockerインストール
+
+1. プラグインディレクトリをホストマシンに準備します。サーバーをアップグレード後もプラグインが失われることを防ぐために、プラグインをホストマシンに保存し、ファイルディレクトリマッピングを使用してコンテナと共有します。`mkdir /xx/to/apps`
+2. 設定ファイルを準備します。`touch /xx/to/config.yaml` `vim /xx/to/config.yaml` 以下の内容を追加します。
+
+```
+RestConfig:
+  Name: MyServers
+  Host: 0.0.0.0
+  Port: 18612
+  Log:
+    Stat: false
+    Level: error
+SecretKey: 修改我（echo -n "test" | md5）
+PluginUrl: https://plugin.codeloverme.cn/
+MarkdownPage:
+  About: https://plugin.codeloverme.cn/about.md
+AppDir: apps
+Name: codelover
+```
+
+- `SecretKey`は、アプリとサーバーが通信するための鍵です。アプリとサーバーは同じ鍵を使用する必要があります。そうでないと、通信ができません。`md5`を使用して鍵を生成できます。
+  - `echo -n "test" | md5`
+- `PluginUrl`は、プラグインリストのURLです。ダウンロード可能なすべてのプラグインが含まれています。
+- `RestConfig.Port`はポート番号です。
+- `AppDir`はサーバースクリプトが保存されるディレクトリです。
+
+3. コンテナを実行します。パラメータを指定します。
+- プラグインディレクトリをマッピングします。`-v /xx/to/apps:/apps`
+- 設定ファイルをマッピングします。`-v /xx/to/config.yaml:/app/config/config.yaml`(オプション)
+- プラグインディレクトリを指定します。指定しない場合は、設定ファイルで指定されたパスが使用されます。`-e AppDir=/apps`
+- 鍵を指定します。指定しない場合は、設定ファイルで指定された鍵が使用されます。`-e SecretKey=e8edf0cd4c5d49694c39edf7a879a92e`
+
+```shell
+docker run -it -d --network=host --name=myServers -v /xx/to/apps:/apps  -e AppDir=/apps -e SecretKey=e8edf0cd4c5d49694c39edf7a879a92e myservers/my_servers
+```
+
+4. コンテナにログインして変更や表示を行います。
+```shell
+docker exec -it {id} sh
+```
+
+5. 変更後にコンテナを再起動します。
+```shell
+docker
