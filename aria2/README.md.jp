@@ -1,0 +1,55 @@
+# aria2の管理
+
+## サーバーでaria2を実行する
+
+```shell
+docker run -d \
+--name aria2 \
+--restart unless-stopped \
+--log-opt max-size=1m \
+-e PUID=$UID \
+-e PGID=$GID \
+-e UMASK_SET=022 \
+-e RPC_SECRET=prc_password \
+-e RPC_PORT=6800 \
+-e LISTEN_PORT=6888 \
+-p 16800:6800 \
+-p 16888:6888 \
+-p 16888:6888/udp \
+-v /root/aria2/config:/config \
+-v /root/aria2/downloads:/downloads \
+p3terx/aria2-pro
+```
+
+- 任意の方法で`docker`を実行することもできますが、上記は単なるデモです
+- 詳細なパラメーターについては、`aria2`の公式ドキュメントを参照してください
+
+
+## 設定
+```yaml
+name: aria2
+enable: true
+priority: 70
+height: 6
+padding: 3
+extend:
+  HostPort:
+    val: "http://127.0.0.1:6800/jsonrpc"
+    desc: インターフェース
+    priority: 200
+  Token:
+    val: "prc_password"
+    desc: キー
+    priority: 200
+```
+
+
+- `HostPort`はaria2の管理アドレスです
+  - `http://127.0.0.1:6800/jsonrpc`
+- `Token`はキーであり、パラメーター`RPC_SECRET`に対応します
+
+
+## 機能
+- ダウンロードの追加
+- ダウンロードタスクの管理
+- ダウンロードの進捗状況、詳細などの表示

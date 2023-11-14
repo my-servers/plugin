@@ -1,0 +1,45 @@
+# Dockerの管理
+
+## プラグインのインターフェース
+![](https://plugin.codeloverme.cn/docker/all.png)
+
+
+## プラグインの設定
+- 長押しして表示画面を表示します
+- ![](https://plugin.codeloverme.cn/docker/config.png)
+- DockerサービスでHTTPポートを開放する必要があります
+  - `/lib/systemd/system/docker.service`を編集し、`ExecStart`に`http`を監視するオプションを追加します
+  - 例：`ExecStart=/usr/bin/dockerd -H tcp://127.0.0.1:6666 -H fd:// --containerd=/run/containerd/containerd.sock`
+
+
+## 機能
+
+### イメージ
+
+- 検索
+- ダウンロード
+- 削除
+
+### コンテナー
+- 長押しでメニューを起動します
+- ![](https://plugin.codeloverme.cn/docker/menu.jpg)
+- クリックして詳細を表示します
+- ![](https://plugin.codeloverme.cn/docker/detail.png)
+- 起動
+- 実行
+- 停止
+
+
+-------------------
+
+> 下記の内容は、上記の設定画面に対応する設定ファイルです。手動でサーバー側で修正する必要はありません。Appで変更すれば問題ありません。
+
+## 設定
+
+```yaml
+HostPort:
+  val: "http://127.0.0.1:6666"
+  desc: インターフェース
+  priority: 200
+
+```

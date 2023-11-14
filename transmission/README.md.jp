@@ -1,0 +1,48 @@
+# transmissionの管理
+
+## まず、サーバーでtransmissionを実行します
+
+```shell
+docker run -d \
+  --name=transmission \
+  -e PUID=1000 \
+  -e PGID=1000 \
+  -e TZ=Shanghai/China \
+  -e TRANSMISSION_WEB_HOME=/transmission-web-control/ \
+  -e USER=username \
+  -e PASS=password \
+  -p 9091:9091 \
+  -p 51413:51413 \
+  -p 51413:51413/udp \
+  -v /root/transmission/config:/config \
+  -v /root/transmission/downloads:/downloads \
+  -v /root/transmission/watch:/watch \
+  --restart unless-stopped \
+  linuxserver/transmission
+```
+- ログインのユーザー名とパスワードを設定します
+- 詳細な設定はtransmissionの公式ドキュメントを参照してください
+
+
+
+## 設定
+
+```yaml
+  HostPort:
+    val: http://username:password@127.0.0.1:9091
+    desc: IPアドレスとポート番号（ユーザー名とパスワードを含む）
+    priority: 180
+  DownloadPath:
+    val: /downloads
+    desc: ダウンロードパス
+    priority: 170
+```
+
+- `HostPort` ユーザー名、パスワード、アドレスの設定
+  - `http://username:password@127.0.0.1:9091`
+
+
+## 機能
+- ダウンロードの追加
+- ダウンロードタスクの管理
+- ダウンロードの進捗状況や詳細の表示など

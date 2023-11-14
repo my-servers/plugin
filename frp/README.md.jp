@@ -1,0 +1,20 @@
+# frpの管理
+
+- frpの設定ファイルの管理をサポートしています
+- ポートの監視をサポートしています
+
+
+```yaml
+extend:
+  ConfigPath:
+    val: "/nas/server/frpc/frpc.ini"
+    desc: 設定ファイル
+    priority: 200
+  RestartScript:
+    val: "docker restart frpc"
+    desc: 再起動スクリプト
+    priority: 201
+
+```
+- `ConfigPath`はfrpの設定ファイルのディレクトリです
+- `RestartScript`は設定更新後の再起動スクリプトです

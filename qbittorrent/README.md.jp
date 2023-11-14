@@ -1,0 +1,86 @@
+# qbittorrentの管理
+
+
+## まず、サーバーでqbittorrentを実行します
+
+```shell
+docker run -d \
+  --name=qbittorrent \
+  -p 7881:7881 \
+  -p 7881:7881/udp \
+  -p 18080:18080 \
+  -v /data/qbittorrent/config:/etc/qBittorrent \
+  -v /data/qbittorrent/downloads:/downloads \
+  --restart unless-stopped \
+  helloz/qbittorrent
+```
+- ログインユーザーとパスワードを設定してください
+- 詳細な設定については、qbittorrentの公式ドキュメントを参照してください
+
+------------
+
+## プラグイン画面
+
+![](https://plugin.codeloverme.cn/qbittorrent/all.png)
+
+
+## プラグインの設定
+
+- 長押しで表示
+- ![](https://plugin.codeloverme.cn/qbittorrent/config.png)
+- バックエンドサーバーの設定に基づいて入力してください。ユーザー名、パスワード、IPアドレス、ポートに特に注意してください。
+
+
+
+## 機能
+- ダウンロードの追加（マグネットリンクの追加）
+- ダウンロードタスクの管理、各ダウンロードタスクを長押しするとメニューが表示されます
+- ![](https://plugin.codeloverme.cn/qbittorrent/menu.jpg)
+- ダウンロードの進捗状況や詳細の確認など、タスクをクリックすると詳細が表示されます
+- ![](https://plugin.codeloverme.cn/qbittorrent/detail.png)
+- ダウンロードの検索
+  - サーバーに検索プラグインをインストールしている必要があります
+
+
+-------------------
+
+> 以下の内容は、上記の設定画面に対応する設定ファイルです。気にせずにApp上で変更してください。サーバーで手動で変更する必要はありません。
+## 設定ファイル
+
+```yaml
+name: qBittorrent
+enable: true
+priority: 90
+height: 6
+padding: 3
+extend:
+  ColNum:
+    val: "2"
+    desc: 表示する列数
+    priority: 200
+  NameLen:
+    val: "20"
+    desc: 名前の長さ制限
+    priority: 210
+  Username:
+    val: username
+    desc: ユーザー名
+    priority: 200
+  Password:
+    val: password
+    desc: パスワード
+    priority: 190
+  HostPort:
+    val: http://127.0.0.1:18080
+    desc: IPアドレスとポート
+    priority: 180
+  SearchNum:
+    val: "20"
+    desc: 検索の表示数
+    priority: 170
+```
+
+- `HostPort` IPアドレスとポート
+  - `http://127.0.0.1:18080`
+- `Username` 上記で設定したユーザー名
+- `Password` 上記で設定したパスワード

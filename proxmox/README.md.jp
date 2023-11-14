@@ -1,0 +1,11 @@
+# Proxmox バーチャルマシン管理システム
+
+## プラグインのインターフェース
+
+![](https://plugin.codeloverme.cn/proxmox/all.jpeg)
+
+## プラグインの設定
+
+- ロングプレスで表示されるインターフェース
+- ![](https://plugin.codeloverme.cn/proxmox/config.png)
+- ユーザー名は`@pam`を指定しないと、自動的に追加されます。
