@@ -4,3 +4,6 @@
 关机: "Shutdown"
 停止: "Stop"
 重启: "Restart"
+ip和端口: "IP Port"
+密码: "Password"
+用户名: "Username"

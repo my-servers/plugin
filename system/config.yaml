@@ -13,7 +13,7 @@ extend:
     priority: 90
   Disk:
     val: /
-    desc: nas挂载点
+    desc: 磁盘
     priority: 100
 
 height: 4

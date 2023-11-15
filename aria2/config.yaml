@@ -6,7 +6,7 @@ padding: 3
 extend:
   HostPort:
     val: "http://127.0.0.1:6800/jsonrpc"
-    desc: 接口
+    desc: Api地址
     priority: 200
   Token:
     val: "test"

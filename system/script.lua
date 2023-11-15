@@ -133,7 +133,7 @@ local function NewSystem(ctx)
     ---@return ProcessCircleUi
     local function getNasUi()
         diskName = self.config.Disk
-        local nasTitle = NewText("").AddString(1, NewString("nas").SetFontSize(10))
+        local nasTitle = NewText("").AddString(1, NewString("磁盘").SetFontSize(10))
         local nasDesc = NewText("").AddString(1,
                 NewString(ByteToUiString(self.runCtx.diskInfo[diskName].Total)).SetFontSize(9))
                                    .AddString(2, NewString(string.format("%.0f%%", self.runCtx.diskInfo[diskName].UsedPercent)).SetFontSize(9))
