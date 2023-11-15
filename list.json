@@ -10,8 +10,7 @@
             "min_server_version": "1.0",
             "min_client_version": "1.0",
             "version": "1.0",
-            "is_finished": true,
-            "support_language":["en","ja"]
+            "is_finished": true
         },
         {
             "id" : "docker",
@@ -23,8 +22,7 @@
             "min_server_version": "1.0",
             "min_client_version": "1.0",
             "version": "1.0",
-            "is_finished": true,
-            "support_language":["en","ja"]
+            "is_finished": true
         },
         {
             "id" : "system",
@@ -36,8 +34,7 @@
             "min_server_version": "1.1",
             "min_client_version": "1.4",
             "version": "1.2",
-            "is_finished": true,
-            "support_language":["en","ja"]
+            "is_finished": true
         },
         {
             "id" : "frp",
@@ -46,11 +43,12 @@
             "author" : "admin",
             "home_url": "",
             "download_url":"https://plugin.codeloverme.cn/frp",
+            "img":[
+            ],
             "min_server_version": "1.0",
             "min_client_version": "1.0",
             "version": "1.0",
-            "is_finished": true,
-            "support_language":["en","ja"]
+            "is_finished": true
         },
         {
             "id" : "aria2",
@@ -62,8 +60,7 @@
             "min_server_version": "1.0",
             "min_client_version": "1.0",
             "version": "1.0",
-            "is_finished": true,
-            "support_language":["en","ja"]
+            "is_finished": true
         },
         {
             "id" : "transmission",
@@ -75,8 +72,7 @@
             "min_server_version": "1.0",
             "min_client_version": "1.0",
             "version": "1.0",
-            "is_finished": true,
-            "support_language":["en","ja"]
+            "is_finished": true
         },
         {
             "id" : "wordpress",
@@ -100,8 +96,7 @@
             "min_server_version": "1.0",
             "min_client_version": "1.0",
             "version": "1.1",
-            "is_finished": true,
-            "support_language":["en","ja"]
+            "is_finished": true
         }
     ]
 }
