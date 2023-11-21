@@ -1,6 +1,19 @@
 {
     "plugin":[
         {
+            "id" : "aaaaafeature",
+            "name": "新功能预告区",
+            "introduce" : "App和插件新功能预告",
+            "author" : "admin",
+            "home_url": "",
+            "download_url":"https://plugin.codeloverme.cn/feature",
+            "min_server_version": "1.0",
+            "min_client_version": "1.0",
+            "version": "1.0",
+            "is_finished": false,
+            "img": []
+        },
+        {
             "id" : "qbittorrent",
             "name": "Qbittorrent",
             "introduce" : "qbittorrent下载工具:\n1.指定链接下载\n2.搜索/下载\n3.暂停/删除",
