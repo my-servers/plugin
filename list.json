@@ -2,7 +2,7 @@
     "plugin":[
         {
             "id" : "aaaaafeature",
-            "name": "新功能预告区",
+            "name": "A新功能预告区",
             "introduce" : "App和插件新功能预告",
             "author" : "admin",
             "home_url": "",
