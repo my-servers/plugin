@@ -22,7 +22,7 @@
             "download_url":"https://plugin.codeloverme.cn/qbittorrent",
             "min_server_version": "1.0",
             "min_client_version": "1.0",
-            "version": "1.0",
+            "version": "1.1",
             "is_finished": true,
             "img": ["en","ja"]
         },
@@ -35,7 +35,7 @@
             "download_url":"https://plugin.codeloverme.cn/docker",
             "min_server_version": "1.0",
             "min_client_version": "1.0",
-            "version": "1.0",
+            "version": "1.1",
             "is_finished": true,
             "img": ["en","ja"]
         },

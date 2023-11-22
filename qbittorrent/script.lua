@@ -87,7 +87,9 @@ local function NewQBittorrent(ctx)
         if err then
             error(err)
         end
-        print("update cookie---------",json.encode(loginRsp),data)
+        if loginRsp.code == 403 then
+            error(loginRsp.body)
+        end
     end
 
     local function getSearchResult()

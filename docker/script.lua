@@ -35,7 +35,7 @@ function asyncDoRequest(method,url,data)
     req = http.request(method,url,data)
     local rsp,err = httpClient:do_request(req)
     if err then
-        error(err)
+        return {}
     end
     return rsp
 end
@@ -44,7 +44,7 @@ function asyncDoRequestWithBackendClient(method,url,data)
     req = http.request(method,url,data)
     local rsp,err = backendHttpClient:do_request(req)
     if err then
-        error(err)
+        return {}
     end
     return rsp
 end
