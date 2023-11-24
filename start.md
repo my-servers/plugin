@@ -1,20 +1,27 @@
 
 # 快速开始
 
-## 服务端
-首先安装服务端程序，可选择安装方式有docker运行和直接进程运行
+## 整体架构
+![](https://plugin.codeloverme.cn/img/myservers.png)
 
-### docker
+## 安装服务端
 
+- 服务端是通过`docker`运行的，**脚本会自动尝试安装docker**
 
-#### 脚本一键安装
+### 方法1: 通过App一键安装服务端（推荐）
+ 
+- 在App上服务器页面，点击`+`，通过ssh一键安装，密钥不会进行任何存储上传，请放心填写
+
+### 方法2: 服务端运行安装脚本
+
 ```shell
 curl -sSL https://plugin.codeloverme.cn/install.sh > install.sh && chmod +x install.sh && ./install.sh && rm -rf install.sh 
 ```
 
+### 方法3: 手动安装
 
 ------------
-> 若上面方式安装成功，则忽略`手动docker安装`
+> 若上面方式1，2安装成功，则忽略`手动安装`
 
 #### 手动docker安装
 
@@ -71,10 +78,6 @@ docker pull myservers/my_servers
 # 重新运行
 docker run -it -d --network=host --name=myServers -v /xx/to/apps:/apps  -e AppDir=/apps -e SecretKey=e8edf0cd4c5d49694c39edf7a879a92e myservers/my_servers
 ```
-
-
-### 直接运行服务端进程（待完善）
-
 
 ## 客户端
 
