@@ -2,7 +2,8 @@
 # 快速开始
 
 ## 整体架构
-![](https://plugin.codeloverme.cn/img/myservers.png)
+[![](https://plugin.codeloverme.cn/img/myservers.png)](https://plugin.codeloverme.cn/img/myservers.png)
+
 
 ## 安装服务端
 
