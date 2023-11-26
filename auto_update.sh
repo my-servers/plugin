@@ -10,7 +10,7 @@ fi
 clear
 
 docker ps -a --filter ancestor=myservers/my_servers --format "{{.ID}}"|xargs docker stop |xargs docker rm
-
+docker image rm myservers/my_servers
 secret_key=$1
 app_dir=$2
 if [[ "$app_dir" == "" ]]; then
