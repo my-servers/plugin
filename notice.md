@@ -1,3 +1,2 @@
 - 📧📧有任何使用上的疑问或者建议，[欢迎直接联系](mailto:codeloverql@gmail.com)
 - 🎉🎉[最新版](https://apps.apple.com/cn/app/myservers/id6466196656)支持一键安装，升级服务端了
-- 若有插件页面打开失败，请升级App
