@@ -14,6 +14,7 @@ local global = {
     pageStart = 1,
     page = 0,
     pageSize = 20,
+    isConfigInterface = false,
 }
 
 ---@param ctx Ctx
@@ -27,10 +28,24 @@ local function NewSystem(ctx)
         runCtx = ctx.ctx     -- 运行上下文
     }
 
+    local function getInterface()
+        local interface = self.runCtx.netInfo[self.config.Interface]
+        global.isConfigInterface = true
+        if interface == nil then
+            global.isConfigInterface = false
+            return nil
+        end
+        return interface
+    end
+
     ---@return number,number
     local function calNetSpeed()
-        local diffRecv = self.runCtx.netInfo[self.config.Interface].BytesRecv - global.netState.recv
-        local diffSend = self.runCtx.netInfo[self.config.Interface].BytesSent - global.netState.send
+        local interface = getInterface()
+        if interface == nil then
+            return 0,0
+        end
+        local diffRecv = interface.BytesRecv - global.netState.recv
+        local diffSend = interface.BytesSent - global.netState.send
         local now = os.time()
         local diffTs = now - global.netState.ts
         if diffTs == 0 then
@@ -41,9 +56,13 @@ local function NewSystem(ctx)
 
     -- updateNetWin 更新网络窗口，计算网速用
     local function updateNetWin()
+        local interface = getInterface()
+        if interface == nil then
+            return
+        end
         global.netState.ts = os.time()
-        global.netState.send = self.runCtx.netInfo[self.config.Interface].BytesSent
-        global.netState.recv = self.runCtx.netInfo[self.config.Interface].BytesRecv
+        global.netState.send = interface.BytesSent
+        global.netState.recv = interface.BytesRecv
     end
 
     ---@return table
@@ -58,8 +77,14 @@ local function NewSystem(ctx)
     ---@return ProcessCircleUi
     local function getNetUi()
         local recvSpeed, sendSpeed = calNetSpeed()
-        local title = NewText("").AddString(1, NewString("网络")
-                .SetFontSize(10))
+        local title = NewText("")
+        if global.isConfigInterface then
+            title.AddString(1, NewString(self.config.Interface)
+                    .SetFontSize(10))
+        else
+            title.AddString(1, NewString(self.config.Interface .. "错误")
+                    .SetFontSize(10).SetColor("#F00"))
+        end
 
         local desc = NewText("").AddString(1, NewString("↑" .. ByteToUiString(sendSpeed)).SetFontSize(9))
                                 .AddString(2, NewString("↓" .. ByteToUiString(recvSpeed)).SetFontSize(9))
