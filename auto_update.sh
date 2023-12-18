@@ -31,6 +31,9 @@ if ! [ -d "$apps_dir" ]; then
 done
 fi
 
+rm -rf ${apps_dir}/tool.lua
+rm -rf ${apps_dir}/ctx.lua
+
 config_dir=$app_dir"/config"
 if ! [ -d "$config_dir" ]; then
   mkdir $config_dir
