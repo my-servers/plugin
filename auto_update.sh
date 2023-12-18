@@ -71,7 +71,7 @@ docker pull myservers/my_servers
 docker run -d --network=host -v ${apps_dir}:/app/apps -v ${config_dir}:/app/config --name myServers --restart=always myservers/my_servers /app/app -k $secret_key -c /app/config/config.yaml
 # 输出运行状态
 
-clear
+#clear
 docker ps | grep myServers
 echo -e "服务器程序已成功升级！"
 echo "密钥: $secret_key"
