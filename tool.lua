@@ -3,7 +3,7 @@ local black = "#000"
 
 local ByteToOther = { "B", "K", "M", "G", "T", "P" }
 function ByteToUiString(number)
-   local  num = tonumber(number)
+    local  num = tonumber(number)
     if num <= 0 then
         return "0B"
     end
@@ -153,8 +153,19 @@ function NewAction(func, arg, name)
             input = nil,
             icon = "",
             check = false,
+            app = "",
+            type = 0,
+            client_terminal_action = {},
         }
     }
+
+    -- SetApp 设置展示的名字
+    ---@param app string app
+    ---@return Action
+    local function SetApp(app)
+        a.actionData.app = app
+        return a
+    end
 
     -- SetIcon 设置展示的名字
     ---@param icon string icon
@@ -220,6 +231,7 @@ function NewAction(func, arg, name)
     a.AddInput = AddInput
     a.SetCheck = SetCheck
     a.SetIcon = SetIcon
+    a.SetApp = SetApp
     return a
 end
 
