@@ -94,6 +94,18 @@
             "is_finished": false
         },
         {
+            "id" : "self_server",
+            "name": "自建服务",
+            "introduce" : "监控和跳转自建服务(也可做书签使用)，开发中..",
+            "author" : "admin",
+            "home_url": "",
+            "download_url":"https://plugin.codeloverme.cn/self_server",
+            "min_server_version": "1.0",
+            "min_client_version": "1.0",
+            "version": "1.0",
+            "is_finished": false
+        },
+        {
             "id" : "proxmox",
             "name": "Proxmox",
             "introduce" : "虚拟机管理系统：\n1.监控节点，存储，虚拟机\n2.管理虚拟机",
