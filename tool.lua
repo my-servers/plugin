@@ -155,7 +155,15 @@ function NewAction(func, arg, name)
             check = false,
             app = "",
             type = 0,
-            client_terminal_action = {},
+            client_terminal_action = {
+                cmd = "",
+            },
+            client_open_url_action = {
+                url = "",
+            },
+            client_copy_action = {
+                text = "",
+            }
         }
     }
 
@@ -164,6 +172,33 @@ function NewAction(func, arg, name)
     ---@return Action
     local function SetApp(app)
         a.actionData.app = app
+        return a
+    end
+
+    -- SetTerminalAction 设置执行终端命令
+    ---@param cmd string 命令
+    ---@return Action
+    local function SetTerminalAction(cmd)
+        a.actionData.type = 1
+        a.actionData.client_terminal_action.cmd = cmd
+        return a
+    end
+
+    -- SetOpenUrlAction 设置执行终端命令
+    ---@param url string 命令
+    ---@return Action
+    local function SetOpenUrlAction(url)
+        a.actionData.type = 2
+        a.actionData.client_open_url_action.url = url
+        return a
+    end
+
+    -- SetCopyAction 复制
+    ---@param url string 命令
+    ---@return Action
+    local function SetCopyAction(text)
+        a.actionData.type = 3
+        a.actionData.client_copy_action.text = text
         return a
     end
 
@@ -232,6 +267,9 @@ function NewAction(func, arg, name)
     a.SetCheck = SetCheck
     a.SetIcon = SetIcon
     a.SetApp = SetApp
+    a.SetTerminalAction = SetTerminalAction
+    a.SetOpenUrlAction = SetOpenUrlAction
+    a.SetCopyAction = SetCopyAction
     return a
 end
 
