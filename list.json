@@ -97,7 +97,7 @@
             "id" : "self_server",
             "name": "自建服务",
             "introduce" : "监控和跳转自建服务(也可做书签使用)，开发中..",
-            "author" : "admin",
+            "author" : "codelover",
             "home_url": "",
             "download_url":"https://plugin.codeloverme.cn/self_server",
             "min_server_version": "1.0",
