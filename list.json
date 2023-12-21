@@ -18,13 +18,13 @@
         {
             "id" : "docker",
             "name": "Docker",
-            "introduce" : "docker管理:\n1.容器的停止/重启/删除\n2.镜像的搜索/拉取/删除",
+            "introduce" : "docker管理:\n🎉🎉新增容器登陆，查看容器日志功能",
             "author" : "admin",
             "home_url": "",
             "download_url":"https://plugin.codeloverme.cn/docker",
-            "min_server_version": "1.0",
-            "min_client_version": "1.0",
-            "version": "1.1",
+            "min_server_version": "1.8",
+            "min_client_version": "1.15",
+            "version": "1.2",
             "is_finished": true,
             "img": ["en","ja"]
         },

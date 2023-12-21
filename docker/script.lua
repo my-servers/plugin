@@ -157,6 +157,8 @@ function NewDocker(ctx)
             else
                 nameAndOp.AddAction(NewAction("stop",{id=c.Id},"停止"))
             end
+            nameAndOp.AddAction(NewAction("",{},"容器日志").SetTerminalAction("docker logs -n 10 -f " .. c.Id.." \n"))
+            nameAndOp.AddAction(NewAction("",{},"登陆容器").SetTerminalAction("docker exec -it " .. c.Id .. " sh \n"))
             app.AddUi(index,nameAndOp.SetDetail(getContainersDetail(c)))
             if i%1 == 0 then
                 index = index+1
