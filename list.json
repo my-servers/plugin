@@ -26,7 +26,8 @@
             "min_client_version": "1.15",
             "version": "1.2",
             "is_finished": true,
-            "img": ["en","ja"]
+            "img": ["en","ja"],
+            "icon": "https://myservers.codeloverme.cn/docker.png"
         },
         {
             "id" : "system",
