@@ -110,6 +110,14 @@
                 {
                     "img": "https://plugin.codeloverme.cn/self_server/selfServerS1.png",
                     "desc": "## 功能 \n- 端口探活 \n- App跳转\n- 页面跳转"
+                },
+                {
+                    "img": "https://plugin.codeloverme.cn/self_server/selfServerS2.png",
+                    "desc": "## 支持Http网页跳转"
+                },
+                {
+                    "img": "https://plugin.codeloverme.cn/self_server/selfServerS3.png",
+                    "desc": "## 支持App跳转"
                 }
             ]
         },
