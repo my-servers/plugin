@@ -96,14 +96,16 @@
         {
             "id" : "self_server",
             "name": "自建服务",
-            "introduce" : "监控和跳转自建服务(也可做书签使用)，开发中..",
-            "author" : "codelover",
+            "introduce" : "自建服务的探活和跳转(也可做书签使用)",
+            "author" : "admin",
             "home_url": "",
             "download_url":"https://plugin.codeloverme.cn/self_server",
-            "min_server_version": "1.0",
-            "min_client_version": "1.0",
+            "min_server_version": "1.9",
+            "min_client_version": "1.16",
             "version": "1.0",
-            "is_finished": false
+            "is_finished": false,
+            "img": ["en","ja"],
+            "icon": "https://plugin.codeloverme.cn/self_server/selfServer.png"
         },
         {
             "id" : "proxmox",

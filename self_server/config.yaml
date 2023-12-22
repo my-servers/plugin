@@ -1,0 +1,14 @@
+name: 自建服务
+enable: true
+priority: 92
+height: 6
+padding: 3
+extend:
+  ColNum:
+    val: "4"
+    desc: 展示多少列
+    priority: 200
+  Second:
+    val: "10"
+    desc: 探活间隔（秒）
+    priority: 100
