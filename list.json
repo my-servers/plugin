@@ -105,7 +105,13 @@
             "version": "1.0",
             "is_finished": false,
             "img": ["en","ja"],
-            "icon": "https://plugin.codeloverme.cn/self_server/selfServer.png"
+            "icon": "https://plugin.codeloverme.cn/self_server/selfServer.png",
+            "img_desc": [
+                {
+                    "img": "https://plugin.codeloverme.cn/self_server/selfServerS1.png",
+                    "desc": "- 端口探活 \n - App跳转\n - 页面跳转"
+                }
+            ]
         },
         {
             "id" : "proxmox",
