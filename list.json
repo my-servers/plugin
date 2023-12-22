@@ -109,7 +109,7 @@
             "img_desc": [
                 {
                     "img": "https://plugin.codeloverme.cn/self_server/selfServerS1.png",
-                    "desc": "- 端口探活 \n - App跳转\n - 页面跳转"
+                    "desc": "## 功能 \n- 端口探活 \n- App跳转\n- 页面跳转"
                 }
             ]
         },
