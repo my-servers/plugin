@@ -4,6 +4,10 @@
 ## 整体架构
 [![](https://plugin.codeloverme.cn/img/myservers.png)](https://plugin.codeloverme.cn/img/myservers.png)
 
+## 大致步骤
+
+[![](https://plugin.codeloverme.cn/img/jiaocheng.png)](https://plugin.codeloverme.cn/img/jiaocheng.png)
+
 
 ## 安装服务端
 
