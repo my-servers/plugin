@@ -1,3 +1,3 @@
 - 🎉🎉2023年最后一周，终身版3折优惠啦！1月1号恢复原价～
 - 建立了一个[微信群](https://plugin.codeloverme.cn/img/wechat.jpg)和[Tg群](https://t.me/+TpAft0JOKUY4M2Q1)，欢迎进来吐槽
-- `通过SSH一键安装`会**自动安装docker拉取MyServers服务端镜像运行**，请悉知！！！后续会进行调整，让用户确认
+- `通过SSH一键安装`会**自动安装docker并拉取MyServers服务端镜像运行**，请悉知！！！后续会进行调整，让用户确认
