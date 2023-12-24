@@ -1,1 +1,2 @@
 - 🎉🎉2023年最后一周，终身版3折优惠啦！1月1号恢复原价～
+- 建立了一个[微信群](https://plugin.codeloverme.cn/img/wechat.jpg)和[Tg群](https://t.me/+TpAft0JOKUY4M2Q1)，欢迎进来吐槽
