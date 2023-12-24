@@ -7,7 +7,6 @@ if ! command -v docker &> /dev/null; then
 else
     echo "Docker已安装，跳过安装步骤。"
 fi
-clear
 
 docker ps -a --filter ancestor=myservers/my_servers --format "{{.ID}}"|xargs docker stop |xargs docker rm
 docker image rm myservers/my_servers
@@ -55,6 +54,8 @@ EOF
 fi
 # 检查密钥长度是否为32
 if [ ${#secret_key} -ne 32 ]; then
+    secret_key=`date`
+    echo $secret_key
     # 判断系统类型，选择合适的md5命令
     if [[ "$OSTYPE" == "darwin"* ]]; then
         # macOS系统

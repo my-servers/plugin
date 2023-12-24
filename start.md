@@ -20,7 +20,7 @@
 ### 方法2: 服务端运行安装脚本
 
 ```shell
-curl -sSL https://plugin.codeloverme.cn/install.sh > install.sh && chmod +x install.sh && ./install.sh && rm -rf install.sh 
+curl -sSL https://plugin.codeloverme.cn/auto_update.sh > install.sh && chmod +x install.sh && ./install.sh && rm -rf install.sh 
 ```
 
 ### 方法3: 手动安装

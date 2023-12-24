@@ -7,7 +7,7 @@ First, install the server application. You can choose to install it using Docker
 
 #### One-Click Script Installation
 ```shell
-curl -sSL https://plugin.codeloverme.cn/install.sh > install.sh && chmod +x install.sh && ./install.sh && rm -rf install.sh 
+curl -sSL https://plugin.codeloverme.cn/auto_update.sh > install.sh && chmod +x install.sh && ./install.sh && rm -rf install.sh
 ```
 
 ------------
