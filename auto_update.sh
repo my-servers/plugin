@@ -1,11 +1,9 @@
 #!/bin/sh
 # 检查Docker是否已经安装
 if ! command -v docker &> /dev/null; then
-    echo "Docker未安装，开始安装Docker..."
+    echo "没有检测到docker，请先手动安装docker. curl -fsSL https://get.docker.com | sh"
     # 安装Docker
-    curl -fsSL https://get.docker.com | sh
-else
-    echo "Docker已安装，跳过安装步骤。"
+    exit 0
 fi
 
 docker ps -a --filter ancestor=myservers/my_servers --format "{{.ID}}"|xargs docker stop |xargs docker rm
