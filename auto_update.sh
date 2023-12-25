@@ -70,6 +70,12 @@ docker pull myservers/my_servers
 docker run -d --network=host -v ${apps_dir}:/app/apps -v ${config_dir}:/app/config --name myServers --restart=always myservers/my_servers /app/app -k $secret_key -c /app/config/config.yaml
 # 输出运行状态
 
+hasServer=`docker ps --filter ancestor=myservers/my_servers --format "{{.ID}}"`
+if [[ "$hasServer" == "" ]]; then
+  echo "安装似乎出现了问题，可以手动执行：docker run -d --network=host -v ${apps_dir}:/app/apps -v ${config_dir}:/app/config --name myServers --restart=always myservers/my_servers /app/app -k $secret_key -c /app/config/config.yaml"
+  exit 0
+fi
+
 #clear
 docker ps | grep myServers
 echo -e "服务器程序已成功升级！"
