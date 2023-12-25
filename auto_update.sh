@@ -1,4 +1,20 @@
 #!/bin/sh
+
+
+generate_random_string() {
+  local length="${1:-32}"
+  local charset="abcdefghijklmnopqrstuvwxyz0123456789"
+  local result=""
+
+  for (( i=0; i<$length; i++ )); do
+    local rand_index=$(( RANDOM % ${#charset} ))
+    result="${result}${charset:$rand_index:1}"
+  done
+
+  echo "$result"
+}
+
+
 # 检查Docker是否已经安装
 if ! command -v docker &> /dev/null; then
     echo "没有检测到docker，请先手动安装docker. curl -fsSL https://get.docker.com | sh"
@@ -6,7 +22,12 @@ if ! command -v docker &> /dev/null; then
     exit 0
 fi
 
-docker ps -a --filter ancestor=myservers/my_servers --format "{{.ID}}"|xargs docker stop |xargs docker rm
+oldImg=`docker ps -a --filter ancestor=myservers/my_servers --format "{{.ID}}"`
+if [[ "$oldImg" != "" ]]; then
+  docker stop ${oldImg}
+  docker rm ${oldImg}
+fi
+
 docker image rm myservers/my_servers
 secret_key=$1
 app_dir=$2
@@ -50,18 +71,10 @@ AppDir: /app/apps
 Name: MyServers
 EOF
 fi
+
 # 检查密钥长度是否为32
 if [ ${#secret_key} -ne 32 ]; then
-    secret_key=`date`
-    echo $secret_key
-    # 判断系统类型，选择合适的md5命令
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        # macOS系统
-        secret_key=$(echo -n "$secret_key" | md5)
-    else
-        # 其他系统，如Linux
-        secret_key=$(echo -n "$secret_key" | md5sum | awk '{print $1}')
-    fi
+    secret_key=$(generate_random_string 32)
 fi
 
 # 拉取Docker镜像（替换为你的Docker镜像名称）
