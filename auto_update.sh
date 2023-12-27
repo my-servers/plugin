@@ -16,10 +16,11 @@ generate_random_string() {
   echo "$result"
 }
 # 检查Docker是否已经安装
-if ! command -v docker &> /dev/null; then
+docker_version=$(docker --version 2>/dev/null)
+
+if [ $? -ne 0 ]; then
     echo "没有检测到docker，请先手动安装docker. curl -fsSL https://get.docker.com | sh"
-    # 安装Docker
-    exit 0
+    exit 1
 fi
 
 oldImg=`docker ps -a --filter ancestor=myservers/my_servers --format "{{.ID}}"`
