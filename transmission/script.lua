@@ -4,7 +4,7 @@ local httpClient = http.client({
     timeout = 2, -- 超时1s
 })
 local global = {
-    urlFormat = "%s/transmission/rpc",
+    urlFormat = "http://%s:%s@%s/transmission/rpc",
     getListArg = {
         arguments = {
             fields = {
@@ -119,6 +119,10 @@ local function NewTransmission(ctx)
         runCtx = ctx.ctx     -- 运行上下文
     }
 
+    local function getUrl()
+        return string.format(global.urlFormat, http.query_escape(self.config.UserName),http.query_escape(self.config.Password),self.config.HostPort)
+    end
+
     local function getDetail(d)
         local detail = string.format([[
 ### %s
@@ -144,7 +148,7 @@ local function NewTransmission(ctx)
 
     function self:Update()
         local app = NewApp()
-        local url = string.format(global.urlFormat,self.config.HostPort)
+        local url = getUrl()
         local stateRsp = doRequest("POST",url,global.getListArg)
         local data = json.decode(stateRsp.body)
         local index = 1
@@ -163,33 +167,33 @@ local function NewTransmission(ctx)
             end
             local line = NewProcessLineUi()
                     .SetDesc(
-                        NewText("leading")
-                                .AddString(1,
-                                    NewString(d.name).SetFontSize(fontSize))
-                                .AddString(2,
-                                    NewString(global.statusName[d.status]).SetFontSize(8)
-                                            .SetBackendColor("#F00")
-                                            .SetColor("#FFF"))
-                                .AddString(2,
-                                NewString(downloadAndUpload)
-                                        .SetFontSize(8)
-                                        .SetBackendColor("#66cccc")
-                                        .SetColor("#FFF"))
-                                .AddString(2,
-                                NewString(ByteToUiString(d.totalSize))
-                                        .SetFontSize(8)
-                                        .SetBackendColor("#66cccc")
-                                        .SetColor("#FFF"))
+                    NewText("leading")
+                            .AddString(1,
+                            NewString(d.name).SetFontSize(fontSize))
+                            .AddString(2,
+                            NewString(global.statusName[d.status]).SetFontSize(8)
+                                                                  .SetBackendColor("#F00")
+                                                                  .SetColor("#FFF"))
+                            .AddString(2,
+                            NewString(downloadAndUpload)
+                                    .SetFontSize(8)
+                                    .SetBackendColor("#66cccc")
+                                    .SetColor("#FFF"))
+                            .AddString(2,
+                            NewString(ByteToUiString(d.totalSize))
+                                    .SetFontSize(8)
+                                    .SetBackendColor("#66cccc")
+                                    .SetColor("#FFF"))
 
-                    )
+            )
                     .SetTitle(NewText("trailing")
                     .AddString(1,
                     NewString(string.format("%.2f%%", d.percentDone * 100 ))
                             .SetFontSize(8)
                             .SetOpacity(0.5)
-                    )
+            )
 
-                    )
+            )
                     .SetProcessData(NewProcessData(d.percentDone*100,100))
 
             if d.status == 0 then
@@ -199,7 +203,7 @@ local function NewTransmission(ctx)
             end
             line.AddAction(NewAction("delete",{id=d.id},"删除").SetCheck(true))
                 .AddAction(NewAction("deleteFile",{id=d.id},"删除并清理文件").SetCheck(true))
-            .SetDetail(getDetail(d))
+                .SetDetail(getDetail(d))
             app.AddUi(index,line)
             if i%2 == 0 then
                 index = index+1
@@ -210,39 +214,39 @@ local function NewTransmission(ctx)
                 .SetSize(buttonSize)
                 .SetIcon("plus.circle")
                 .SetAction(NewAction("download",{},"")
-                    .AddInput("Path",NewInput("路径",1).SetVal(self.config.DownloadPath))
-                    .AddInput("Url",NewInput("下载链接",2))
-                )
+                .AddInput("Path",NewInput("路径",1).SetVal(self.config.DownloadPath))
+                .AddInput("Url",NewInput("下载链接",2))
+        )
         )
         return app.Data()
     end
 
     function self:Start()
-        local url = string.format(global.urlFormat,self.config.HostPort)
+        local url = getUrl()
         doRequest("POST",url,getStartArg(self.arg.id))
         return NewToast("启动下载","info.circle","#000")
     end
 
     function self:Stop()
-        local url = string.format(global.urlFormat,self.config.HostPort)
+        local url = getUrl()
         doRequest("POST",url,getStopArg(self.arg.id))
         return NewToast("暂停","stop.circle","#000")
     end
 
     function self:Delete()
-        local url = string.format(global.urlFormat,self.config.HostPort)
+        local url = getUrl()
         doRequest("POST",url,getDeleteArg(self.arg.id))
         return NewToast("删除成功","trash","#F00")
     end
 
     function self:DeleteFile()
-        local url = string.format(global.urlFormat,self.config.HostPort)
+        local url = getUrl()
         doRequest("POST",url,getDeleteFileArg(self.arg.id))
         return NewToast("删除成功","trash","#F00")
     end
 
     function self:Download()
-        local url = string.format(global.urlFormat,self.config.HostPort)
+        local url = getUrl()
         doRequest("POST",url,getDownloadFileArg(self.input.Url,self.input.Path))
         return NewToast("下载","info.circle","#000")
     end
