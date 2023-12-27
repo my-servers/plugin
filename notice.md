@@ -1,3 +1,2 @@
 - 🎉🎉2023年最后一周，终身版3折优惠啦！1月1号恢复原价～
 - 建立了一个[微信群](https://plugin.codeloverme.cn/img/wechat.jpg)和[Tg群](https://t.me/+TpAft0JOKUY4M2Q1)，欢迎进来吐槽
-- `通过SSH一键安装`目前删除了脚本的自动安装docker的逻辑，用户需要手动提前安装docker，请悉知！！
