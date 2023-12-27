@@ -1,20 +1,20 @@
 #!/bin/sh
 
+#!/bin/sh
 
 generate_random_string() {
-  local length="${1:-32}"
-  local charset="abcdefghijklmnopqrstuvwxyz0123456789"
-  local result=""
-
-  for (( i=0; i<$length; i++ )); do
-    local rand_index=$(( RANDOM % ${#charset} ))
+  length="${1:-32}"
+  charset="abcdefghijklmnopqrstuvwxyz0123456789"
+  result=""
+  i=0
+  while [ $i -lt $length ]; do
+    rand_index=$(( RANDOM % ${#charset} ))
     result="${result}${charset:$rand_index:1}"
+    i=$((i+1))
   done
 
   echo "$result"
 }
-
-
 # 检查Docker是否已经安装
 if ! command -v docker &> /dev/null; then
     echo "没有检测到docker，请先手动安装docker. curl -fsSL https://get.docker.com | sh"
