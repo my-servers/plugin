@@ -59,6 +59,15 @@ function getStopArg(id)
     }
 end
 
+function getReanounceArg(id)
+    return {
+        arguments = {
+            ids = id,
+        },
+        method = "torrent-reannounce"
+    }
+end
+
 function getDeleteArg(id)
     return {
         arguments = {
@@ -129,12 +138,14 @@ local function NewTransmission(ctx)
 |  项   | 值  |
 |  ----  | ----  |
 | 大小  | %s |
-| 下载进度  | %s |
+| 进度  | %s |
 | 状态  | %s |
+| 路径  | %s |
 ]],
                 d.name,ByteToUiString(d.totalSize),
                 string.format("%.2f%%", d.percentDone * 100 ),
-                global.statusName[d.status]
+                global.statusName[d.status],
+                d.downloadDir
         )
         if type(d.files) == "table" then
             for i = 1, #d.files do
@@ -157,13 +168,13 @@ local function NewTransmission(ctx)
             local d = data.arguments.torrents[i]
             local downloadAndUpload = ""
             if tonumber(d.rateDownload) > 0 then
-                downloadAndUpload =  string.format("↓%s",ByteToUiString(d.rateDownload))
+                downloadAndUpload = string.format("↓%s",ByteToUiString(d.rateDownload))
             end
             if tonumber(d.rateUpload) > 0 then
                 downloadAndUpload = downloadAndUpload..string.format(" ↑%s",ByteToUiString(d.rateUpload))
             end
             if downloadAndUpload == "" then
-                downloadAndUpload =  string.format("↓%s",ByteToUiString(d.rateDownload))
+                downloadAndUpload = string.format("↓%s",ByteToUiString(d.rateDownload))
             end
             local line = NewProcessLineUi()
                     .SetDesc(
@@ -201,6 +212,7 @@ local function NewTransmission(ctx)
             else
                 line.AddAction(NewAction("stop",{id=d.id},"暂停"))
             end
+            line.AddAction(NewAction("reannounce",{id=d.id},"刷新Peers列表"))
             line.AddAction(NewAction("delete",{id=d.id},"删除").SetCheck(true))
                 .AddAction(NewAction("deleteFile",{id=d.id},"删除并清理文件").SetCheck(true))
                 .SetDetail(getDetail(d))
@@ -210,14 +222,13 @@ local function NewTransmission(ctx)
             end
         end
         local buttonSize = 17
-        app.AddMenu(NewIconButton()
-                .SetSize(buttonSize)
-                .SetIcon("plus.circle")
-                .SetAction(NewAction("download",{},"")
-                .AddInput("Path",NewInput("路径",1).SetVal(self.config.DownloadPath))
-                .AddInput("Url",NewInput("下载链接",2))
-        )
-        )
+        addTorrentButton = NewIconButton().SetSize(buttonSize)
+                                          .SetIcon("plus.circle")
+                                          .SetAction(NewAction("download",{},"")
+                                              .AddInput("Path",NewInput("路径",1).SetVal(self.config.DownloadPath))
+                                              .AddInput("Url",NewInput("下载链接",2))
+                                          )
+        app.AddMenu(addTorrentButton)
         return app.Data()
     end
 
@@ -231,6 +242,12 @@ local function NewTransmission(ctx)
         local url = getUrl()
         doRequest("POST",url,getStopArg(self.arg.id))
         return NewToast("暂停","stop.circle","#000")
+    end
+
+    function self:Reannounce()
+        local url = getUrl()
+        doRequest("POST",url,getReanounceArg(self.arg.id))
+        return NewToast("刷新Peers列表成功","antenna.radiowaves.left.and.right.circle","#000")
     end
 
     function self:Delete()
@@ -273,6 +290,10 @@ end
 
 function stop(ctx)
     return NewTransmission(ctx):Stop()
+end
+
+function reannounce(ctx)
+    return NewTransmission(ctx):Reannounce()
 end
 
 function delete(ctx)
