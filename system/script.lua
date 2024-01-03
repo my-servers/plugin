@@ -74,9 +74,9 @@ local function NewSystem(ctx)
             end
             global.allCpuPoints[index][#global.allCpuPoints[index] + 1] = value
         end
-        -- while #global.cpuPoints > tonumber(self.config.CpuWin) do
-        --     table.remove(global.cpuPoints, 1)
-        -- end
+        while #global.allCpuPoints > tonumber(self.config.CpuWin) do
+            table.remove(global.allCpuPoints, 1)
+        end
         return global.allCpuPoints
     end
 
@@ -368,6 +368,8 @@ local function NewSystem(ctx)
             app.AddUi(1, getCpuUi())
             app.AddUi(1, getNasUi())
             app.AddUi(2, getCpuLineChart())
+            local info = cpu.Percent(0, true)
+            calAllCpuPoint(info)
             updateNetWin()
         else
             self:addAllFileUi(app)
@@ -401,7 +403,6 @@ local function NewSystem(ctx)
                         NewPoint(value, tostring(index))
                 )
             end
-            print("add line:",index1,#value1)
             page.AddPageSection(
                     NewPageSection("cpu-"..tostring(index1)).AddUiRow(
                             NewUiRow().AddUi(
@@ -410,6 +411,7 @@ local function NewSystem(ctx)
                     )
             )
         end
+        calCpuPoint()
         return page.Data()
     end
 
