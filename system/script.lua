@@ -74,8 +74,10 @@ local function NewSystem(ctx)
             end
             global.allCpuPoints[index][#global.allCpuPoints[index] + 1] = value
         end
-        while #global.allCpuPoints > tonumber(self.config.CpuWin) do
-            table.remove(global.allCpuPoints, 1)
+        for index, value in ipairs(global.allCpuPoints) do
+            while #value > tonumber(self.config.CpuWin) do
+                table.remove(value, 1)
+            end
         end
         return global.allCpuPoints
     end
