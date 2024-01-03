@@ -2,6 +2,7 @@ local json = require("json")
 local lfs = require("lfs")
 local global = {
     cpuPoints = {},
+    allCpuPoints = {},
     netState = {
         recv = 0,
         send = 0,
@@ -63,6 +64,20 @@ local function NewSystem(ctx)
         global.netState.ts = os.time()
         global.netState.send = interface.BytesSent
         global.netState.recv = interface.BytesRecv
+    end
+
+
+    local function calAllCpuPoint(allPoint)
+        for index, value in ipairs(allPoint) do
+            if global.allCpuPoints[index] == nil then
+                global.allCpuPoints[index] = {}
+            end
+            global.allCpuPoints[index][#global.allCpuPoints[index] + 1] = value
+        end
+        -- while #global.cpuPoints > tonumber(self.config.CpuWin) do
+        --     table.remove(global.cpuPoints, 1)
+        -- end
+        return global.allCpuPoints
     end
 
     ---@return table
@@ -177,7 +192,7 @@ local function NewSystem(ctx)
         for i, v in ipairs(calCpuPoint()) do
             cpuLineChart.AddPoint(NewPoint(v, tostring(i)))
         end
-        return cpuLineChart
+        return cpuLineChart.SetPage("","cpuDetail",{},"cpu详情")
     end
 
     ---@param app AppUI
@@ -372,6 +387,32 @@ local function NewSystem(ctx)
         return {}
     end
 
+
+    function self:CpuDetail()
+        local page = NewPage()
+
+        local info = cpu.Percent(0, true)
+        local res = calAllCpuPoint(info)
+
+        for index1, value1 in ipairs(res) do
+            local line = NewLineChartUi()
+            for index, value in ipairs(value1) do
+                line.AddPoint(
+                        NewPoint(value, tostring(index))
+                )
+            end
+            print("add line:",index1,#value1)
+            page.AddPageSection(
+                    NewPageSection("cpu-"..tostring(index1)).AddUiRow(
+                            NewUiRow().AddUi(
+                                    line
+                            )
+                    )
+            )
+        end
+        return page.Data()
+    end
+
     return self
 end
 
@@ -424,4 +465,9 @@ end
 
 function delete(ctx)
     return NewSystem(ctx):Delete()
+end
+
+
+function cpuDetail(ctx)
+    return NewSystem(ctx):CpuDetail()
 end
