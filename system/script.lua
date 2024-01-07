@@ -400,15 +400,28 @@ local function NewSystem(ctx)
 
         for index1, value1 in ipairs(res) do
             local line = NewLineChartUi()
+            local text = NewTextUi().SetText(
+                    NewText("").AddString(1,NewString(self.runCtx.cpuInfo[index1].ModelName))
+            )
             for index, value in ipairs(value1) do
                 line.AddPoint(
                         NewPoint(value, tostring(index))
                 )
+
             end
+            local pageName = string.format(
+                    "cpu-%s / cache-%s",
+                    self.runCtx.cpuInfo[index1].CPU,
+                    ByteToUiString(self.runCtx.cpuInfo[index1].CacheSize)
+            )
             page.AddPageSection(
-                    NewPageSection("cpu-"..tostring(index1)).AddUiRow(
+                    NewPageSection(pageName).AddUiRow(
                             NewUiRow().AddUi(
                                     line
+                            )
+                    ).AddUiRow(
+                            NewUiRow().AddUi(
+                                    text
                             )
                     )
             )

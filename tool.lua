@@ -1159,6 +1159,9 @@ function NewPageSection(name)
             name = name,
             ui_row = {},
             menu = nil,
+            pre = {},
+            next = {},
+            page_info = "",
         }
     }
 
@@ -1176,8 +1179,26 @@ function NewPageSection(name)
         return pageSection.data
     end
 
+    local function SetPre(action)
+        pageSection.data.pre = action.Data()
+        return pageSection
+    end
+
+    local function SetNext(action)
+        pageSection.data.next = action.Data()
+        return pageSection
+    end
+
+    local function SetPageInfo(info)
+        pageSection.data.page_info = info
+        return pageSection
+    end
+
     pageSection.AddUiRow = AddUiRow
     pageSection.AddMenu = AddMenu
+    pageSection.SetPre = SetPre
+    pageSection.SetNext = SetNext
+    pageSection.SetPageInfo = SetPageInfo
     pageSection.Data = Data
 
     return pageSection
