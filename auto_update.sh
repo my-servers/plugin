@@ -24,7 +24,7 @@ if [ $? -ne 0 ]; then
 fi
 
 oldImg=`docker ps -a --filter ancestor=myservers/my_servers --format "{{.ID}}"`
-if [[ "$oldImg" != "" ]]; then
+if [ "$oldImg" != "" ]; then
   docker stop ${oldImg}
   docker rm ${oldImg}
 fi
@@ -32,7 +32,7 @@ fi
 docker image rm myservers/my_servers
 secret_key=$1
 app_dir=$2
-if [[ "$app_dir" == "" ]]; then
+if [ "$app_dir" == "" ]; then
   app_dir=~/.myservers
 fi
 
@@ -85,7 +85,7 @@ docker run -d --network=host -v ${apps_dir}:/app/apps -v ${config_dir}:/app/conf
 # 输出运行状态
 
 hasServer=`docker ps --filter ancestor=myservers/my_servers --format "{{.ID}}"`
-if [[ "$hasServer" == "" ]]; then
+if [ "$hasServer" == "" ]; then
   echo "安装似乎出现了问题，可以手动执行：docker run -d --network=host -v ${apps_dir}:/app/apps -v ${config_dir}:/app/config --name myServers --restart=always myservers/my_servers /app/app -k $secret_key -c /app/config/config.yaml"
   exit 0
 fi
