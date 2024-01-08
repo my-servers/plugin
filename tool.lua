@@ -1157,7 +1157,7 @@ function NewPageSection(name)
     local pageSection = {
         data = {
             name = name,
-            ui_row = {},
+            ui_row = nil,
             menu = nil,
             pre = {},
             next = {},
@@ -1166,11 +1166,17 @@ function NewPageSection(name)
     }
 
     function AddUiRow(uiRow)
+        if pageSection.data.ui_row == nil then
+            pageSection.data.ui_row = {}
+        end
         table.insert(pageSection.data.ui_row, uiRow.Data())
         return pageSection
     end
 
     local function AddMenu(menu)
+        if pageSection.data.menu == nil then
+            pageSection.data.menu = {}
+        end
         table.insert(pageSection.data.menu, menu.Data())
         return pageSection
     end

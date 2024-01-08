@@ -1,5 +1,6 @@
 local json = require("json")
 local lfs = require("lfs")
+local strings = require("strings")
 local global = {
     cpuPoints = {},
     allCpuPoints = {},
@@ -16,6 +17,17 @@ local global = {
     page = 0,
     pageSize = 20,
     isConfigInterface = false,
+    allNeedShowDisk = {
+        "ext",
+        "xfs",
+        "ntfs",
+        "fat",
+        "hfs",
+        "apfs",
+        "btrfs",
+        "zfs",
+        "ufs",
+    },
 }
 
 ---@param ctx Ctx
@@ -109,19 +121,9 @@ local function NewSystem(ctx)
         local netUi = NewProcessCircleUi().SetTitle(title)
                                           .SetDesc(desc)
                                           .SetProcessData(NewProcessData(recvSpeed, recvSpeed + sendSpeed))
-        return netUi
-    end
+                                          .SetPage("","netDetail",{},"网络")
 
-    local function getMemDetail(m)
-        local detail = string.format([[
-### 内存
-|  项   | 值  |
-| -- | -- |
-| 总内存 | %s |
-| 可用  | %s |
-| 已使用  | %s |
-]],ByteToUiString(m.Total),ByteToUiString(m.Available),ByteToUiString(m.Used))
-        return detail
+        return netUi
     end
 
     ---@return ProcessCircleUi
@@ -133,31 +135,8 @@ local function NewSystem(ctx)
         local memUi = NewProcessCircleUi().SetTitle(memTitle)
                                           .SetDesc(memDesc)
                                           .SetProcessData(NewProcessData(self.runCtx.memInfo.Used, self.runCtx.memInfo.Total))
-                                          .SetDetail(getMemDetail(self.runCtx.memInfo))
+                                          .SetPage("","memDetail",{},"内存")
         return memUi
-    end
-
-    local function getCpuDetail(cpus)
-        local detail = [[
-### cpu
-]]
-        for i = 1, #cpus do
-            local c = cpus[i]
-            detail = detail .. string.format([[
-#### 核%d
-- VendorID: `%s`
-- Family: `%s`
-- Model: `%s`
-- PhysicalID: `%s`
-- CoreID: `%s`
-- ModelName: `%s`
-- Mhz: `%s`
-- CacheSize: `%s`
-]],i,c.VendorID,c.Family,c.Model,c.PhysicalID,c.CoreID,c.ModelName,
-                    tostring(c.Mhz),
-                    ByteToUiString(Tonumber(c.CacheSize)))
-        end
-        return detail
     end
 
     ---@return ProcessCircleUi
@@ -168,7 +147,7 @@ local function NewSystem(ctx)
         local cpuUi = NewProcessCircleUi().SetTitle(cpuTitle)
                                           .SetDesc(cpuDesc)
                                           .SetProcessData(NewProcessData(self.runCtx.cpuPercent[1], 100))
-        cpuUi.SetDetail(getCpuDetail(self.runCtx.cpuInfo)).SetPage("","cpuDetail",{},"cpu详情")
+                                          .SetPage("","cpuDetail",{},"CPU")
         return cpuUi
     end
 
@@ -183,6 +162,7 @@ local function NewSystem(ctx)
         local nasUi = NewProcessCircleUi().SetTitle(nasTitle)
                                           .SetDesc(nasDesc)
                                           .SetProcessData(NewProcessData(self.runCtx.diskInfo[diskName].Used, self.runCtx.diskInfo[diskName].Total))
+                                          .SetPage("","diskDetail",{},"磁盘")
         return nasUi
     end
 
@@ -410,9 +390,10 @@ local function NewSystem(ctx)
 
             end
             local pageName = string.format(
-                    "cpu-%s / cache-%s",
+                    "cpu-%s / cache-%s / 主频-%s Mhz",
                     self.runCtx.cpuInfo[index1].CPU,
-                    ByteToUiString(self.runCtx.cpuInfo[index1].CacheSize)
+                    ByteToUiString(self.runCtx.cpuInfo[index1].CacheSize),
+                    ByteToUiString(tostring(self.runCtx.cpuInfo[index1].Mhz))
             )
             page.AddPageSection(
                     NewPageSection(pageName).AddUiRow(
@@ -427,6 +408,397 @@ local function NewSystem(ctx)
             )
         end
         calCpuPoint()
+        return page.Data()
+    end
+
+    function self:MemDetail()
+        local page = NewPage()
+        local fontSize = 18
+        page.AddPageSection(
+                NewPageSection("内存信息").AddUiRow(
+                        NewUiRow().AddUi(
+                                NewTextUi().SetText(
+                                        NewText("").AddString(
+                                                1,
+                                                NewString(ByteToUiString(self.runCtx.memInfo.Total))
+                                                        .SetColor("#FF00FF")
+                                                        .SetFontSize(fontSize)
+                                        ).AddString(
+                                                2,
+                                                NewString("")
+                                        ).AddString(
+                                                3,
+                                                NewString("总内存").SetFontSize(10)
+                                        )
+                                )
+                        ).AddUi(
+                                NewTextUi().SetText(
+                                        NewText("").AddString(
+                                                1,
+                                                NewString(ByteToUiString(self.runCtx.memInfo.Available))
+                                                        .SetColor("#FF00FF")
+                                                        .SetFontSize(fontSize)
+                                        ).AddString(
+                                                2,
+                                                NewString("")
+                                        ).AddString(
+                                                3,
+                                                NewString("空闲内存").SetFontSize(10)
+                                        )
+                                )
+                        )
+                ).AddUiRow(
+                        NewUiRow().AddUi(
+                                NewTextUi().SetText(
+                                        NewText("").AddString(
+                                                1,
+                                                NewString(ByteToUiString(self.runCtx.memInfo.Buffers))
+                                                        .SetColor("#FF00FF")
+                                                        .SetFontSize(fontSize)
+                                        ).AddString(
+                                                2,
+                                                NewString("")
+                                        ).AddString(
+                                                3,
+                                                NewString("Buffer").SetFontSize(10)
+                                        )
+                                )
+                        ).AddUi(
+                                NewTextUi().SetText(
+                                        NewText("").AddString(
+                                                1,
+                                                NewString(ByteToUiString(self.runCtx.memInfo.Cached))
+                                                        .SetColor("#FF00FF")
+                                                        .SetFontSize(fontSize)
+                                        ).AddString(
+                                                2,
+                                                NewString("")
+                                        ).AddString(
+                                                3,
+                                                NewString("Cached").SetFontSize(10)
+                                        )
+                                )
+                        )
+                ).AddUiRow(
+                        NewUiRow().AddUi(
+                                NewTextUi().SetText(
+                                        NewText("").AddString(
+                                                1,
+                                                NewString(ByteToUiString(self.runCtx.memInfo.SwapTotal))
+                                                        .SetColor("#FF00FF")
+                                                        .SetFontSize(fontSize)
+                                        ).AddString(
+                                                2,
+                                                NewString("")
+                                        ).AddString(
+                                                3,
+                                                NewString("分区总大小").SetFontSize(10)
+                                        )
+                                )
+                        ).AddUi(
+                                NewTextUi().SetText(
+                                        NewText("").AddString(
+                                                1,
+                                                NewString(ByteToUiString(self.runCtx.memInfo.SwapFree))
+                                                        .SetColor("#FF00FF")
+                                                        .SetFontSize(fontSize)
+                                        ).AddString(
+                                                2,
+                                                NewString("")
+                                        ).AddString(
+                                                3,
+                                                NewString("空闲分区").SetFontSize(10)
+                                        )
+                                )
+                        )
+                ).AddUiRow(
+                        NewUiRow().AddUi(
+                                NewTextUi().SetText(
+                                        NewText("").AddString(
+                                                1,
+                                                NewString(ByteToUiString(self.runCtx.memInfo.Shared))
+                                                        .SetColor("#FF00FF")
+                                                        .SetFontSize(fontSize)
+                                        ).AddString(
+                                                2,
+                                                NewString("")
+                                        ).AddString(
+                                                3,
+                                                NewString("共享内存").SetFontSize(10)
+                                        )
+                                )
+                        ).AddUi(
+                                NewTextUi().SetText(
+                                        NewText("").AddString(
+                                                1,
+                                                NewString(ByteToUiString(self.runCtx.memInfo.Slab))
+                                                        .SetColor("#FF00FF")
+                                                        .SetFontSize(fontSize)
+                                        ).AddString(
+                                                2,
+                                                NewString("")
+                                        ).AddString(
+                                                3,
+                                                NewString("内核数据slab").SetFontSize(10)
+                                        )
+                                )
+                        )
+                ).AddUiRow(
+                        NewUiRow().AddUi(
+                                NewTextUi().SetText(
+                                        NewText("").AddString(
+                                                1,
+                                                NewString(ByteToUiString(self.runCtx.memInfo.Dirty))
+                                                        .SetColor("#FF00FF")
+                                                        .SetFontSize(fontSize)
+                                        ).AddString(
+                                                2,
+                                                NewString("")
+                                        ).AddString(
+                                                3,
+                                                NewString("脏页").SetFontSize(10)
+                                        )
+                                )
+                        ).AddUi(
+                                NewTextUi().SetText(
+                                        NewText("").AddString(
+                                                1,
+                                                NewString(ByteToUiString(self.runCtx.memInfo.WriteBack))
+                                                        .SetColor("#FF00FF")
+                                                        .SetFontSize(fontSize)
+                                        ).AddString(
+                                                2,
+                                                NewString("")
+                                        ).AddString(
+                                                3,
+                                                NewString("正在写回磁盘的虚拟内存").SetFontSize(10)
+                                        )
+                                )
+                        )
+                )
+        )
+        return page.Data()
+    end
+
+    function self:NetDetail()
+        local netInfo = net.IOCountersList()
+        local page = NewPage()
+        local fontSize = 18
+        for i = 1, #netInfo do
+            local value = netInfo[i]
+            page.AddPageSection(
+                    NewPageSection(tostring(value.Name))
+                            .AddUiRow(
+                            NewUiRow().AddUi(
+                                    NewTextUi().SetText(
+                                            NewText("")
+                                                    .AddString(
+                                                    1,
+                                                    NewString(ByteToUiString(value.BytesSent))
+                                                            .SetColor("#FF00FF")
+                                                            .SetFontSize(fontSize)
+                                            )
+                                                    .AddString(
+                                                    2,
+                                                    NewString("发送字节数")
+                                            )
+                                    )
+                            ).AddUi(
+                                    NewTextUi().SetText(
+                                            NewText("")
+                                                    .AddString(
+                                                    1,
+                                                    NewString(ByteToUiString(value.BytesRecv))
+                                                            .SetColor("#FF00FF")
+                                                            .SetFontSize(fontSize)
+                                            )
+                                                    .AddString(
+                                                    2,
+                                                    NewString("接收字节数")
+                                            )
+                                    )
+                            ).AddUi(
+                                    NewTextUi().SetText(
+                                            NewText("")
+                                                    .AddString(
+                                                    1,
+                                                    NewString(ByteToUiString(value.PacketsSent))
+                                                            .SetColor("#FF00FF")
+                                                            .SetFontSize(fontSize)
+                                            )
+                                                    .AddString(
+                                                    2,
+                                                    NewString("发送数据包")
+                                            )
+                                    )
+                            ).AddUi(
+                                    NewTextUi().SetText(
+                                            NewText("")
+                                                    .AddString(
+                                                    1,
+                                                    NewString(ByteToUiString(value.PacketsRecv))
+                                                            .SetColor("#FF00FF")
+                                                            .SetFontSize(fontSize)
+                                            )
+                                                    .AddString(
+                                                    2,
+                                                    NewString("接收数据包")
+                                            )
+                                    )
+                            )
+                    )
+                            .AddUiRow(
+                            NewUiRow().AddUi(
+                                    NewTextUi().SetText(
+                                            NewText("")
+                                                    .AddString(
+                                                    1,
+                                                    NewString(ByteToUiString(value.Errout))
+                                                            .SetColor("#FF00FF")
+                                                            .SetFontSize(fontSize)
+                                            )
+                                                    .AddString(
+                                                    2,
+                                                    NewString("发送错误包")
+                                            )
+                                    )
+                            ).AddUi(
+                                    NewTextUi().SetText(
+                                            NewText("")
+                                                    .AddString(
+                                                    1,
+                                                    NewString(ByteToUiString(value.Errin))
+                                                            .SetColor("#FF00FF")
+                                                            .SetFontSize(fontSize)
+                                            )
+                                                    .AddString(
+                                                    2,
+                                                    NewString("接收错误包")
+                                            )
+                                    )
+                            ).AddUi(
+                                    NewTextUi().SetText(
+                                            NewText("")
+                                                    .AddString(
+                                                    1,
+                                                    NewString(ByteToUiString(value.Dropout))
+                                                            .SetColor("#FF00FF")
+                                                            .SetFontSize(fontSize)
+                                            )
+                                                    .AddString(
+                                                    2,
+                                                    NewString("发送丢弃包")
+                                            )
+                                    )
+                            ).AddUi(
+                                    NewTextUi().SetText(
+                                            NewText("")
+                                                    .AddString(
+                                                    1,
+                                                    NewString(ByteToUiString(value.Dropin))
+                                                            .SetColor("#FF00FF")
+                                                            .SetFontSize(fontSize)
+                                            )
+                                                    .AddString(
+                                                    2,
+                                                    NewString("接收丢弃包")
+                                            )
+                                    )
+                            )
+                    )
+                            .AddMenu(
+                            NewIconButton()
+                                    .SetIcon("doc.on.doc")
+                                    .SetAction(
+                                    NewAction("",{},"复制").SetCopyAction(value.Name)
+                            ).SetSize(14)
+                    )
+            )
+        end
+
+        return page.Data()
+    end
+
+    function checkDiskNeedShow(type)
+        for index, value in ipairs(global.allNeedShowDisk) do
+            if strings.contains(type, value) then
+                return true
+            end
+        end
+        return false
+    end
+
+    function self:DiskDetail()
+        local page = NewPage()
+        local disk = disk.IOCountersList()
+        local fontSize = 18
+        local fontColor = "#FF00FF"
+        for i=1, #disk do
+            local value = disk[i]
+            if checkDiskNeedShow(value.Fstype) then
+                local name = string.format("%s (%.2f%%)",value.Path,value.UsedPercent)
+                page.AddPageSection(
+                        NewPageSection(name).AddUiRow(
+                                NewUiRow().AddUi(
+                                        NewTextUi().SetText(
+                                                NewText("")
+                                                        .AddString(
+                                                        1,
+                                                        NewString(value.Fstype).SetFontSize(fontSize).SetColor(fontColor)
+                                                )
+                                                        .AddString(2,NewString("类型"))
+                                        )
+                                ).AddUi(
+                                        NewTextUi().SetText(
+                                                NewText("")
+                                                        .AddString(
+                                                        1,
+                                                        NewString(ByteToUiString(value.Total)).SetFontSize(fontSize).SetColor(fontColor)
+                                                )
+                                                        .AddString(2,NewString("容量"))
+                                        )
+                                ).AddUi(
+                                        NewTextUi().SetText(
+                                                NewText("")
+                                                        .AddString(
+                                                        1,
+                                                        NewString(ByteToUiString(value.Free)).SetFontSize(fontSize).SetColor(fontColor)
+                                                )
+                                                        .AddString(2,NewString("空闲"))
+                                        )
+                                ).AddUi(
+                                        NewTextUi().SetText(
+                                                NewText("")
+                                                        .AddString(
+                                                        1,
+                                                        NewString(ByteToUiString(value.Used)).SetFontSize(fontSize).SetColor(fontColor)
+                                                )
+                                                        .AddString(2,NewString("已使用"))
+                                        )
+                                )
+                        ).AddUiRow(
+                                NewUiRow().AddUi(
+                                        NewProcessLineUi().SetProcessData(
+                                                NewProcessData(value.Used, value.Total)
+                                        )
+                                )
+                        ).AddMenu(
+                                NewIconButton()
+                                        .SetIcon("doc.on.doc")
+                                        .SetAction(
+                                        NewAction("",{},"复制").SetCopyAction(value.Path)
+                                ).SetSize(14)
+                        ).AddMenu(
+                                NewIconButton()
+                                        .SetIcon("terminal")
+                                        .SetAction(
+                                        NewAction("",{},"进入目录").SetTerminalAction("cd "..value.Path)
+                                ).SetSize(14)
+                        )
+                )
+            end
+
+        end
         return page.Data()
     end
 
@@ -487,4 +859,17 @@ end
 
 function cpuDetail(ctx)
     return NewSystem(ctx):CpuDetail()
+end
+
+function memDetail(ctx)
+    return NewSystem(ctx):MemDetail()
+end
+
+function netDetail(ctx)
+    return NewSystem(ctx):NetDetail()
+end
+
+
+function diskDetail(ctx)
+    return NewSystem(ctx):DiskDetail()
 end
