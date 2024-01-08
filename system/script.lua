@@ -2,6 +2,7 @@ local json = require("json")
 local lfs = require("lfs")
 local global = {
     cpuPoints = {},
+    allCpuPoints = {},
     netState = {
         recv = 0,
         send = 0,
@@ -63,6 +64,22 @@ local function NewSystem(ctx)
         global.netState.ts = os.time()
         global.netState.send = interface.BytesSent
         global.netState.recv = interface.BytesRecv
+    end
+
+
+    local function calAllCpuPoint(allPoint)
+        for index, value in ipairs(allPoint) do
+            if global.allCpuPoints[index] == nil then
+                global.allCpuPoints[index] = {}
+            end
+            global.allCpuPoints[index][#global.allCpuPoints[index] + 1] = value
+        end
+        for index, value in ipairs(global.allCpuPoints) do
+            while #value > tonumber(self.config.CpuWin) do
+                table.remove(value, 1)
+            end
+        end
+        return global.allCpuPoints
     end
 
     ---@return table
@@ -151,7 +168,7 @@ local function NewSystem(ctx)
         local cpuUi = NewProcessCircleUi().SetTitle(cpuTitle)
                                           .SetDesc(cpuDesc)
                                           .SetProcessData(NewProcessData(self.runCtx.cpuPercent[1], 100))
-        cpuUi.SetDetail(getCpuDetail(self.runCtx.cpuInfo))
+        cpuUi.SetDetail(getCpuDetail(self.runCtx.cpuInfo)).SetPage("","cpuDetail",{},"cpu详情")
         return cpuUi
     end
 
@@ -177,7 +194,7 @@ local function NewSystem(ctx)
         for i, v in ipairs(calCpuPoint()) do
             cpuLineChart.AddPoint(NewPoint(v, tostring(i)))
         end
-        return cpuLineChart
+        return cpuLineChart.SetPage("","cpuDetail",{},"cpu详情")
     end
 
     ---@param app AppUI
@@ -353,6 +370,8 @@ local function NewSystem(ctx)
             app.AddUi(1, getCpuUi())
             app.AddUi(1, getNasUi())
             app.AddUi(2, getCpuLineChart())
+            local info = cpu.Percent(0, true)
+            calAllCpuPoint(info)
             updateNetWin()
         else
             self:addAllFileUi(app)
@@ -370,6 +389,45 @@ local function NewSystem(ctx)
 
     function self:Clear()
         return {}
+    end
+
+
+    function self:CpuDetail()
+        local page = NewPage()
+
+        local info = cpu.Percent(0, true)
+        local res = calAllCpuPoint(info)
+
+        for index1, value1 in ipairs(res) do
+            local line = NewLineChartUi()
+            local text = NewTextUi().SetText(
+                    NewText("").AddString(1,NewString(self.runCtx.cpuInfo[index1].ModelName))
+            )
+            for index, value in ipairs(value1) do
+                line.AddPoint(
+                        NewPoint(value, tostring(index))
+                )
+
+            end
+            local pageName = string.format(
+                    "cpu-%s / cache-%s",
+                    self.runCtx.cpuInfo[index1].CPU,
+                    ByteToUiString(self.runCtx.cpuInfo[index1].CacheSize)
+            )
+            page.AddPageSection(
+                    NewPageSection(pageName).AddUiRow(
+                            NewUiRow().AddUi(
+                                    line
+                            )
+                    ).AddUiRow(
+                            NewUiRow().AddUi(
+                                    text
+                            )
+                    )
+            )
+        end
+        calCpuPoint()
+        return page.Data()
     end
 
     return self
@@ -424,4 +482,9 @@ end
 
 function delete(ctx)
     return NewSystem(ctx):Delete()
+end
+
+
+function cpuDetail(ctx)
+    return NewSystem(ctx):CpuDetail()
 end

@@ -560,6 +560,7 @@ function NewLineChartUi()
             ui_line_chart = {},
             detail = "",
             height = 0,
+            page = {},
         }
     }
 
@@ -617,6 +618,17 @@ function NewLineChartUi()
         return lineChart.data
     end
 
+    local function SetPage(app,func,arg,name)
+        lineChart.data.page = {
+            app = app,
+            func = func,
+            arg = json.encode(arg),
+            name = name,
+        }
+        return lineChart
+    end
+
+    lineChart.SetPage = SetPage
     lineChart.AddAction = AddAction
     lineChart.SetTitle = SetTitle
     lineChart.AddPoint = AddPoint
@@ -635,6 +647,7 @@ function NewProcessCircleUi()
             ui_type = 1,
             actions = nil,
             ui_process_circle = {},
+            page = {},
         }
     }
 
@@ -704,6 +717,17 @@ function NewProcessCircleUi()
         return processCircle.processCircleUiData
     end
 
+    local function SetPage(app,func,arg,name)
+        processCircle.processCircleUiData.page = {
+            app = app,
+            func = func,
+            arg = json.encode(arg),
+            name = name,
+        }
+        return processCircle
+    end
+
+    processCircle.SetPage = SetPage
     processCircle.SetProcessData = SetProcessData
     processCircle.SetDesc = SetDesc
     processCircle.SetTitle = SetTitle
@@ -725,6 +749,7 @@ function NewProcessLineUi()
             ui_process_line = {},
             detail = "",
             height = 0,
+            page = {},
         }
     }
 
@@ -793,6 +818,17 @@ function NewProcessLineUi()
         return processLine.processLineUiData
     end
 
+    local function SetPage(app,func,arg,name)
+        processLine.processLineUiData.page = {
+            app = app,
+            func = func,
+            arg = json.encode(arg),
+            name = name,
+        }
+        return processLine
+    end
+
+    processLine.SetPage = SetPage
     processLine.SetProcessData = SetProcessData
     processLine.SetDesc = SetDesc
     processLine.SetTitle = SetTitle
@@ -816,7 +852,8 @@ function NewMarkdownUi()
             },
             actions = nil,
             height = 0,
-            detail = ""
+            detail = "",
+            page = {},
         }
     }
 
@@ -860,6 +897,18 @@ function NewMarkdownUi()
         return markdownUi.uiMarkdownData
     end
 
+
+    local function SetPage(app,func,arg,name)
+        markdownUi.uiMarkdownData.page = {
+            app = app,
+            func = func,
+            arg = json.encode(arg),
+            name = name,
+        }
+        return markdownUi
+    end
+
+    markdownUi.SetPage = SetPage
     markdownUi.SetMarkdown   = SetMarkdown
     markdownUi.Data      = Data
     markdownUi.AddAction = AddAction
@@ -880,6 +929,7 @@ function NewTextUi()
             actions = nil,
             height = 0,
             detail = "",
+            page = {},
         }
     }
 
@@ -923,6 +973,17 @@ function NewTextUi()
         return textUi.uiTextData
     end
 
+    local function SetPage(app,func,arg,name)
+        textUi.uiTextData.page = {
+            app = app,
+            func = func,
+            arg = json.encode(arg),
+            name = name,
+        }
+        return textUi
+    end
+
+    textUi.SetPage = SetPage
     textUi.SetDetail = SetDetail
     textUi.SetText   = SetText
     textUi.Data      = Data
@@ -942,6 +1003,7 @@ function NewIconButtonUi()
             ui_type = 4,
             ui_icon_button = nil,
             actions = nil,
+            page = {},
         }
     }
     -- AddAction 添加动作
@@ -980,6 +1042,18 @@ function NewIconButtonUi()
     local function Data()
         return iconButtonUi.data
     end
+
+    local function SetPage(app,func,arg,name)
+        iconButtonUi.data.page = {
+            app = app,
+            func = func,
+            arg = json.encode(arg),
+            name = name,
+        }
+        return iconButtonUi
+    end
+
+    iconButtonUi.SetPage = SetPage
     iconButtonUi.SetIconButton = SetIconButton
     iconButtonUi.Data = Data
     iconButtonUi.AddAction = AddAction
@@ -1052,6 +1126,107 @@ function NewApp()
     app.Data    = Data
     return app
 end
+
+
+function NewUiRow()
+    ---@class UiRow
+    local uiRoW = {
+        data = {
+            height = 0,
+            uis = {},
+        }
+    }
+
+    function AddUi(ui)
+        table.insert(uiRoW.data.uis, ui.Data())
+        return uiRoW
+    end
+
+    function Data()
+        return uiRoW.data
+    end
+
+    uiRoW.Data = Data
+    uiRoW.AddUi = AddUi
+
+    return uiRoW
+end
+
+function NewPageSection(name)
+    ---@class PageSection
+    local pageSection = {
+        data = {
+            name = name,
+            ui_row = {},
+            menu = nil,
+            pre = {},
+            next = {},
+            page_info = "",
+        }
+    }
+
+    function AddUiRow(uiRow)
+        table.insert(pageSection.data.ui_row, uiRow.Data())
+        return pageSection
+    end
+
+    local function AddMenu(menu)
+        table.insert(pageSection.data.menu, menu.Data())
+        return pageSection
+    end
+
+    local function Data()
+        return pageSection.data
+    end
+
+    local function SetPre(action)
+        pageSection.data.pre = action.Data()
+        return pageSection
+    end
+
+    local function SetNext(action)
+        pageSection.data.next = action.Data()
+        return pageSection
+    end
+
+    local function SetPageInfo(info)
+        pageSection.data.page_info = info
+        return pageSection
+    end
+
+    pageSection.AddUiRow = AddUiRow
+    pageSection.AddMenu = AddMenu
+    pageSection.SetPre = SetPre
+    pageSection.SetNext = SetNext
+    pageSection.SetPageInfo = SetPageInfo
+    pageSection.Data = Data
+
+    return pageSection
+end
+
+
+function NewPage()
+    ---@class Page
+    local page = {
+        data = {
+            page_section_data = {}
+        }
+    }
+
+    function AddPageSection(pageSection)
+        table.insert(page.data.page_section_data, pageSection.Data())
+        return page
+    end
+
+    function Data()
+        return page.data
+    end
+
+    page.AddPageSection = AddPageSection
+    page.Data = Data
+    return page
+end
+
 
 function NewToast(text,icon,color)
     return {
