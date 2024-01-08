@@ -1,0 +1,12 @@
+{
+  "img_desc": [
+    {
+      "img": "https://plugin.codeloverme.cn/img/1_add_server.png",
+      "desc":"## 1.添加服务器\n- 推荐添加ssh后一键安装服务端\n- 服务端运行需要docker，请先手动安装\n- 长按服务器可进行配置\n- 下拉选项数据可以方便选择输入数据\n- 终端运行中不要关闭"
+    },
+    {
+      "img": "https://plugin.codeloverme.cn/img/2_add_server.png",
+      "desc":"## 2.安装插件\n- 系统监控会自动安装\n- 其他插件在插件页面进行安装\n- 长按可进行删除"
+    }
+  ]
+}

@@ -31,7 +31,7 @@
         },
         {
             "id" : "system",
-            "name": "System",
+            "name": "系统监控",
             "introduce" : "系统监控：\n1.监控cpu，内存，网络，磁盘\n2.监控cpu的走势\n3.执行shell命令",
             "author" : "admin",
             "home_url": "",
