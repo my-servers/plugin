@@ -732,9 +732,12 @@ local function NewSystem(ctx)
         local page = NewPage()
         local disk = disk.IOCountersList()
         local fontSize = 18
-        local fontColor = "#FF00FF"
         for i=1, #disk do
             local value = disk[i]
+            local fontColor = "#FF00FF"
+            if value.UsedPercent > 90 then
+                fontColor = "#F00"
+            end
             if checkDiskNeedShow(value.Fstype) then
                 local name = string.format("%s (%.2f%%)",value.Path,value.UsedPercent)
                 page.AddPageSection(
@@ -792,7 +795,7 @@ local function NewSystem(ctx)
                                 NewIconButton()
                                         .SetIcon("terminal")
                                         .SetAction(
-                                        NewAction("",{},"进入目录").SetTerminalAction("cd "..value.Path)
+                                        NewAction("",{},"复制").SetTerminalAction("cd "..value.Path)
                                 ).SetSize(14)
                         )
                 )
