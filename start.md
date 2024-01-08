@@ -46,3 +46,7 @@ curl -sSL https://plugin.codeloverme.cn/auto_update.sh > install.sh && chmod +x 
 5. 如何暴露MyServers的服务到外网？
 - 只需要暴露18612端口到外网就行（端口转发，内网穿透都行）
 - MyServers服务端是http协议，数据全程由密钥加密
+
+
+
+[浏览器查看此文档](https://myservers.codeloverme.cn/doc/)
