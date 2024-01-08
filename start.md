@@ -8,100 +8,41 @@
 
 [![](https://plugin.codeloverme.cn/img/jiaocheng.png)](https://plugin.codeloverme.cn/img/jiaocheng.png)
 
+## 详细步骤
 
-## 安装服务端
+### [1.添加服务器](https://plugin.codeloverme.cn/img/1_add_server.png)
+[![](https://plugin.codeloverme.cn/img/1_add_server.png)](https://plugin.codeloverme.cn/img/1_add_server.png)
+- 推荐添加ssh后一键安装服务端
+- 服务端运行需要docker，请先手动安装
+- 长按服务器可进行配置，重新安装服务端会自动换密钥
+- 下拉选项数据可以方便选择输入数据
+- 终端运行中不要关闭
+### [2.安装配置插件](https://plugin.codeloverme.cn/img/2_add_server.png)
+[![](https://plugin.codeloverme.cn/img/2_add_server.png)](https://plugin.codeloverme.cn/img/2_add_server.png)
+- 系统监控会自动安装
+- 其他插件在插件页面进行安装
+- 长按可进行删除
 
-- 服务端是通过`docker`运行的，**脚本会自动尝试安装docker**
 
-### 方法1: 通过App一键安装服务端（推荐）
- 
-- 在App上服务器页面，点击`+`，通过ssh一键安装，密钥不会进行任何存储上传，请放心填写
-
-### 方法2: 服务端运行安装脚本
-
+## QA
+1. 若安装失败，可手动运行安装脚本
 ```shell
 curl -sSL https://plugin.codeloverme.cn/auto_update.sh > install.sh && chmod +x install.sh && ./install.sh && rm -rf install.sh 
 ```
 
-### 方法3: 手动安装
+2. 群晖如何安装？
+- 首先开启ssh访问
+- 然后给ssh的账户赋予操作docker的权限
+- 可能需要重启nas才能生效
+- 重启后再在app上执行上面的操作
 
-------------
-> 若上面方式1，2安装成功，则忽略`手动安装`
+3. 路由器如何安装？
+- 由于目前服务端依赖于docker运行，如果路由器性能低，不建议安装在路由器上，可安装在自己的电脑或者家庭服务器上
+- 如果路由器系统是openwrt，后续会出openwrt的插件
 
-#### 手动docker安装
+4. MyServers服务端和其他服务是什么关系？
+- 正如上面的架构图，MyServers服务端一般和其他服务端在一个内网下，MyServers服务端通过插件访问其他服务
 
-1. **宿主机**准备插件目录，为了防止后续升级服务端后插件丢失，建议插件存放在宿主机上，通过文件目录映射共享给容器`mkdir /xx/to/apps`
-2. **宿主机**准备准备配置文件`touch /xx/to/config.yaml` `vim /xx/to/config.yaml` 内容如下
-
-```
-RestConfig:
-  Name: MyServers
-  Host: 0.0.0.0
-  Port: 18612
-  Log:
-    Stat: false
-    Level: error
-SecretKey: 修改我（echo -n "test" | md5）
-PluginUrl: https://plugin.codeloverme.cn/
-MarkdownPage:
-  About: https://plugin.codeloverme.cn/about.md
-AppDir: apps
-Name: codelover
-```
-
-- `SecretKey` 是app和服务端通信的密钥，app和服务端保持一致，否则无法通信，可以使用`md5`生成
-  - `echo -n "test" | md5`
-- `PluginUrl` 插件列表地址，里面是所以的可下载的插件
-- `RestConfig.Port` 端口
-- `AppDir` 服务端脚本保存的目录
-
-3. 运行容器，指定参数
-- 映射插件目录 `-v /xx/to/apps:/apps`
-- 映射配置文件 `-v /xx/to/config.yaml:/app/config/config.yaml`(可选)
-- 指定插件目录，如果不指定则使用配置文件中的 `-e AppDir=/apps`
-- 指定密钥，如果不指定则使用配置文件中的 `-e SecretKey=e8edf0cd4c5d49694c39edf7a879a92e`
-
-```shell
-docker run -it -d --network=host --name=myServers -v /xx/to/apps:/apps  -e AppDir=/apps -e SecretKey=e8edf0cd4c5d49694c39edf7a879a92e myservers/my_servers
-```
-
-4. 登录容器修改和查看
-```shell
-docker exec -it {id} sh
-```
-
-5. 修改后重启容器
-```shell
-docker restart {id} 
-```
-
-### 升级服务端
-- 拉取最新的服务端，重新运行
-```
-# 拉取最新的服务端
-docker pull myservers/my_servers
-# 重新运行
-docker run -it -d --network=host --name=myServers -v /xx/to/apps:/apps  -e AppDir=/apps -e SecretKey=e8edf0cd4c5d49694c39edf7a879a92e myservers/my_servers
-```
-
-## 客户端
-
-> 客户端的主要操作有**长按**和**点击**两种
-
-### 1. 添加服务器
-- 先到**服务器**界面，**点击**`+`添加
-- ![](https://myservers.codeloverme.cn/img/add_server.jpeg)
-- 填写名字（随意），ip端口，密钥（和服务端对齐），`提交`
-- 填写**后点**击选中
-
-### 2. 安装插件到服务器
-- 到**服务**界面
-- ![](https://myservers.codeloverme.cn/img/add_plugin.png)
-- **长按**想要安装的插件，**点击**`启用`
-
-### 3. 再到应用界面
-- **长按**已经启用的应用进行`配置`，每个插件有不同的配置，具体**点击**应用会有说明
-- ![](https://myservers.codeloverme.cn/img/config_app.png)
-
-更多特性请访问[MyServers官网](https://myservers.codeloverme.cn)
-
+5. 如何暴露MyServers的服务到外网？
+- 只需要暴露18612端口到外网就行（端口转发，内网穿透都行）
+- MyServers服务端是http协议，数据全程由密钥加密
