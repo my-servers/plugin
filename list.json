@@ -1,5 +1,5 @@
 {
-    "notice": "🎉🎉SSH终端功能已经上线，欢迎体验！",
+    "notice": "🎉🎉系统插件cpu新增详情二级页，欢迎体验，更多插件的二级页支持正在开发中！",
     "notice_detail_url": "https://plugin.codeloverme.cn/feature/README.md",
     "plugin":[
         {
@@ -36,9 +36,9 @@
             "author" : "admin",
             "home_url": "",
             "download_url":"https://plugin.codeloverme.cn/system",
-            "min_server_version": "1.1",
-            "min_client_version": "1.12",
-            "version": "1.2",
+            "min_server_version": "1.10",
+            "min_client_version": "1.21",
+            "version": "1.3",
             "is_finished": true,
             "img": ["en","ja"]
         },

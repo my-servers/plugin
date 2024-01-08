@@ -168,7 +168,7 @@ local function NewSystem(ctx)
         local cpuUi = NewProcessCircleUi().SetTitle(cpuTitle)
                                           .SetDesc(cpuDesc)
                                           .SetProcessData(NewProcessData(self.runCtx.cpuPercent[1], 100))
-        cpuUi.SetDetail(getCpuDetail(self.runCtx.cpuInfo))
+        cpuUi.SetDetail(getCpuDetail(self.runCtx.cpuInfo)).SetPage("","cpuDetail",{},"cpu详情")
         return cpuUi
     end
 
