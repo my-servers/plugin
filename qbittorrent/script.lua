@@ -25,6 +25,10 @@ local global = {
         DeleteUrl = "/api/v2/torrents/delete",
         LoginUrl = "/api/v2/auth/login",
         Url = "/api/v2/torrents/info",
+        TorrentDetail = "/api/v2/torrents/properties",
+        Files = "/api/v2/torrents/files",
+        Peers = "/api/v2/sync/torrentPeers",
+        Trackers = "/api/v2/torrents/trackers",
         SearchUrl = "/api/v2/search/start",
         AddUrl = "/api/v2/torrents/add",
         SearchResultUrl = "/api/v2/search/results",
@@ -140,7 +144,7 @@ local function NewQBittorrent(ctx)
                     .SetFontSize(8)
                     .SetBackendColor("#66cccc")
                     .SetColor("#FFF"))
-                 .AddString(2,
+                .AddString(2,
                     NewString(tostring(list[i].nbSeeders).." 做种")
                             .SetFontSize(8)
                             .SetBackendColor("#66cccc")
@@ -204,18 +208,18 @@ local function NewQBittorrent(ctx)
             end
             line = NewProcessLineUi()
                     .SetDesc(NewText("leading")
-                            .AddString(1, NewString(string.sub(d.name, 0, tonumber(config.NameLen)))
-                                .SetFontSize(10))
-                            .AddString(2, NewString(string.format("%s", ByteToUiString(d.total_size)))
-                                .SetFontSize(8)
-                                .SetBackendColor("#663366")
-                                .SetColor("#FFF")
-                            )
-                            .AddString(2, state.SetBackendColor("#333366")
-                                               .SetColor("#FFF")))
+                    .AddString(1, NewString(string.sub(d.name, 0, tonumber(config.NameLen)))
+                    .SetFontSize(10))
+                    .AddString(2, NewString(string.format("%s", ByteToUiString(d.total_size)))
+                    .SetFontSize(8)
+                    .SetBackendColor("#663366")
+                    .SetColor("#FFF")
+            )
+                    .AddString(2, state.SetBackendColor("#333366")
+                                       .SetColor("#FFF")))
                     .SetTitle(NewText("")
-                            .AddString(1, NewString(string.format("%.2f%%", d.completed * 100 / d.total_size))
-                                .SetFontSize(8)))
+                    .AddString(1, NewString(string.format("%.2f%%", d.completed * 100 / d.total_size))
+                    .SetFontSize(8)))
                     .SetProcessData(NewProcessData(d.completed, d.total_size))
             if d.state == "pausedDL" or d.state == "pausedUP" then
                 line.AddAction(NewAction("resume", { hash = d.hash }, "继续").SetIcon("play.circle"))
@@ -225,6 +229,7 @@ local function NewQBittorrent(ctx)
             line.AddAction(NewAction("delete", { hash = d.hash,clean = "false" }, "删除").SetIcon("trash.circle").SetCheck(true))
             line.AddAction(NewAction("delete", { hash = d.hash,clean = "true" }, "删除并清理文件").SetIcon("trash.circle").SetCheck(true))
             line.SetDetail(genDetail(d))
+                .SetPage("","torrentDetail",d,"Torrent详情")
             app.AddUi(index, line)
             col = col + 1
             if col % tonumber(config.ColNum) == 0 then
@@ -355,6 +360,333 @@ local function NewQBittorrent(ctx)
     end
 
 
+    function escapePattern(text)
+        return text:gsub("([^%w])", "%%%1")
+    end
+
+    function self:PeersCountry()
+        local data = string.format("?hash=%s",tostring(self.arg.hash))
+        local req = http.request("GET",self.config.HostPort .. global.api.Peers .. data)
+        local detailRsp,err = httpClient:do_request(req)
+        if detailRsp.code == 403 then
+            updateCookie()
+            detailRsp,err = httpClient:do_request(req)
+            if err then
+                error(err)
+            end
+        end
+        local peers = json.decode(detailRsp.body)
+        local afterFilter = {}
+        for key, value in pairs(peers.peers) do
+            if value.country == self.arg.country and value.dl_speed > 0 then
+                table.insert(afterFilter, value)
+            end
+        end
+
+        table.sort(afterFilter,function (a, b)
+            return a.dl_speed > b.dl_speed
+        end)
+
+        local page = NewPage()
+        local userSection = NewPageSection("用户")
+        local fontColor = "#FF00FF"
+        local fontSize = 10
+        for index, value in ipairs(afterFilter) do
+            userSection.AddUiRow(
+                    NewUiRow().AddUi(
+                            NewProcessLineUi().SetDesc(
+                                    NewText("leading").AddString(
+                                            1,
+                                            NewString(value.ip..":"..tostring(value.port)).SetFontSize(fontSize)
+                                    ).AddString(
+                                            1,
+                                            NewString(value.connection).SetFontSize(fontSize)
+                                    ).AddString(
+                                            1,
+                                            NewString(value.client).SetFontSize(fontSize)
+                                    )
+                            ).SetProcessData(
+                                    NewProcessData(value.progress,1)
+                            ).SetTitle(
+                                    NewText("trailing").AddString(
+                                            1,
+                                            NewString(ByteToUiString(value.dl_speed).."/S").SetColor(fontColor).SetFontSize(fontSize)
+                                    )
+                            ).AddAction(
+                                    NewAction("",{},"复制ip").SetCopyAction(value.ip..":"..tostring(value.port))
+                            )
+                    )
+            )
+        end
+        return page.AddPageSection(userSection).Data()
+    end
+
+    function self:TorrentDetail()
+        local page = NewPage()
+        local torrentDetail = {}
+        local files = {}
+        local peers = {}
+        local trackers = {}
+        goAndWait({
+            getDetail = function ()
+                local data = string.format("?hash=%s",tostring(self.arg.hash))
+                local req = http.request("GET",self.config.HostPort .. global.api.TorrentDetail .. data)
+                local detailRsp,err = httpClient:do_request(req)
+                if detailRsp.code == 403 then
+                    updateCookie()
+                    detailRsp,err = httpClient:do_request(req)
+                    if err then
+                        error(err)
+                    end
+                end
+                torrentDetail = json.decode(detailRsp.body)
+            end,
+            files = function ()
+                local data = string.format("?hash=%s",tostring(self.arg.hash))
+                local req = http.request("GET",self.config.HostPort .. global.api.Files .. data)
+                local detailRsp,err = httpClient:do_request(req)
+                if detailRsp.code == 403 then
+                    updateCookie()
+                    detailRsp,err = httpClient:do_request(req)
+                    if err then
+                        error(err)
+                    end
+                end
+                files = json.decode(detailRsp.body)
+            end,
+            peers = function ()
+                local data = string.format("?hash=%s",tostring(self.arg.hash))
+                local req = http.request("GET",self.config.HostPort .. global.api.Peers .. data)
+                local detailRsp,err = httpClient:do_request(req)
+                if detailRsp.code == 403 then
+                    updateCookie()
+                end
+                peers = json.decode(detailRsp.body)
+            end,
+            trackers = function ()
+                local data = string.format("?hash=%s",tostring(self.arg.hash))
+                local req = http.request("GET",self.config.HostPort .. global.api.Trackers .. data)
+                local detailRsp,err = httpClient:do_request(req)
+                if detailRsp.code == 403 then
+                    updateCookie()
+                    detailRsp,err = httpClient:do_request(req)
+                    if err then
+                        error(err)
+                    end
+                end
+                trackers = json.decode(detailRsp.body)
+            end
+        })
+
+
+        local fontColor = "#FF00FF"
+        local fontSize = 16
+
+        local contentSection = NewPageSection("内容")
+        for index, value in ipairs(files) do
+            contentSection.AddUiRow(
+                    NewUiRow().AddUi(
+                            NewProcessLineUi().SetDesc(
+                                    NewText("leading").AddString(
+                                            1,
+                                            NewString(string.gsub(value.name, escapePattern(torrentDetail.name), "", 1))
+                                                    .SetFontSize(10)
+                                    ).AddString(
+                                            2,
+                                            NewString(ByteToUiString(value.size))
+                                                    .SetColor(fontColor)
+                                                    .SetFontSize(10)
+                                    )
+                                                      .AddString(
+                                            2,
+                                            NewString(string.format("%.2f%%",value.progress))
+                                                    .SetColor(fontColor)
+                                                    .SetFontSize(10)
+                                    )
+                            ).SetProcessData(
+                                    NewProcessData(value.progress*100,100)
+                            )
+                    )
+            )
+        end
+
+        local data = {}
+        for key, value in pairs(peers.peers) do
+            if data[value.country] == nil then
+                data[value.country] = {
+                    country = value.country,
+                    dl_speed = 0,
+                    peers = {},
+                }
+            end
+            data[value.country].dl_speed = data[value.country].dl_speed+value.dl_speed
+            table.insert(data[value.country].peers, value)
+        end
+
+        local afterFilter = {}
+        for key, value in pairs(data) do
+            if value.dl_speed > 0 then
+                table.insert(afterFilter, value)
+            end
+        end
+        table.sort(afterFilter, function (a, b)
+            return a.dl_speed > b.dl_speed
+        end)
+        data = afterFilter
+
+
+        local peersSection = NewPageSection("用户")
+        local row = NewUiRow()
+        local index = 1
+        for i, value in ipairs(data) do
+            local key = value.country
+            row.AddUi(
+                    NewTextUi().SetText(
+                            NewText("").AddString(
+                                    1,
+                                    NewString(ByteToUiString(value.dl_speed).."/S")
+                                            .SetFontSize(fontSize)
+                                            .SetColor(fontColor)
+                            ).AddString(
+                                    2,
+                                    NewString(key)
+                            )
+                    ).SetPage("qbittorrent","peersCountry",{hash=self.arg.hash, country=key},key.."用户")
+            )
+            if index % 4 == 0 then
+                peersSection.AddUiRow(row)
+                row = NewUiRow()
+            end
+            index = index + 1
+        end
+
+        local trackersSection = NewPageSection("Tracker")
+        table.sort(trackers,function (a, b)
+            return a.num_peers > b.num_peers
+        end)
+        for index, value in ipairs(trackers) do
+            if value.status == 2 then
+                trackersSection.AddUiRow(
+                        NewUiRow().AddUi(
+                                NewProcessLineUi().SetDesc(
+                                        NewText("leading").AddString(
+                                                1,
+                                                NewString(value.url).SetFontSize(10)
+                                        ).AddString(
+                                                2,
+                                        -- 用户
+                                                NewString("用户:").SetFontSize(10)
+                                        ).AddString(
+                                                2,
+                                        -- 用户
+                                                NewString(tostring(value.num_peers)).SetFontSize(10)
+                                        ).AddString(
+                                                2,
+                                        -- 用户
+                                                NewString(" 种子:").SetFontSize(10)
+                                        ).AddString(
+                                                2,
+                                        -- 种子
+                                                NewString(tostring(value.num_seeds)).SetFontSize(10)
+                                        ).AddString(
+                                                2,
+                                        -- 用户
+                                                NewString(" 下载:").SetFontSize(10)
+                                        ).AddString(
+                                                2,
+                                        -- 下载
+                                                NewString(tostring(value.num_leeches)).SetFontSize(10)
+                                        )
+                                )
+                        )
+                )
+            end
+        end
+
+        page.AddPageSection(
+                NewPageSection(self.arg.name)
+                        .AddMenu(
+                        NewIconButton()
+                                .SetIcon("doc.on.doc")
+                                .SetAction(
+                                NewAction("",{},"复制").SetCopyAction(self.arg.magnet_uri)
+                        ).SetSize(14)
+                ).AddUiRow(
+                        NewUiRow().AddUi(
+                                NewTextUi().SetText(
+                                        NewText("").AddString(
+                                                1,
+                                                NewString(ByteToUiString(torrentDetail.dl_speed).."/S")
+                                                        .SetColor(fontColor)
+                                                        .SetFontSize(fontSize)
+                                        ).AddString(
+                                                2,
+                                                NewString("下载速度")
+                                        )
+                                )
+                        ).AddUi(
+                                NewTextUi().SetText(
+                                        NewText("").AddString(
+                                                1,
+                                                NewString(ByteToUiString(torrentDetail.up_speed).."/S")
+                                                        .SetColor(fontColor)
+                                                        .SetFontSize(fontSize)
+                                        ).AddString(
+                                                2,
+                                                NewString("上传速度")
+                                        )
+                                )
+                        ).AddUi(
+                                NewTextUi().SetText(
+                                        NewText("").AddString(
+                                                1,
+                                                NewString(ByteToUiString(torrentDetail.total_downloaded))
+                                                        .SetColor(fontColor)
+                                                        .SetFontSize(fontSize)
+                                        ).AddString(
+                                                2,
+                                                NewString("已下载")
+                                        )
+                                )
+                        ).AddUi(
+                                NewTextUi().SetText(
+                                        NewText("").AddString(
+                                                1,
+                                                NewString(ByteToUiString(torrentDetail.total_size))
+                                                        .SetColor(fontColor)
+                                                        .SetFontSize(fontSize)
+                                        ).AddString(
+                                                2,
+                                                NewString("总大小")
+                                        )
+                                )
+                        )
+                ).AddUiRow(
+                        NewUiRow().AddUi(
+                                NewProcessLineUi().SetProcessData(
+                                        NewProcessData(torrentDetail.total_downloaded,torrentDetail.total_size)
+                                ).SetTitle(
+                                        NewText("").AddString(
+                                                1,
+                                                NewString(string.format("%.0f小时%.0f分钟",torrentDetail.eta/3600,(torrentDetail.eta%3600)/60))
+                                                        .SetColor(fontColor)
+                                                        .SetFontSize(10)
+                                        )
+                                )
+                        )
+                )
+        ).AddPageSection(
+                contentSection
+        ).AddPageSection(
+                peersSection
+        ).AddPageSection(
+                trackersSection
+        )
+
+        return page.Data()
+    end
+
+
     self.GetUi = GetUi
     self.Choice = Choice
     self.Pause = Pause
@@ -409,4 +741,12 @@ end
 
 function download(ctx)
     return NewQBittorrent(ctx).Download()
+end
+
+function torrentDetail(ctx)
+    return NewQBittorrent(ctx):TorrentDetail()
+end
+
+function peersCountry(ctx)
+    return NewQBittorrent(ctx):PeersCountry()
 end

@@ -1,17 +1,17 @@
 {
-    "notice": "🎉🎉系统插件cpu新增详情二级页，欢迎体验，更多插件的二级页支持正在开发中！",
+    "notice": "🎉🎉系统插件,qBittorrent新增详情二级页，欢迎体验，更多插件的二级页支持正在开发中！",
     "notice_detail_url": "https://plugin.codeloverme.cn/feature/README.md",
     "plugin":[
         {
             "id" : "qbittorrent",
-            "name": "Qbittorrent",
-            "introduce" : "qbittorrent下载工具:\n1.指定链接下载\n2.搜索/下载\n3.暂停/删除",
+            "name": "qBittorrent",
+            "introduce" : "qBittorrent下载工具:\n1.指定链接下载\n2.搜索/下载\n3.暂停/删除",
             "author" : "admin",
             "home_url": "",
             "download_url":"https://plugin.codeloverme.cn/qbittorrent",
-            "min_server_version": "1.0",
-            "min_client_version": "1.0",
-            "version": "1.1",
+            "min_server_version": "1.11",
+            "min_client_version": "1.21",
+            "version": "1.2",
             "is_finished": true,
             "img": ["en","ja"]
         },
