@@ -441,6 +441,8 @@ function NewInput(desc, priority)
             val = "",
             desc = tostring(desc),
             priority = tonumber(priority),
+            input_type = 0,
+            input_list = nil
         }
     }
 
@@ -455,8 +457,18 @@ function NewInput(desc, priority)
         return input.data
     end
 
+    local function AddList(name,val)
+        if input.data.input_list == nil then
+            input.data.input_list = {}
+        end
+        input.data.input_type = 1
+        table.insert(input.data.input_list,{name=name,val=val})
+        return input
+    end
+
     input.Data = Data
     input.SetVal = SetVal
+    input.AddList = AddList
     return input
 end
 

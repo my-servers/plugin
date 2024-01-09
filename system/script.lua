@@ -2,6 +2,8 @@ local json = require("json")
 local lfs = require("lfs")
 local strings = require("strings")
 local global = {
+    fontColor = "#0e0e0e",
+    fontDescColor = "#b8b8b8",
     cpuPoints = {},
     allCpuPoints = {},
     netState = {
@@ -381,7 +383,7 @@ local function NewSystem(ctx)
         for index1, value1 in ipairs(res) do
             local line = NewLineChartUi()
             local text = NewTextUi().SetText(
-                    NewText("").AddString(1,NewString(self.runCtx.cpuInfo[index1].ModelName))
+                    NewText("").AddString(1,NewString(self.runCtx.cpuInfo[index1].ModelName).SetColor(global.fontDescColor))
             )
             for index, value in ipairs(value1) do
                 line.AddPoint(
@@ -421,14 +423,14 @@ local function NewSystem(ctx)
                                         NewText("").AddString(
                                                 1,
                                                 NewString(ByteToUiString(self.runCtx.memInfo.Total))
-                                                        .SetColor("#FF00FF")
+                                                        .SetColor(global.fontColor)
                                                         .SetFontSize(fontSize)
                                         ).AddString(
                                                 2,
                                                 NewString("")
                                         ).AddString(
                                                 3,
-                                                NewString("总内存").SetFontSize(10)
+                                                NewString("总内存").SetFontSize(10).SetColor(global.fontDescColor)
                                         )
                                 )
                         ).AddUi(
@@ -436,14 +438,14 @@ local function NewSystem(ctx)
                                         NewText("").AddString(
                                                 1,
                                                 NewString(ByteToUiString(self.runCtx.memInfo.Available))
-                                                        .SetColor("#FF00FF")
+                                                        .SetColor(global.fontColor)
                                                         .SetFontSize(fontSize)
                                         ).AddString(
                                                 2,
                                                 NewString("")
                                         ).AddString(
                                                 3,
-                                                NewString("空闲内存").SetFontSize(10)
+                                                NewString("空闲内存").SetFontSize(10).SetColor(global.fontDescColor)
                                         )
                                 )
                         )
@@ -453,14 +455,14 @@ local function NewSystem(ctx)
                                         NewText("").AddString(
                                                 1,
                                                 NewString(ByteToUiString(self.runCtx.memInfo.Buffers))
-                                                        .SetColor("#FF00FF")
+                                                        .SetColor(global.fontColor)
                                                         .SetFontSize(fontSize)
                                         ).AddString(
                                                 2,
                                                 NewString("")
                                         ).AddString(
                                                 3,
-                                                NewString("Buffer").SetFontSize(10)
+                                                NewString("Buffer").SetFontSize(10).SetColor(global.fontDescColor)
                                         )
                                 )
                         ).AddUi(
@@ -468,14 +470,14 @@ local function NewSystem(ctx)
                                         NewText("").AddString(
                                                 1,
                                                 NewString(ByteToUiString(self.runCtx.memInfo.Cached))
-                                                        .SetColor("#FF00FF")
+                                                        .SetColor(global.fontColor)
                                                         .SetFontSize(fontSize)
                                         ).AddString(
                                                 2,
                                                 NewString("")
                                         ).AddString(
                                                 3,
-                                                NewString("Cached").SetFontSize(10)
+                                                NewString("Cached").SetFontSize(10).SetColor(global.fontDescColor)
                                         )
                                 )
                         )
@@ -485,14 +487,14 @@ local function NewSystem(ctx)
                                         NewText("").AddString(
                                                 1,
                                                 NewString(ByteToUiString(self.runCtx.memInfo.SwapTotal))
-                                                        .SetColor("#FF00FF")
+                                                        .SetColor(global.fontColor)
                                                         .SetFontSize(fontSize)
                                         ).AddString(
                                                 2,
                                                 NewString("")
                                         ).AddString(
                                                 3,
-                                                NewString("分区总大小").SetFontSize(10)
+                                                NewString("分区总大小").SetFontSize(10).SetColor(global.fontDescColor)
                                         )
                                 )
                         ).AddUi(
@@ -500,14 +502,14 @@ local function NewSystem(ctx)
                                         NewText("").AddString(
                                                 1,
                                                 NewString(ByteToUiString(self.runCtx.memInfo.SwapFree))
-                                                        .SetColor("#FF00FF")
+                                                        .SetColor(global.fontColor)
                                                         .SetFontSize(fontSize)
                                         ).AddString(
                                                 2,
                                                 NewString("")
                                         ).AddString(
                                                 3,
-                                                NewString("空闲分区").SetFontSize(10)
+                                                NewString("空闲分区").SetFontSize(10).SetColor(global.fontDescColor)
                                         )
                                 )
                         )
@@ -517,14 +519,14 @@ local function NewSystem(ctx)
                                         NewText("").AddString(
                                                 1,
                                                 NewString(ByteToUiString(self.runCtx.memInfo.Shared))
-                                                        .SetColor("#FF00FF")
+                                                        .SetColor(global.fontColor)
                                                         .SetFontSize(fontSize)
                                         ).AddString(
                                                 2,
                                                 NewString("")
                                         ).AddString(
                                                 3,
-                                                NewString("共享内存").SetFontSize(10)
+                                                NewString("共享内存").SetFontSize(10).SetColor(global.fontDescColor)
                                         )
                                 )
                         ).AddUi(
@@ -532,14 +534,14 @@ local function NewSystem(ctx)
                                         NewText("").AddString(
                                                 1,
                                                 NewString(ByteToUiString(self.runCtx.memInfo.Slab))
-                                                        .SetColor("#FF00FF")
+                                                        .SetColor(global.fontColor)
                                                         .SetFontSize(fontSize)
                                         ).AddString(
                                                 2,
                                                 NewString("")
                                         ).AddString(
                                                 3,
-                                                NewString("内核数据slab").SetFontSize(10)
+                                                NewString("内核数据slab").SetFontSize(10).SetColor(global.fontDescColor)
                                         )
                                 )
                         )
@@ -549,14 +551,14 @@ local function NewSystem(ctx)
                                         NewText("").AddString(
                                                 1,
                                                 NewString(ByteToUiString(self.runCtx.memInfo.Dirty))
-                                                        .SetColor("#FF00FF")
+                                                        .SetColor(global.fontColor)
                                                         .SetFontSize(fontSize)
                                         ).AddString(
                                                 2,
                                                 NewString("")
                                         ).AddString(
                                                 3,
-                                                NewString("脏页").SetFontSize(10)
+                                                NewString("脏页").SetFontSize(10).SetColor(global.fontDescColor)
                                         )
                                 )
                         ).AddUi(
@@ -564,14 +566,14 @@ local function NewSystem(ctx)
                                         NewText("").AddString(
                                                 1,
                                                 NewString(ByteToUiString(self.runCtx.memInfo.WriteBack))
-                                                        .SetColor("#FF00FF")
+                                                        .SetColor(global.fontColor)
                                                         .SetFontSize(fontSize)
                                         ).AddString(
                                                 2,
                                                 NewString("")
                                         ).AddString(
                                                 3,
-                                                NewString("正在写回磁盘的虚拟内存").SetFontSize(10)
+                                                NewString("正在写回磁盘的虚拟内存").SetFontSize(10).SetColor(global.fontDescColor)
                                         )
                                 )
                         )
@@ -595,12 +597,14 @@ local function NewSystem(ctx)
                                                     .AddString(
                                                     1,
                                                     NewString(ByteToUiString(value.BytesSent))
-                                                            .SetColor("#FF00FF")
+                                                            .SetColor(global.fontColor)
                                                             .SetFontSize(fontSize)
-                                            )
-                                                    .AddString(
+                                            ).AddString(
                                                     2,
-                                                    NewString("发送字节数")
+                                                    NewString("").SetColor(global.fontDescColor)
+                                            ).AddString(
+                                                    3,
+                                                    NewString("发送字节数").SetColor(global.fontDescColor)
                                             )
                                     )
                             ).AddUi(
@@ -609,12 +613,15 @@ local function NewSystem(ctx)
                                                     .AddString(
                                                     1,
                                                     NewString(ByteToUiString(value.BytesRecv))
-                                                            .SetColor("#FF00FF")
+                                                            .SetColor(global.fontColor)
                                                             .SetFontSize(fontSize)
+                                            ).AddString(
+                                                    2,
+                                                    NewString("").SetColor(global.fontDescColor)
                                             )
                                                     .AddString(
-                                                    2,
-                                                    NewString("接收字节数")
+                                                    3,
+                                                    NewString("接收字节数").SetColor(global.fontDescColor)
                                             )
                                     )
                             ).AddUi(
@@ -623,12 +630,15 @@ local function NewSystem(ctx)
                                                     .AddString(
                                                     1,
                                                     NewString(ByteToUiString(value.PacketsSent))
-                                                            .SetColor("#FF00FF")
+                                                            .SetColor(global.fontColor)
                                                             .SetFontSize(fontSize)
+                                            ).AddString(
+                                                    2,
+                                                    NewString("").SetColor(global.fontDescColor)
                                             )
                                                     .AddString(
-                                                    2,
-                                                    NewString("发送数据包")
+                                                    3,
+                                                    NewString("发送数据包").SetColor(global.fontDescColor)
                                             )
                                     )
                             ).AddUi(
@@ -637,12 +647,15 @@ local function NewSystem(ctx)
                                                     .AddString(
                                                     1,
                                                     NewString(ByteToUiString(value.PacketsRecv))
-                                                            .SetColor("#FF00FF")
+                                                            .SetColor(global.fontColor)
                                                             .SetFontSize(fontSize)
+                                            ).AddString(
+                                                    2,
+                                                    NewString("").SetColor(global.fontDescColor)
                                             )
                                                     .AddString(
-                                                    2,
-                                                    NewString("接收数据包")
+                                                    3,
+                                                    NewString("接收数据包").SetColor(global.fontDescColor)
                                             )
                                     )
                             )
@@ -654,12 +667,15 @@ local function NewSystem(ctx)
                                                     .AddString(
                                                     1,
                                                     NewString(ByteToUiString(value.Errout))
-                                                            .SetColor("#FF00FF")
+                                                            .SetColor(global.fontColor)
                                                             .SetFontSize(fontSize)
+                                            ).AddString(
+                                                    2,
+                                                    NewString("").SetColor(global.fontDescColor)
                                             )
                                                     .AddString(
-                                                    2,
-                                                    NewString("发送错误包")
+                                                    3,
+                                                    NewString("发送错误包").SetColor(global.fontDescColor)
                                             )
                                     )
                             ).AddUi(
@@ -668,12 +684,15 @@ local function NewSystem(ctx)
                                                     .AddString(
                                                     1,
                                                     NewString(ByteToUiString(value.Errin))
-                                                            .SetColor("#FF00FF")
+                                                            .SetColor(global.fontColor)
                                                             .SetFontSize(fontSize)
+                                            ).AddString(
+                                                    2,
+                                                    NewString("").SetColor(global.fontDescColor)
                                             )
                                                     .AddString(
-                                                    2,
-                                                    NewString("接收错误包")
+                                                    3,
+                                                    NewString("接收错误包").SetColor(global.fontDescColor)
                                             )
                                     )
                             ).AddUi(
@@ -682,12 +701,15 @@ local function NewSystem(ctx)
                                                     .AddString(
                                                     1,
                                                     NewString(ByteToUiString(value.Dropout))
-                                                            .SetColor("#FF00FF")
+                                                            .SetColor(global.fontColor)
                                                             .SetFontSize(fontSize)
+                                            ).AddString(
+                                                    2,
+                                                    NewString("").SetColor(global.fontDescColor)
                                             )
                                                     .AddString(
-                                                    2,
-                                                    NewString("发送丢弃包")
+                                                    3,
+                                                    NewString("发送丢弃包").SetColor(global.fontDescColor)
                                             )
                                     )
                             ).AddUi(
@@ -696,12 +718,15 @@ local function NewSystem(ctx)
                                                     .AddString(
                                                     1,
                                                     NewString(ByteToUiString(value.Dropin))
-                                                            .SetColor("#FF00FF")
+                                                            .SetColor(global.fontColor)
                                                             .SetFontSize(fontSize)
+                                            ).AddString(
+                                                    2,
+                                                    NewString("").SetColor(global.fontDescColor)
                                             )
                                                     .AddString(
-                                                    2,
-                                                    NewString("接收丢弃包")
+                                                    3,
+                                                    NewString("接收丢弃包").SetColor(global.fontDescColor)
                                             )
                                     )
                             )
@@ -734,7 +759,7 @@ local function NewSystem(ctx)
         local fontSize = 18
         for i=1, #disk do
             local value = disk[i]
-            local fontColor = "#FF00FF"
+            local fontColor = global.fontColor
             if value.UsedPercent > 90 then
                 fontColor = "#F00"
             end
@@ -748,8 +773,11 @@ local function NewSystem(ctx)
                                                         .AddString(
                                                         1,
                                                         NewString(value.Fstype).SetFontSize(fontSize).SetColor(fontColor)
+                                                ).AddString(
+                                                        2,
+                                                        NewString("").SetFontSize(fontSize).SetColor(fontColor)
                                                 )
-                                                        .AddString(2,NewString("类型"))
+                                                        .AddString(3,NewString("类型").SetColor(global.fontDescColor))
                                         )
                                 ).AddUi(
                                         NewTextUi().SetText(
@@ -757,8 +785,11 @@ local function NewSystem(ctx)
                                                         .AddString(
                                                         1,
                                                         NewString(ByteToUiString(value.Total)).SetFontSize(fontSize).SetColor(fontColor)
+                                                ).AddString(
+                                                        2,
+                                                        NewString("").SetFontSize(fontSize).SetColor(fontColor)
                                                 )
-                                                        .AddString(2,NewString("容量"))
+                                                        .AddString(3,NewString("容量").SetColor(global.fontDescColor))
                                         )
                                 ).AddUi(
                                         NewTextUi().SetText(
@@ -766,8 +797,11 @@ local function NewSystem(ctx)
                                                         .AddString(
                                                         1,
                                                         NewString(ByteToUiString(value.Free)).SetFontSize(fontSize).SetColor(fontColor)
+                                                ).AddString(
+                                                        2,
+                                                        NewString("").SetFontSize(fontSize).SetColor(fontColor)
                                                 )
-                                                        .AddString(2,NewString("空闲"))
+                                                        .AddString(3,NewString("空闲").SetColor(global.fontDescColor))
                                         )
                                 ).AddUi(
                                         NewTextUi().SetText(
@@ -775,8 +809,11 @@ local function NewSystem(ctx)
                                                         .AddString(
                                                         1,
                                                         NewString(ByteToUiString(value.Used)).SetFontSize(fontSize).SetColor(fontColor)
+                                                ).AddString(
+                                                        2,
+                                                        NewString("").SetFontSize(fontSize).SetColor(fontColor)
                                                 )
-                                                        .AddString(2,NewString("已使用"))
+                                                        .AddString(3,NewString("已使用").SetColor(global.fontDescColor))
                                         )
                                 )
                         ).AddUiRow(
@@ -791,13 +828,14 @@ local function NewSystem(ctx)
                                         .SetAction(
                                         NewAction("",{},"复制").SetCopyAction(value.Path)
                                 ).SetSize(14)
-                        ).AddMenu(
-                                NewIconButton()
-                                        .SetIcon("terminal")
-                                        .SetAction(
-                                        NewAction("",{},"复制").SetTerminalAction("cd "..value.Path)
-                                ).SetSize(14)
                         )
+                        --.AddMenu(
+                        --        NewIconButton()
+                        --                .SetIcon("terminal")
+                        --                .SetAction(
+                        --                NewAction("",{},"复制").SetTerminalAction("cd "..value.Path)
+                        --        ).SetSize(14)
+                        --)
                 )
             end
 

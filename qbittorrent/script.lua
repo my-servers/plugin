@@ -6,6 +6,9 @@ local httpClient = http.client({
 })
 
 local global = {
+    fontColor = "#6348f2",
+    downloadFontColor = "#4dbf7a",
+    upFontColor = "#ff4f00",
     cookie = "",
     choiceButton = "2",
     urlArg = "?filter=downloading",
@@ -29,10 +32,17 @@ local global = {
         Files = "/api/v2/torrents/files",
         Peers = "/api/v2/sync/torrentPeers",
         Trackers = "/api/v2/torrents/trackers",
+        FilePrio = "/api/v2/torrents/filePrio",
         SearchUrl = "/api/v2/search/start",
         AddUrl = "/api/v2/torrents/add",
         SearchResultUrl = "/api/v2/search/results",
         StopSearchUrl = "/api/v2/search/stop",
+    },
+    priorityMap = {
+        ["0"] = "不下载",
+        ["1"] = "正常",
+        ["6"] = "较高",
+        ["7"] = "最高",
     }
 }
 
@@ -169,25 +179,6 @@ local function NewQBittorrent(ctx)
         return loginRsp
     end
 
-    local function genDetail(d)
-        return string.format([[
-#### %s
-|  项   | 值  |
-|  ----  | ----  |
-| 下载目录  | %s |
-| hash  | %s |
-| 已下载  | %s |
-| 总大小  | %s |
-| 创建时间  | %s |
-| 下载完成时间  | %s |
-| 上次活跃时间  | %s |
-        ]],d.name,d.content_path,d.infohash_v1,
-                ByteToUiString(d.downloaded),ByteToUiString(d.total_size),
-                os.date("%Y/%m/%d %H:%M:%S", d.added_on),
-                os.date("%Y/%m/%d %H:%M:%S", d.completion_on),
-                os.date("%Y/%m/%d %H:%M:%S", d.last_activity))
-    end
-
     local function handleBittorrentList(app)
         -- 周期获取数据
         local config = self.config
@@ -228,7 +219,6 @@ local function NewQBittorrent(ctx)
             end
             line.AddAction(NewAction("delete", { hash = d.hash,clean = "false" }, "删除").SetIcon("trash.circle").SetCheck(true))
             line.AddAction(NewAction("delete", { hash = d.hash,clean = "true" }, "删除并清理文件").SetIcon("trash.circle").SetCheck(true))
-            line.SetDetail(genDetail(d))
                 .SetPage("","torrentDetail",d,"Torrent详情")
             app.AddUi(index, line)
             col = col + 1
@@ -364,6 +354,16 @@ local function NewQBittorrent(ctx)
         return text:gsub("([^%w])", "%%%1")
     end
 
+    function self:ChangePriority()
+        local data = string.format("hash=%s&id=%s&priority=%s", self.arg.hash,self.arg.index,self.input.Priority)
+        local req = http.request("POST",self.config.HostPort .. global.api.FilePrio,data)
+        local addRsp,err = httpClient:do_request(req)
+        if err then
+            error(err)
+        end
+        return NewToast("修改优先级成功:"..global.priorityMap[self.input.Priority],"info.circle","#000")
+    end
+
     function self:PeersCountry()
         local data = string.format("?hash=%s",tostring(self.arg.hash))
         local req = http.request("GET",self.config.HostPort .. global.api.Peers .. data)
@@ -389,7 +389,6 @@ local function NewQBittorrent(ctx)
 
         local page = NewPage()
         local userSection = NewPageSection("用户")
-        local fontColor = "#FF00FF"
         local fontSize = 10
         for index, value in ipairs(afterFilter) do
             userSection.AddUiRow(
@@ -410,7 +409,7 @@ local function NewQBittorrent(ctx)
                             ).SetTitle(
                                     NewText("trailing").AddString(
                                             1,
-                                            NewString(ByteToUiString(value.dl_speed).."/S").SetColor(fontColor).SetFontSize(fontSize)
+                                            NewString(ByteToUiString(value.dl_speed).."/S").SetColor(global.downloadFontColor).SetFontSize(fontSize)
                                     )
                             ).AddAction(
                                     NewAction("",{},"复制ip").SetCopyAction(value.ip..":"..tostring(value.port))
@@ -478,10 +477,7 @@ local function NewQBittorrent(ctx)
             end
         })
 
-
-        local fontColor = "#FF00FF"
         local fontSize = 16
-
         local contentSection = NewPageSection("内容")
         for index, value in ipairs(files) do
             contentSection.AddUiRow(
@@ -494,17 +490,32 @@ local function NewQBittorrent(ctx)
                                     ).AddString(
                                             2,
                                             NewString(ByteToUiString(value.size))
-                                                    .SetColor(fontColor)
+                                                    .SetColor(global.fontColor)
                                                     .SetFontSize(10)
-                                    )
-                                                      .AddString(
+                                    ).AddString(
                                             2,
-                                            NewString(string.format("%.2f%%",value.progress))
-                                                    .SetColor(fontColor)
+                                            NewString(string.format("%.2f%%",value.progress*100))
+                                                    .SetColor(global.fontColor)
+                                                    .SetFontSize(10)
+                                    ).AddString(
+                                            2,
+                                            NewString(global.priorityMap[tostring(value.priority)])
+                                            -- .SetColor(global.fontColor)
                                                     .SetFontSize(10)
                                     )
                             ).SetProcessData(
                                     NewProcessData(value.progress*100,100)
+                            )
+                                              .AddAction(
+                                    NewAction("changePriority",{hash=self.arg.hash,index=value.index},"修改下载优先级")
+                                            .AddInput(
+                                            "Priority",
+                                            NewInput("优先级","1")
+                                                    .AddList("不下载", "0")
+                                                    .AddList("正常", "1")
+                                                    .AddList("较高", "6")
+                                                    .AddList("最高", "7")
+                                    )
                             )
                     )
             )
@@ -533,8 +544,6 @@ local function NewQBittorrent(ctx)
             return a.dl_speed > b.dl_speed
         end)
         data = afterFilter
-
-
         local peersSection = NewPageSection("用户")
         local row = NewUiRow()
         local index = 1
@@ -546,7 +555,7 @@ local function NewQBittorrent(ctx)
                                     1,
                                     NewString(ByteToUiString(value.dl_speed).."/S")
                                             .SetFontSize(fontSize)
-                                            .SetColor(fontColor)
+                                            .SetColor(global.downloadFontColor)
                             ).AddString(
                                     2,
                                     NewString(key)
@@ -598,6 +607,9 @@ local function NewQBittorrent(ctx)
                                                 NewString(tostring(value.num_leeches)).SetFontSize(10)
                                         )
                                 )
+                                                  .AddAction(
+                                        NewAction("",{},"复制url").SetCopyAction(value.url)
+                                )
                         )
                 )
             end
@@ -617,7 +629,7 @@ local function NewQBittorrent(ctx)
                                         NewText("").AddString(
                                                 1,
                                                 NewString(ByteToUiString(torrentDetail.dl_speed).."/S")
-                                                        .SetColor(fontColor)
+                                                        .SetColor(global.downloadFontColor)
                                                         .SetFontSize(fontSize)
                                         ).AddString(
                                                 2,
@@ -629,7 +641,7 @@ local function NewQBittorrent(ctx)
                                         NewText("").AddString(
                                                 1,
                                                 NewString(ByteToUiString(torrentDetail.up_speed).."/S")
-                                                        .SetColor(fontColor)
+                                                        .SetColor(global.upFontColor)
                                                         .SetFontSize(fontSize)
                                         ).AddString(
                                                 2,
@@ -641,7 +653,7 @@ local function NewQBittorrent(ctx)
                                         NewText("").AddString(
                                                 1,
                                                 NewString(ByteToUiString(torrentDetail.total_downloaded))
-                                                        .SetColor(fontColor)
+                                                        .SetColor(global.fontColor)
                                                         .SetFontSize(fontSize)
                                         ).AddString(
                                                 2,
@@ -653,7 +665,7 @@ local function NewQBittorrent(ctx)
                                         NewText("").AddString(
                                                 1,
                                                 NewString(ByteToUiString(torrentDetail.total_size))
-                                                        .SetColor(fontColor)
+                                                        .SetColor(global.fontColor)
                                                         .SetFontSize(fontSize)
                                         ).AddString(
                                                 2,
@@ -669,7 +681,7 @@ local function NewQBittorrent(ctx)
                                         NewText("").AddString(
                                                 1,
                                                 NewString(string.format("%.0f小时%.0f分钟",torrentDetail.eta/3600,(torrentDetail.eta%3600)/60))
-                                                        .SetColor(fontColor)
+                                                        .SetColor(global.fontColor)
                                                         .SetFontSize(10)
                                         )
                                 )
@@ -749,4 +761,8 @@ end
 
 function peersCountry(ctx)
     return NewQBittorrent(ctx):PeersCountry()
+end
+
+function changePriority(ctx)
+    return NewQBittorrent(ctx):ChangePriority()
 end
