@@ -30,6 +30,15 @@
 
 #### 2.检查docker是否已经运行
 - 目前MyServers的服务端是基于docker运行的，需要先手动安装docker
+- 如果出现下面的报错，说明ssh登陆的用户没有操作docker的权限，[需要把当前用户加到docker组](https://stackoverflow.com/questions/47854463/docker-got-permission-denied-while-trying-to-connect-to-the-docker-daemon-socke)
+```shell
+Got permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock
+```
+
+- 添加当前用户到docker组
+```shell
+sudo usermod -a -G docker $USER
+```
 
 ```shell
 # 查看docker命令
