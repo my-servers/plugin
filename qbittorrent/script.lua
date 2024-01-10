@@ -11,7 +11,12 @@ local global = {
     upFontColor = "#ff4f00",
     cookie = "",
     choiceButton = "2",
-    urlArg = "?filter=downloading",
+    urlArg = "downloading",
+    downloadStatue = {
+        ["downloading"] = "下载中",
+        ["all"] = "全部",
+        ["completed"] = "已完成",
+    },
     blue = "#F00",
     black = "#000",
     stateMsg = {
@@ -43,6 +48,12 @@ local global = {
         ["1"] = "正常",
         ["6"] = "较高",
         ["7"] = "最高",
+    },
+    listPageArg = {
+        offset = 0,
+        type = "downloading",
+        limit = 8,
+        firstHash = "",-- 由于qb没有返回分页结束符
     }
 }
 
@@ -170,61 +181,82 @@ local function NewQBittorrent(ctx)
         end
     end
 
-    local function getBittorrentList()
-        req = http.request("GET",self.config.HostPort .. global.api.Url .. global.urlArg)
-        loginRsp,err = httpClient:do_request(req)
+    local function getBittorrentList(type,offset,limit)
+        local url = string.format("%s%s?filter=%s&limit=%d&offset=%d",self.config.HostPort,global.api.Url,type,limit,offset)
+        local req = http.request("GET",url)
+        local loginRsp,err = httpClient:do_request(req)
         if err then
             error(err)
         end
         return loginRsp
     end
 
+    local function getBtOneItem(d)
+        local state = NewString(string.format("↓%s/S ↑%s/S", ByteToUiString(d.dlspeed), ByteToUiString(d.upspeed)))
+                .SetFontSize(8)
+        if global.stateMsg[d.state] ~= nil then
+            state.SetContent(global.stateMsg[d.state])
+        end
+        line = NewProcessLineUi()
+                .SetDesc(NewText("leading")
+                .AddString(1, NewString(string.sub(d.name, 0, tonumber(config.NameLen)))
+                .SetFontSize(10))
+                .AddString(2, NewString(string.format("%s", ByteToUiString(d.total_size)))
+                .SetFontSize(8)
+                .SetBackendColor("#663366")
+                .SetColor("#FFF")
+        )
+                .AddString(2, state.SetBackendColor("#333366")
+                                   .SetColor("#FFF")))
+                .SetTitle(NewText("")
+                .AddString(1, NewString(string.format("%.2f%%", d.completed * 100 / d.total_size))
+                .SetFontSize(8)))
+                .SetProcessData(NewProcessData(d.completed, d.total_size))
+        if d.state == "pausedDL" or d.state == "pausedUP" then
+            line.AddAction(NewAction("resume", { hash = d.hash }, "继续").SetIcon("play.circle"))
+        else
+            line.AddAction(NewAction("pause", { hash = d.hash }, "暂停").SetIcon("pause.circle"))
+        end
+        line.AddAction(NewAction("delete", { hash = d.hash,clean = "false" }, "删除").SetIcon("trash.circle").SetCheck(true))
+        line.AddAction(NewAction("delete", { hash = d.hash,clean = "true" }, "删除并清理文件").SetIcon("trash.circle").SetCheck(true))
+            .SetPage("qbittorrent","torrentDetail",d,"Torrent详情")
+        return line
+    end
+
     local function handleBittorrentList(app)
         -- 周期获取数据
         local config = self.config
-        local data = getBittorrentList()
+        local data = getBittorrentList(global.urlArg,0,10)
         if data.code == 403 then
             updateCookie(config)
-            data = getBittorrentList()
+            data = getBittorrentList(global.urlArg,0,10)
         end
         local list = json.decode(data.body)
         local index = 2
         local col = 0
+        local hasMore = false
         for i = 1, #list do
-            local d = list[i]
-            local state = NewString(string.format("↓%s/S ↑%s/S", ByteToUiString(d.dlspeed), ByteToUiString(d.upspeed)))
-                    .SetFontSize(8)
-            if global.stateMsg[d.state] ~= nil then
-                state.SetContent(global.stateMsg[d.state])
+            if i >= 6 then
+                hasMore = true
+                break
             end
-            line = NewProcessLineUi()
-                    .SetDesc(NewText("leading")
-                    .AddString(1, NewString(string.sub(d.name, 0, tonumber(config.NameLen)))
-                    .SetFontSize(10))
-                    .AddString(2, NewString(string.format("%s", ByteToUiString(d.total_size)))
-                    .SetFontSize(8)
-                    .SetBackendColor("#663366")
-                    .SetColor("#FFF")
-            )
-                    .AddString(2, state.SetBackendColor("#333366")
-                                       .SetColor("#FFF")))
-                    .SetTitle(NewText("")
-                    .AddString(1, NewString(string.format("%.2f%%", d.completed * 100 / d.total_size))
-                    .SetFontSize(8)))
-                    .SetProcessData(NewProcessData(d.completed, d.total_size))
-            if d.state == "pausedDL" or d.state == "pausedUP" then
-                line.AddAction(NewAction("resume", { hash = d.hash }, "继续").SetIcon("play.circle"))
-            else
-                line.AddAction(NewAction("pause", { hash = d.hash }, "暂停").SetIcon("pause.circle"))
-            end
-            line.AddAction(NewAction("delete", { hash = d.hash,clean = "false" }, "删除").SetIcon("trash.circle").SetCheck(true))
-            line.AddAction(NewAction("delete", { hash = d.hash,clean = "true" }, "删除并清理文件").SetIcon("trash.circle").SetCheck(true))
-                .SetPage("","torrentDetail",d,"Torrent详情")
-            app.AddUi(index, line)
+            app.AddUi(index, getBtOneItem(list[i]))
             col = col + 1
             if col % tonumber(config.ColNum) == 0 then
                 index = index + 1
             end
+        end
+        if hasMore then
+            global.listPageArg.offset = 0
+            app.AddUi(
+                    index,
+                    NewTextUi().SetText(
+                            NewText("").AddString(
+                                    1,
+                                    NewString("更多").SetColor(global.fontColor).SetFontSize(10)
+                            )
+                    ).SetPage("qbittorrent","moreList",{},global.downloadStatue[global.urlArg])
+            )
         end
     end
 
@@ -244,14 +276,17 @@ local function NewQBittorrent(ctx)
         local arg = self.arg
         global.choiceButton = tostring(arg.id)
         if global.choiceButton == "1" then
-            global.urlArg = "?filter=all"
+            global.urlArg = "all"
         end
         if global.choiceButton == "2" then
-            global.urlArg = "?filter=downloading"
+            global.urlArg = "downloading"
         end
         if global.choiceButton == "3" then
-            global.urlArg = "?filter=completed"
+            global.urlArg = "completed"
         end
+        global.listPageArg.type = global.urlArg
+        global.listPageArg.offset = 0
+        global.listPageArg.firstHash = ""
         return {}
     end
 
@@ -699,6 +734,72 @@ local function NewQBittorrent(ctx)
     end
 
 
+    function self:Next()
+        global.listPageArg.offset =  global.listPageArg.offset+global.listPageArg.limit
+    end
+
+    function self:Pre()
+        global.listPageArg.offset = global.listPageArg.offset-global.listPageArg.limit
+        if global.listPageArg.offset < 0 then
+            global.listPageArg.offset = 0
+        end
+    end
+
+    function self:MoreList()
+        local page = NewPage()
+
+        local data = getBittorrentList(global.listPageArg.type,global.listPageArg.offset,global.listPageArg.limit)
+        if data.code == 403 then
+            updateCookie()
+            data = getBittorrentList(global.listPageArg.type,global.listPageArg.offset,global.listPageArg.limit)
+        end
+        local listSection = NewPageSection("列表")
+        local list = json.decode(data.body)
+        local hasNext = true
+        local isEmpty = true
+        for index, value in ipairs(list) do
+            if  global.listPageArg.offset == 0 and index == 1 then
+                global.listPageArg.firstHash = value.hash
+            end
+            if global.listPageArg.offset ~= 0 and value.hash == global.listPageArg.firstHash then
+                hasNext = false
+                break
+            end
+            isEmpty = false
+            listSection.AddUiRow(
+                    NewUiRow().AddUi(
+                            getBtOneItem(value)
+                    )
+            )
+        end
+
+        if #list < global.listPageArg.limit then
+            hasNext = false
+        end
+
+
+        if hasNext then
+            listSection.SetNext(
+                    NewAction("next",{},"下一页")
+            )
+        end
+        if global.listPageArg.offset > 0 then
+            listSection.SetPre(
+                    NewAction("pre",{},"上一页")
+            )
+        end
+        if isEmpty then
+            self:Pre()
+        end
+        listSection.SetPageInfo(tostring(global.listPageArg.offset))
+
+        page.AddPageSection(
+                listSection
+        )
+        return page.Data()
+    end
+
+
     self.GetUi = GetUi
     self.Choice = Choice
     self.Pause = Pause
@@ -765,4 +866,16 @@ end
 
 function changePriority(ctx)
     return NewQBittorrent(ctx):ChangePriority()
+end
+
+function moreList(ctx)
+    return NewQBittorrent(ctx):MoreList()
+end
+
+function next(ctx)
+    return NewQBittorrent(ctx):Next()
+end
+
+function pre(ctx)
+    return NewQBittorrent(ctx):Pre()
 end
