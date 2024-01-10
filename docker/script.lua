@@ -8,7 +8,6 @@ local httpClient = http.client({
 local backendHttpClient = http.client({
     timeout = 300, -- 超时300s
     headers = {["Content-Type"]="application/x-www-form-urlencoded"},
-    --headers = {["Content-Type"]="application/json"},
 })
 
 local global = {
@@ -23,6 +22,24 @@ local global = {
         imageList = "/images/json?all=true",
         searchImage = "/images/search?term=%s",
         pullImage = "/images/create",
+        systemInfo = "/info",
+    },
+    them = {
+        systemInfoNumFrontSize = 24,
+        allContainersColor = "#000",
+        allRunningContainersColor = "#6348f2",
+        allPausedContainersColor = "#4dbf7a",
+        allStoppedontainersColor = "#ff4f00",
+        systemInfoDescFontColor = "#b8b8b8",
+    },
+    containersPage = {
+        curType = "running",
+        stateMap = {
+            ["running"] = "运行中",
+            ["paused"] = "暂停",
+            ["exited"] = "停止",
+            ["all"] = "全部",
+        },
     },
     containerState = {},
     updateStateTs = 0,
@@ -277,6 +294,88 @@ function NewDocker(ctx)
         end
     end
 
+
+    function self:GetUi11()
+        local app = NewApp()
+        req = http.request("GET",self.config.HostPort..global.api.systemInfo)
+        local stateRsp,err = httpClient:do_request(req)
+        if err then
+            error(err)
+        end
+        local data = json.decode(stateRsp.body)
+        app
+                .AddUi(
+                1,
+                NewTextUi().SetText(
+                        NewText("")
+                                .AddString(
+                                1,
+                                NewString(tostring(data.Containers))
+                                        .SetFontSize(global.them.systemInfoNumFrontSize)
+                                        .SetColor(global.them.allContainersColor)
+                        )
+                                .AddString(
+                                1,
+                                NewString("/")
+                                        .SetFontSize(global.them.systemInfoNumFrontSize)
+                                        .SetColor(global.them.systemInfoDescFontColor)
+                        )
+                                .AddString(
+                                1,
+                                NewString(tostring(data.ContainersRunning))
+                                        .SetFontSize(global.them.systemInfoNumFrontSize)
+                                        .SetColor(global.them.allRunningContainersColor)
+                        )
+                                .AddString(
+                                1,
+                                NewString("/")
+                                        .SetFontSize(global.them.systemInfoNumFrontSize)
+                                        .SetColor(global.them.systemInfoDescFontColor)
+                        )
+                                .AddString(
+                                1,
+                                NewString(tostring(data.ContainersPaused))
+                                        .SetFontSize(global.them.systemInfoNumFrontSize)
+                                        .SetColor(global.them.allPausedContainersColor)
+                        )
+                                .AddString(
+                                1,
+                                NewString("/")
+                                        .SetFontSize(global.them.systemInfoNumFrontSize)
+                                        .SetColor(global.them.systemInfoDescFontColor)
+                        )
+                                .AddString(
+                                1,
+                                NewString(tostring(data.ContainersStopped))
+                                        .SetFontSize(global.them.systemInfoNumFrontSize)
+                                        .SetColor(global.them.allStoppedontainersColor)
+                        )
+                                .AddString(
+                                2,
+                                NewString("\n容器")
+                                        .SetColor(global.them.systemInfoDescFontColor)
+                        )
+                ).SetPage("docker","containers",{},"容器列表")
+        )
+                .AddUi(
+                1,
+                NewTextUi().SetText(
+                        NewText("")
+                                .AddString(
+                                1,
+                                NewString(tostring(data.Images))
+                                        .SetFontSize(global.them.systemInfoNumFrontSize)
+                        )
+                                .AddString(
+                                2,
+                                NewString("\n镜像")
+                                        .SetColor(global.them.systemInfoDescFontColor)
+                        )
+                )
+        )
+
+        return app.Data()
+    end
     function self:GetUi()
         local app = NewApp()
         local buttonSize = 17
@@ -369,6 +468,113 @@ function NewDocker(ctx)
         return NewToast("拉取镜像","info.circle","#000")
     end
 
+    function self:ChangeCurChoiceState()
+        print("changeCurChoiceState")
+        global.containersPage.curType = self.arg.state
+    end
+    function self:Containers()
+        local state = {}
+        goAndWait({
+            state = function ()
+                req = http.request("GET",self.config.HostPort..global.api.systemInfo)
+                local stateRsp,err = httpClient:do_request(req)
+                if err then
+                    error(err)
+                end
+                state = json.decode(stateRsp.body)
+            end
+        })
+        local page = NewPage()
+        -- 容器状态
+        page.AddPageSection(
+                NewPageSection("容器状态").AddUiRow(
+                        NewUiRow()
+                                .AddUi(
+                                NewIconButtonUi().SetIconButton(
+                                        NewIconButton().SetDesc(
+                                                NewText("")
+                                                        .AddString(
+                                                        1,
+                                                        NewString(tostring(state.Containers)).SetFontSize(global.them.systemInfoNumFrontSize)
+                                                )
+                                                        .AddString(
+                                                        2,
+                                                        NewString("\n全部").SetColor(global.them.systemInfoDescFontColor)
+                                                )
+                                        ).SetAction(
+                                                NewAction("changeCurChoiceState",{state="all"},"切换状态")
+                                        )
+                                )
+                        )
+                                .AddUi(
+                                NewIconButtonUi().SetIconButton(
+                                        NewIconButton().SetDesc(
+                                                NewText("")
+                                                        .AddString(
+                                                        1,
+                                                        NewString(tostring(state.ContainersRunning))
+                                                                .SetFontSize(global.them.systemInfoNumFrontSize)
+                                                                .SetColor(global.them.allRunningContainersColor)
+                                                )
+                                                        .AddString(
+                                                        2,
+                                                        NewString("\n运行中")
+                                                                .SetColor(global.them.systemInfoDescFontColor)
+
+                                                )
+                                        ).SetAction(
+                                                NewAction("changeCurChoiceState",{state="running"},"切换状态")
+                                        )
+                                )
+                        )
+                                .AddUi(
+                                NewIconButtonUi().SetIconButton(
+                                        NewIconButton()
+                                                .SetDesc(
+                                                NewText("")
+                                                        .AddString(
+                                                        1,
+                                                        NewString(tostring(state.ContainersPaused))
+                                                                .SetFontSize(global.them.systemInfoNumFrontSize)
+                                                                .SetColor(global.them.allPausedContainersColor)
+                                                )
+                                                        .AddString(
+                                                        2,
+                                                        NewString("\n暂停").SetColor(global.them.systemInfoDescFontColor)
+                                                )
+                                        ).SetAction(
+                                                NewAction("changeCurChoiceState",{state="paused"},"切换状态")
+                                        )
+                                )
+                        )
+                                .AddUi(
+                                NewIconButtonUi().SetIconButton(
+                                        NewIconButton()
+                                                .SetDesc(
+                                                NewText("")
+                                                        .AddString(
+                                                        1,
+                                                        NewString(tostring(state.ContainersStopped))
+                                                                .SetFontSize(global.them.systemInfoNumFrontSize)
+                                                                .SetColor(global.them.allStoppedontainersColor)
+                                                )
+                                                        .AddString(
+                                                        2,
+                                                        NewString("\n停止").SetColor(global.them.systemInfoDescFontColor)
+                                                )
+                                        ).SetAction(
+                                                NewAction("changeCurChoiceState",{state="exited"},"切换状态")
+                                        )
+                                )
+                        )
+                )
+        )
+
+        page.AddPageSection(
+                NewPageSection(global.containersPage.stateMap[global.containersPage.curType])
+        )
+        return page.Data()
+    end
     return self
 end
 
@@ -418,4 +624,12 @@ end
 
 function pull(ctx)
     return NewDocker(ctx):Pull()
+end
+
+function containers(ctx)
+    return NewDocker(ctx):Containers()
+end
+
+function changeCurChoiceState(ctx)
+    return NewDocker(ctx):ChangeCurChoiceState()
 end
