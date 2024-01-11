@@ -23,6 +23,8 @@ local global = {
         searchImage = "/images/search?term=%s",
         pullImage = "/images/create",
         systemInfo = "/info",
+        containersListFilter = "/containers/json?filters=%s",
+        containersInspect = "/containers/%s/json",
     },
     them = {
         systemInfoNumFrontSize = 24,
@@ -31,6 +33,25 @@ local global = {
         allPausedContainersColor = "#4dbf7a",
         allStoppedontainersColor = "#ff4f00",
         systemInfoDescFontColor = "#b8b8b8",
+        containerListFontColor = "#000",
+        containerImageFontColor = "#b8b8b8",
+    },
+    -- 容器的cpu
+    containerCpu = {
+        curContainer = "",
+        -- 每个cpu窗口
+        perWindown = {},
+        -- 总的cpu的窗口
+        totalWindown = {},
+        oldData = {
+            cpu_usage = {
+                cpu_usage = {
+                    total_usage = 0,
+                }
+            },
+            system_cpu_usage = 0,
+        },
+        preTs = 0,
     },
     containersPage = {
         curType = "running",
@@ -295,7 +316,7 @@ function NewDocker(ctx)
     end
 
 
-    function self:GetUi11()
+    function self:GetUi()
         local app = NewApp()
         req = http.request("GET",self.config.HostPort..global.api.systemInfo)
         local stateRsp,err = httpClient:do_request(req)
@@ -376,7 +397,7 @@ function NewDocker(ctx)
 
         return app.Data()
     end
-    function self:GetUi()
+    function self:GetUi1()
         local app = NewApp()
         local buttonSize = 17
         imageMenu = NewIconButton().SetIcon("shippingbox.circle")
@@ -468,110 +489,348 @@ function NewDocker(ctx)
         return NewToast("拉取镜像","info.circle","#000")
     end
 
-    function self:ChangeCurChoiceState()
-        print("changeCurChoiceState")
-        global.containersPage.curType = self.arg.state
-    end
-    function self:Containers()
-        local state = {}
+    function self:ContainerDetail()
+        local page = NewPage()
+        local state  = {}
+        local inspect = {}
         goAndWait({
-            state = function ()
-                req = http.request("GET",self.config.HostPort..global.api.systemInfo)
+            stateKey = function ()
+                local url = string.format(self.config.HostPort..global.api.containersStatsFormat,self.arg.Id)
+                local req = http.request("GET",url)
                 local stateRsp,err = httpClient:do_request(req)
                 if err then
                     error(err)
                 end
                 state = json.decode(stateRsp.body)
+            end,
+            inspectKey = function ()
+                local url = string.format(self.config.HostPort..global.api.containersInspect,self.arg.Id)
+                local req = http.request("GET",url)
+                local stateRsp,err = httpClient:do_request(req)
+                if err then
+                    error(err)
+                end
+                inspect = json.decode(stateRsp.body)
+            end
+        })
+        if inspect.State.Running == false then
+            page.AddPageSection(NewPageSection("容器未运行"))
+            return page.Data()
+        end
+        if global.containerCpu.curContainer ~= self.arg.Id then
+            global.containerCpu.totalWindown = {}
+            global.containerCpu.curContainer = self.arg.Id
+        end
+
+        local container_cpu_delta = Tonumber(global.containerCpu.oldData.cpu_usage.total_usage) - Tonumber(state.cpu_stats.cpu_usage.total_usage)
+        local system_cpu_delta = (Tonumber(global.containerCpu.oldData.system_cpu_usage) - Tonumber(state.cpu_stats.system_cpu_usage))
+        local cpu_usage_percent = (container_cpu_delta / system_cpu_delta) * 100 * Tonumber(state.cpu_stats.online_cpus)
+        if cpu_usage_percent < 0 then
+            cpu_usage_percent = 0
+        end
+        if cpu_usage_percent > 100 then
+            cpu_usage_percent = 100
+        end
+        global.containerCpu.oldData = state.cpu_stats
+        table.insert(global.containerCpu.totalWindown, cpu_usage_percent)
+
+
+        print("totalWindown ", json.encode(global.containerCpu.totalWindown))
+        local section = NewPageSection(string.sub(self.arg.Command,0 ,30).."...")
+        local line = NewLineChartUi()
+        for index, value in ipairs(global.containerCpu.totalWindown) do
+            line.AddPoint(
+                    NewPoint(value,tostring(index))
+            )
+        end
+        local memUse = Tonumber(state.memory_stats.usage)/Tonumber(state.memory_stats.limit)*100
+
+        section.AddUiRow(
+                NewUiRow().AddUi(
+                        NewProcessCircleUi().SetProcessData(
+                                NewProcessData(cpu_usage_percent, 100)
+                        )
+                                            .SetDesc(
+                                NewText("")
+                                        .AddString(
+                                        1, NewString(string.format("%d核",state.cpu_stats.online_cpus)).SetFontSize(10)
+                                )
+                                        .AddString(
+                                        2, NewString(string.format("%d%%",cpu_usage_percent)).SetFontSize(10)
+                                )
+                        )
+                                            .SetTitle(
+                                NewText("").AddString(1,NewString("cpu"))
+                        )
+                ).AddUi(
+                        NewProcessCircleUi().SetProcessData(
+                                NewProcessData(memUse, 100)
+                        )
+                                            .SetDesc(
+                                NewText("").AddString(
+                                        2, NewString(string.format("%d%%",memUse)).SetFontSize(10)
+                                ).AddString(
+                                        1, NewString(ByteToUiString(state.memory_stats.limit)).SetFontSize(10)
+                                )
+                        )
+                                            .SetTitle(
+                                NewText("").AddString(1,NewString("内存"))
+                        )
+                )
+        ).AddMenu(
+                NewIconButton().SetIcon("doc.on.doc").SetAction(
+                        NewAction("",{},"").SetCopyAction(self.arg.Command)
+                ).SetSize(14)
+        )
+        -- .AddUiRow(
+        --     NewUiRow()
+        -- )
+        table.sort(inspect.Mounts,function (a, b)
+            return a.Source < b.Source
+        end)
+        local disk = NewPageSection("磁盘挂载")
+        for index, value in ipairs(inspect.Mounts) do
+            disk.AddUiRow(
+                    NewUiRow().AddUi(
+                            NewProcessLineUi().SetDesc(
+                                    NewText("leading").AddString(
+                                            1,
+                                            NewString(value.Source)
+                                    ).AddString(
+                                            3,
+                                            NewString(value.Destination).SetColor(global.them.systemInfoDescFontColor)
+                                    )
+                            ).SetTitle(
+                                    NewText("trailing")
+                                            .AddString(1, NewString(value.Mode))
+                            )
+                                              .AddAction(
+                                    NewAction("",{},"复制源目录").SetCopyAction(value.Source)
+                            ).AddAction(
+                                    NewAction("",{},"复制目标目录").SetCopyAction(value.Destination)
+                            ).AddAction(
+                                    NewAction("",{},"终端打开源目录").SetTerminalAction("cd "..value.Source.."\n")
+                            ).AddAction(
+                                    NewAction("",{},"容器中打开目标录").SetTerminalAction("docker exec -it "..self.arg.Id.." sh \n cd "..value.Destination.."\n")
+                            )
+                    )
+            )
+        end
+
+        local network = NewPageSection("网络 "..inspect.HostConfig.NetworkMode)
+        for key, value in pairs(inspect.HostConfig.PortBindings) do
+            network.AddUiRow(
+                    NewUiRow().AddUi(
+                            NewTextUi().SetText(
+                                    NewText("").AddString(
+                                            1,
+                                            NewString(key)
+                                    )
+                            )
+                    )
+            )
+        end
+
+        section.AddUiRow(
+                NewUiRow()
+                        .AddUi(
+                        line
+                )
+        )
+        page.AddPageSection(
+                section
+        ).AddPageSection(
+                disk
+        ).AddPageSection(
+                network
+        )
+        return page.Data()
+    end
+    function self:ChangeCurChoiceState()
+        print("changeCurChoiceState")
+        global.containersPage.curType = self.arg.state
+    end
+
+    function self:Containers()
+        local state = {}
+        local list = {}
+        goAndWait({
+            stateKey = function ()
+                local req = http.request("GET",self.config.HostPort..global.api.systemInfo)
+                local stateRsp,err = httpClient:do_request(req)
+                if err then
+                    error(err)
+                end
+                state = json.decode(stateRsp.body)
+            end,
+            listKey = function ()
+                local url = self.config.HostPort..global.api.containersList
+                if global.containersPage.curType ~= "all" then
+                    url = string.format(self.config.HostPort..global.api.containersListFilter,json.encode({status={global.containersPage.curType}}))
+                end
+                local req = http.request("GET", url)
+                local stateRsp,err = httpClient:do_request(req)
+                if err then
+                    error(err)
+                end
+                list = json.decode(stateRsp.body)
             end
         })
         local page = NewPage()
+        local allDesc = NewString("全部").SetColor(global.them.systemInfoDescFontColor)
+        if global.containersPage.curType == "all" then
+            -- allDesc.SetBackendColor(global.them.allContainersColor)
+        end
+        local all = NewIconButtonUi().SetIconButton(
+                NewIconButton().SetDesc(
+                        NewText("")
+                                .AddString(
+                                1,
+                                NewString(tostring(state.Containers)).SetFontSize(global.them.systemInfoNumFrontSize)
+                        )
+                                .AddString(
+                                2,
+                                allDesc
+                        )
+                ).SetAction(
+                        NewAction("changeCurChoiceState",{state="all"},"切换状态")
+                )
+        )
+        local runningDesc = NewString("运行中").SetColor(global.them.systemInfoDescFontColor)
+        if global.containersPage.curType == "running" then
+            -- runningDesc.SetBackendColor(global.them.allRunningContainersColor)
+        end
+        local running = NewIconButtonUi().SetIconButton(
+                NewIconButton().SetDesc(
+                        NewText("")
+                                .AddString(
+                                1,
+                                NewString(tostring(state.ContainersRunning))
+                                        .SetFontSize(global.them.systemInfoNumFrontSize)
+                                        .SetColor(global.them.allRunningContainersColor)
+                        )
+                                .AddString(
+                                2,
+                                runningDesc
+                        )
+                ).SetAction(
+                        NewAction("changeCurChoiceState",{state="running"},"切换状态")
+                )
+        )
+        local pausedDesc = NewString("暂停").SetColor(global.them.systemInfoDescFontColor)
+        if global.containersPage.curType == "paused" then
+            -- pausedDesc.SetBackendColor(global.them.allPausedContainersColor)
+        end
+        local paused = NewIconButtonUi().SetIconButton(
+                NewIconButton()
+                        .SetDesc(
+                        NewText("")
+                                .AddString(
+                                1,
+                                NewString(tostring(state.ContainersPaused))
+                                        .SetFontSize(global.them.systemInfoNumFrontSize)
+                                        .SetColor(global.them.allPausedContainersColor)
+                        )
+                                .AddString(
+                                2,
+                                pausedDesc
+                        )
+                ).SetAction(
+                        NewAction("changeCurChoiceState",{state="paused"},"切换状态")
+                )
+        )
+        local stopedDesc = NewString("停止").SetColor(global.them.systemInfoDescFontColor)
+        if global.containersPage.curType == "exited" then
+            -- stopedDesc.SetBackendColor(global.them.allStoppedontainersColor)
+        end
+        local stoped = NewIconButtonUi().SetIconButton(
+                NewIconButton()
+                        .SetDesc(
+                        NewText("")
+                                .AddString(
+                                1,
+                                NewString(tostring(state.ContainersStopped))
+                                        .SetFontSize(global.them.systemInfoNumFrontSize)
+                                        .SetColor(global.them.allStoppedontainersColor)
+                        )
+                                .AddString(
+                                2,
+                                stopedDesc
+                        )
+                ).SetAction(
+                        NewAction("changeCurChoiceState",{state="exited"},"切换状态")
+                )
+        )
         -- 容器状态
         page.AddPageSection(
                 NewPageSection("容器状态").AddUiRow(
                         NewUiRow()
                                 .AddUi(
-                                NewIconButtonUi().SetIconButton(
-                                        NewIconButton().SetDesc(
-                                                NewText("")
-                                                        .AddString(
-                                                        1,
-                                                        NewString(tostring(state.Containers)).SetFontSize(global.them.systemInfoNumFrontSize)
-                                                )
-                                                        .AddString(
-                                                        2,
-                                                        NewString("\n全部").SetColor(global.them.systemInfoDescFontColor)
-                                                )
-                                        ).SetAction(
-                                                NewAction("changeCurChoiceState",{state="all"},"切换状态")
-                                        )
-                                )
+                                all
                         )
                                 .AddUi(
-                                NewIconButtonUi().SetIconButton(
-                                        NewIconButton().SetDesc(
-                                                NewText("")
-                                                        .AddString(
-                                                        1,
-                                                        NewString(tostring(state.ContainersRunning))
-                                                                .SetFontSize(global.them.systemInfoNumFrontSize)
-                                                                .SetColor(global.them.allRunningContainersColor)
-                                                )
-                                                        .AddString(
-                                                        2,
-                                                        NewString("\n运行中")
-                                                                .SetColor(global.them.systemInfoDescFontColor)
-
-                                                )
-                                        ).SetAction(
-                                                NewAction("changeCurChoiceState",{state="running"},"切换状态")
-                                        )
-                                )
+                                running
                         )
                                 .AddUi(
-                                NewIconButtonUi().SetIconButton(
-                                        NewIconButton()
-                                                .SetDesc(
-                                                NewText("")
-                                                        .AddString(
-                                                        1,
-                                                        NewString(tostring(state.ContainersPaused))
-                                                                .SetFontSize(global.them.systemInfoNumFrontSize)
-                                                                .SetColor(global.them.allPausedContainersColor)
-                                                )
-                                                        .AddString(
-                                                        2,
-                                                        NewString("\n暂停").SetColor(global.them.systemInfoDescFontColor)
-                                                )
-                                        ).SetAction(
-                                                NewAction("changeCurChoiceState",{state="paused"},"切换状态")
-                                        )
-                                )
+                                paused
                         )
                                 .AddUi(
-                                NewIconButtonUi().SetIconButton(
-                                        NewIconButton()
-                                                .SetDesc(
-                                                NewText("")
-                                                        .AddString(
-                                                        1,
-                                                        NewString(tostring(state.ContainersStopped))
-                                                                .SetFontSize(global.them.systemInfoNumFrontSize)
-                                                                .SetColor(global.them.allStoppedontainersColor)
-                                                )
-                                                        .AddString(
-                                                        2,
-                                                        NewString("\n停止").SetColor(global.them.systemInfoDescFontColor)
-                                                )
-                                        ).SetAction(
-                                                NewAction("changeCurChoiceState",{state="exited"},"切换状态")
-                                        )
-                                )
+                                stoped
                         )
                 )
         )
-
+        local section = NewPageSection(global.containersPage.stateMap[global.containersPage.curType])
+        for index, value in ipairs(list) do
+            local fontColor = global.them.allRunningContainersColor
+            if value.State == "paused" then
+                fontColor = global.them.allPausedContainersColor
+            end
+            if value.State == "exited" then
+                fontColor = global.them.allStoppedontainersColor
+            end
+            local name = string.sub(value.Names[1],2,string.len(value.Names[1]))
+            local container = NewProcessLineUi().SetDesc(
+                    NewText("leading")
+                            .AddString(
+                            1,
+                            NewString(name)
+                                    .SetColor(fontColor).SetFontSize(12)
+                    )
+                            .AddString(
+                            2,
+                            NewString(value.Image).SetFontSize(10)
+                                                  .SetColor(global.them.containerImageFontColor)
+                    )
+            ).SetTitle(
+                    NewText("trailing")
+                            .AddString(
+                            2,
+                            NewString(value.Status)
+                                    .SetColor(global.them.containerImageFontColor)
+                                    .SetFontSize(10)
+                    )
+                            .AddString(
+                            1,
+                            NewString(value.State)
+                                    .SetColor(fontColor)
+                                    .SetFontSize(10)
+                    )
+            ).AddAction(NewAction("restart",{id=value.Id},"重启"))
+                                                .AddAction(NewAction("start",{id=value.Id},"启动"))
+                                                .AddAction(NewAction("stop",{id=value.Id},"停止"))
+                                                .AddAction(NewAction("",{},"容器日志").SetTerminalAction("docker logs -n 10 -f " .. value.Id.." \n"))
+                                                .AddAction(NewAction("",{},"登陆容器").SetTerminalAction("docker exec -it " .. value.Id .. " sh \n"))
+            -- if value.State == "running" then
+            container.SetPage("docker","containerDetail",value,name)
+            -- end
+            section.AddUiRow(
+                    NewUiRow().AddUi(
+                            container
+                    )
+            )
+        end
         page.AddPageSection(
-                NewPageSection(global.containersPage.stateMap[global.containersPage.curType])
+                section
         )
         return page.Data()
     end
@@ -632,4 +891,8 @@ end
 
 function changeCurChoiceState(ctx)
     return NewDocker(ctx):ChangeCurChoiceState()
+end
+
+function containerDetail(ctx)
+    return NewDocker(ctx):ContainerDetail()
 end
