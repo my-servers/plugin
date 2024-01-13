@@ -1,2 +1,2 @@
 - 💬💬建立了一个[微信群](https://plugin.codeloverme.cn/img/wechat.jpg)和[Tg群](https://t.me/+TpAft0JOKUY4M2Q1)，欢迎进来吐槽
-- 🎉🎉App支持了二级页面，icloud存储等功能，欢迎下载[最新版](https://apps.apple.com/cn/app/myservers-%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%BA%94%E7%94%A8%E7%9B%91%E6%8E%A7%E7%AE%A1%E7%90%86%E5%8A%A9%E6%89%8B/id6466196656)并升级服务端体验～
+- App 1.23版本在ios17上有白屏的bug，建议先不要升级，新版本已经提交了，预计1月14发布
