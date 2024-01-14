@@ -89,6 +89,16 @@ local global = {
     }
 }
 
+local function initButton()
+    global.allStateButton = {}
+    for key, value in pairs(global.allStateConfig) do
+        table.insert(global.allStateButton,value)
+    end
+    table.sort(global.allStateButton,function (a, b)
+        return a.priority < b.priority
+    end)
+end
+
 ---@param ctx Ctx
 ---@return QBittorrent
 local function NewQBittorrent(ctx)
@@ -99,43 +109,6 @@ local function NewQBittorrent(ctx)
         config = ctx.config, -- 配置
         runCtx = ctx.ctx     -- 运行上下文
     }
-
-    ---@param app AppUI
-    local function setMenu(app)
-        buttonSize = 17
-        addTorrentButton = NewIconButton().SetIcon("plus.circle")
-                                          .SetAction(NewAction("add", {}, "").AddInput("Url", NewInput("磁链接", 1)))
-                                          .SetSize(buttonSize)
-        searchButton = NewIconButton().SetIcon("magnifyingglass.circle")
-                                      .SetAction(NewAction("search", {}, "").AddInput("Key", NewInput("搜索关键字", 1)))
-                                      .SetSize(buttonSize)
-        allBtButton = NewIconButton().SetIcon("list.bullet.circle")
-                                     .SetAction(NewAction("choice", { id = 1 }, ""))
-                                     .SetSize(buttonSize)
-                                     .SetColor(global.choiceButton == "1" and global.blue or global.black)
-
-        downloadingBtButton = NewIconButton().SetIcon("arrow.down.circle")
-                                             .SetAction(NewAction("choice", { id = 2 }, ""))
-                                             .SetSize(buttonSize)
-                                             .SetColor(global.choiceButton == "2" and global.blue or global.black)
-        finishBtButton = NewIconButton().SetIcon("checkmark.circle")
-                                        .SetAction(NewAction("choice", { id = 3 }, ""))
-                                        .SetSize(buttonSize)
-                                        .SetColor(global.choiceButton == "3" and global.blue or global.black)
-        app.AddMenu(addTorrentButton)
-        if global.searchTaskId ~= 0 then
-            searchStopButton = NewIconButton().SetIcon("stop.circle")
-                                              .SetAction(NewAction("stopSearch", {}, ""))
-                                              .SetSize(buttonSize)
-                                              .SetColor("#F00")
-            app.AddMenu(searchStopButton)
-        else
-            app.AddMenu(searchButton)
-        end
-        app.AddMenu(allBtButton)
-        app.AddMenu(downloadingBtButton)
-        app.AddMenu(finishBtButton)
-    end
 
     local function updateCookie()
         data = string.format("username=%s&password=%s",self.config.Username,self.config.Password)
@@ -287,7 +260,9 @@ local function NewQBittorrent(ctx)
 
     function GetUi()
         local app = NewApp()
-
+        if #global.allStateButton == 0 then
+            initButton()
+        end
         local globalInfo = {}
         goAndWait({
             globalInfoKey = function ()
@@ -894,13 +869,7 @@ local function NewQBittorrent(ctx)
 end
 
 function register()
-    global.allStateButton = {}
-    for key, value in pairs(global.allStateConfig) do
-        table.insert(global.allStateButton,value)
-    end
-    table.sort(global.allStateButton,function (a, b)
-        return a.priority < b.priority
-    end)
+    initButton()
     return {
     }
 end
