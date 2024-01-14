@@ -12,11 +12,37 @@ local global = {
     cookie = "",
     choiceButton = "2",
     urlArg = "downloading",
-    downloadStatue = {
-        ["downloading"] = "下载中",
-        ["all"] = "全部",
-        ["completed"] = "已完成",
+    allStateConfig = {
+        all = {
+            fontColor = "#34a853",
+            name = "全部",
+            pageArg = "all",
+            priority = 1,
+            icon = "≡",
+        },
+        downloading = {
+            fontColor = "#4285f4",
+            name = "下载中",
+            pageArg = "downloading",
+            priority = 2,
+            icon = "⇣",
+        },
+        completed = {
+            fontColor = "#fbbc07",
+            name = "已完成",
+            pageArg = "completed",
+            priority = 3,
+            icon = "✓",
+        },
+        paused = {
+            fontColor = "#ea4335",
+            name = "暂停",
+            pageArg = "paused",
+            priority = 4,
+            icon = "⏸︎",
+        }
     },
+    allStateButton= {},
     blue = "#F00",
     black = "#000",
     stateMsg = {
@@ -42,6 +68,7 @@ local global = {
         AddUrl = "/api/v2/torrents/add",
         SearchResultUrl = "/api/v2/search/results",
         StopSearchUrl = "/api/v2/search/stop",
+        GlobalInfo = "/api/v2/transfer/info",
     },
     priorityMap = {
         ["0"] = "不下载",
@@ -52,8 +79,13 @@ local global = {
     listPageArg = {
         offset = 0,
         type = "downloading",
-        limit = 8,
+        limit = 10,
         firstHash = "",-- 由于qb没有返回分页结束符
+    },
+    them = {
+        descFontColor = "#b8b8b8",
+        infoFontSize = 18,
+        buttonSize = 28,
     }
 }
 
@@ -223,51 +255,92 @@ local function NewQBittorrent(ctx)
         return line
     end
 
-    local function handleBittorrentList(app)
-        -- 周期获取数据
-        local config = self.config
-        local data = getBittorrentList(global.urlArg,0,10)
-        if data.code == 403 then
-            updateCookie(config)
-            data = getBittorrentList(global.urlArg,0,10)
+    local function doRequestWithLogin(req)
+        local loginRsp,err = httpClient:do_request(req)
+        if loginRsp.code == 403 then
+            updateCookie()
+            loginRsp,err = httpClient:do_request(req)
         end
-        local list = json.decode(data.body)
-        local index = 2
-        local col = 0
-        local hasMore = false
-        for i = 1, #list do
-            if i >= 6 then
-                hasMore = true
-                break
-            end
-            app.AddUi(index, getBtOneItem(list[i]))
-            col = col + 1
-            if col % tonumber(config.ColNum) == 0 then
-                index = index + 1
-            end
+        if err then
+            error(err)
         end
-        if hasMore then
-            global.listPageArg.offset = 0
-            app.AddUi(
-                    index,
-                    NewTextUi().SetText(
-                            NewText("").AddString(
-                                    1,
-                                    NewString("更多").SetColor(global.fontColor).SetFontSize(10)
-                            )
-                    ).SetPage("qbittorrent","moreList",{},global.downloadStatue[global.urlArg])
-            )
+        if loginRsp.code == 403 then
+            error("登陆失败")
         end
+        return loginRsp
     end
 
-    local function GetUi()
+    local function getGlobalInfo(text, desc)
+        return NewTextUi().SetText(
+                NewText("")
+                        .AddString(
+                        1,
+                        NewString(text)
+                                .SetFontSize(global.them.infoFontSize)
+                )
+                        .AddString(
+                        2,
+                        NewString(desc).SetColor(global.them.descFontColor)
+                )
+        )
+    end
+
+    function GetUi()
         local app = NewApp()
-        setMenu(app)
-        if global.searchTaskId == 0 then
-            handleBittorrentList(app)
-        else
-            handleSearchList(app)
+
+        local globalInfo = {}
+        goAndWait({
+            globalInfoKey = function ()
+                local url = string.format("%s%s",self.config.HostPort,global.api.GlobalInfo)
+                local req = http.request("GET",url)
+                local info = doRequestWithLogin(req)
+                globalInfo = json.decode(info.body)
+            end
+        })
+
+        app
+                .AddUi(
+                1,
+                getGlobalInfo(ByteToUiString(globalInfo.dl_info_speed).."/s","下载速度")
+        )
+                .AddUi(
+                1,
+                getGlobalInfo(ByteToUiString(globalInfo.dl_info_data),"累计下载")
+        )
+                .AddUi(
+                1,
+                getGlobalInfo(ByteToUiString(globalInfo.up_info_speed).."/s","上传速度")
+        )
+                .AddUi(
+                1,
+                getGlobalInfo(ByteToUiString(globalInfo.up_info_data),"累计上传")
+        )
+
+        for index, value in ipairs(global.allStateButton) do
+            app
+                    .AddUi(
+                    2,
+                    NewTextUi().SetText(
+                            NewText("")
+                                    .AddString(
+                                    1,
+                                    NewString(value.icon)
+                                            .SetFontSize(global.them.buttonSize)
+                                            .SetColor(value.fontColor)
+                            )
+                                    .AddString(
+                                    2,
+                                    NewString(value.name).SetColor(global.them.descFontColor)
+                            )
+                    ).SetPage("qbittorrent","moreList",{type=value.pageArg},value.name)
+            )
         end
+        app
+                .AddMenu(
+                NewIconButton().SetIcon("plus.circle")
+                               .SetAction(NewAction("add", {}, "").AddInput("Url", NewInput("磁链接", 1)))
+                               .SetSize(17)
+        )
         return app.Data()
     end
 
@@ -747,7 +820,10 @@ local function NewQBittorrent(ctx)
 
     function self:MoreList()
         local page = NewPage()
-
+        if global.listPageArg.type ~= self.arg.type then
+            global.listPageArg.offset = 0
+        end
+        global.listPageArg.type = self.arg.type
         local data = getBittorrentList(global.listPageArg.type,global.listPageArg.offset,global.listPageArg.limit)
         if data.code == 403 then
             updateCookie()
@@ -792,6 +868,11 @@ local function NewQBittorrent(ctx)
             self:Pre()
         end
         listSection.SetPageInfo(tostring(global.listPageArg.offset))
+                   .AddMenu(
+                NewIconButton().SetIcon("plus.circle")
+                               .SetAction(NewAction("add", {}, "").AddInput("Url", NewInput("磁链接", 1)))
+                               .SetSize(17)
+        )
 
         page.AddPageSection(
                 listSection
@@ -813,6 +894,13 @@ local function NewQBittorrent(ctx)
 end
 
 function register()
+    global.allStateButton = {}
+    for key, value in pairs(global.allStateConfig) do
+        table.insert(global.allStateButton,value)
+    end
+    table.sort(global.allStateButton,function (a, b)
+        return a.priority < b.priority
+    end)
     return {
     }
 end
