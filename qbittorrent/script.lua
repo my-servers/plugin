@@ -86,6 +86,8 @@ local global = {
         descFontColor = "#b8b8b8",
         infoFontSize = 18,
         buttonSize = 28,
+        listInfoFontSize = 11,
+        listDescFontSize = 10,
     }
 }
 
@@ -197,25 +199,59 @@ local function NewQBittorrent(ctx)
     end
 
     local function getBtOneItem(d)
-        local state = NewString(string.format("↓%s/S ↑%s/S", ByteToUiString(d.dlspeed), ByteToUiString(d.upspeed)))
-                .SetFontSize(8)
-        if global.stateMsg[d.state] ~= nil then
-            state.SetContent(global.stateMsg[d.state])
+        local download = NewString(string.format("↓%s/S", ByteToUiString(d.dlspeed)))
+                .SetFontSize(global.them.listDescFontSize).SetColor(global.downloadFontColor)
+        local upload = NewString(string.format("↑%s/S", ByteToUiString(d.upspeed)))
+                .SetFontSize(global.them.listDescFontSize).SetColor(global.upFontColor)
+
+        if d.dlspeed == 0 then
+            download.SetColor(global.them.descFontColor)
         end
-        line = NewProcessLineUi()
-                .SetDesc(NewText("leading")
-                .AddString(1, NewString(string.sub(d.name, 0, tonumber(config.NameLen)))
-                .SetFontSize(10))
-                .AddString(2, NewString(string.format("%s", ByteToUiString(d.total_size)))
-                .SetFontSize(8)
-                .SetBackendColor("#663366")
-                .SetColor("#FFF")
+        if d.upspeed == 0 then
+            upload.SetColor(global.them.descFontColor)
+        end
+
+        local right = NewText("trailing")
+                .AddString(
+                1,
+                NewString(string.format("%.2f%%", d.completed * 100 / d.total_size))
+                        .SetFontSize(global.them.listDescFontSize)
         )
-                .AddString(2, state.SetBackendColor("#333366")
-                                   .SetColor("#FFF")))
-                .SetTitle(NewText("")
-                .AddString(1, NewString(string.format("%.2f%%", d.completed * 100 / d.total_size))
-                .SetFontSize(8)))
+
+        if global.stateMsg[d.state] ~= nil then
+            right.AddString(
+                    2,
+                    NewString(global.stateMsg[d.state]).SetFontSize(global.them.listDescFontSize)
+            )
+        else
+            right
+                    .AddString(
+                    2,
+                    download
+            )
+                    .AddString(
+                    2,
+                    upload
+            )
+        end
+
+
+        local line = NewProcessLineUi()
+                .SetDesc(NewText("leading")
+                .AddString(
+                1,
+                NewString(string.sub(d.name, 0, tonumber(self.config.NameLen)))
+                        .SetFontSize(global.them.listInfoFontSize)
+        )
+                .AddString(
+                2,
+                NewString(string.format("%s", ByteToUiString(d.total_size)))
+                        .SetFontSize(global.them.listDescFontSize).SetColor(global.them.descFontColor)
+        )
+        )
+                .SetTitle(
+                right
+        )
                 .SetProcessData(NewProcessData(d.completed, d.total_size))
         if d.state == "pausedDL" or d.state == "pausedUP" then
             line.AddAction(NewAction("resume", { hash = d.hash }, "继续").SetIcon("play.circle"))
