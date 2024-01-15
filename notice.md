@@ -1,2 +1,1 @@
 - 💬💬建立了一个[微信群](https://plugin.codeloverme.cn/img/wechat.jpg)和[Tg群](https://t.me/+TpAft0JOKUY4M2Q1)，欢迎进来吐槽
-- App 1.23版本在ios17上有白屏的bug，建议先不要升级，新版本已经提交了，预计1月14发布
