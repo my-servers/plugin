@@ -1,1 +1,2 @@
 - 💬💬建立了一个[微信群](https://plugin.codeloverme.cn/img/wechat.jpg)和[Tg群](https://t.me/+TpAft0JOKUY4M2Q1)，欢迎进来吐槽
+- tr插件升级啦🎉🎉

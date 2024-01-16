@@ -3,6 +3,9 @@ local json = require("json")
 local httpClient = http.client({
     timeout = 2, -- 超时1s
 })
+local asyncHttpClient = http.client({
+    timeout = 5, -- 超时1s
+})
 local global = {
     urlFormat = "http://%s:%s@%s/transmission/rpc",
     getListArg = {
@@ -21,12 +24,47 @@ local global = {
                 "addedDate",
                 "doneDate",
                 "comment",
-                "peers",
-                "files"
             },
             format = "json"
         },
         method = "torrent-get"
+    },
+    getDetail = {
+        method= "torrent-get",
+        arguments= {
+            ids={},
+            fields= {
+                "magnetLink",
+                "files",
+                "id",
+                "name",
+                "status",
+                "hashString",
+                "totalSize",
+                "percentDone",
+                "addedDate",
+                "trackerStats",
+                "leftUntilDone",
+                "rateDownload",
+                "rateUpload",
+                "recheckProgress",
+                "rateDownload",
+                "rateUpload",
+                "peers",
+                "peersGettingFromUs",
+                "peersSendingToUs",
+                "uploadRatio",
+                "uploadedEver",
+                "downloadedEver",
+                "downloadDir",
+                "error",
+                "errorString",
+                "doneDate",
+                "queuePosition",
+                "activityDate"
+            }
+        },
+        tag= ""
     },
     sessionId = "",
     sessionKey = "X-Transmission-Session-Id",
@@ -38,7 +76,56 @@ local global = {
         [4] = "下载中",
         [5] = "等待做种",
         [6] = "做种中",
-    }
+    },
+    getGlobalState = {
+        method = "session-stats",
+        arguments = {},
+        tag = "",
+    },
+    them = {
+        descFontColor = "#b8b8b8",
+        infoFontSize = 16,
+        buttonSize = 28,
+        listInfoFontSize = 11,
+        listDescFontSize = 10,
+        allFontColor = "#34a853",
+        downlodingFontColor = "#4285f4",
+        pausedFontColor = "#ea4335",
+        finishedFontColor = "#fbbc07",
+        downloadFontColor = "#4dbf7a",
+        upFontColor = "#ff4f00",
+        sizeFontClolor = "#6348f2"
+    },
+    allButton = {
+        {
+            name = "全部",
+            arg = "all",
+            descFontColor = "#b8b8b8",
+            fontColor = "#34a853",
+        },
+        {
+            name = "下载中",
+            arg = "downloding",
+            descFontColor = "#b8b8b8",
+            fontColor = "#34a853"
+        },
+        {
+            name = "已完成",
+            arg = "finished",
+            descFontColor = "#b8b8b8",
+            fontColor = "#fbbc07"
+        },
+        {
+            name = "已暂停",
+            arg = "paused",
+            descFontColor = "#b8b8b8",
+            fontColor = "#ea4335"
+        },
+    },
+    allTorrentList = {}, -- 0-6
+    downlodingTorrentList = {}, -- 1 2 3 4
+    pausedTorrentList = {}, -- 0
+    finishedTorrentList = {}, -- 6
 }
 
 function getStartArg(id)
@@ -97,8 +184,31 @@ function getDownloadFileArg(url,path)
     }
 end
 
+function asyncDoRequest(method,url,data)
+    local req = http.request(method,url,json.encode(data))
+    local stateRsp,err = asyncHttpClient:do_request(req)
+    if err then
+        error(err)
+    end
+    if stateRsp.code == 409 then
+        asyncHttpClient = http.client({
+            timeout = 5, -- 超时1s
+            headers = {
+                [global.sessionKey] = stateRsp.headers[global.sessionKey]
+            }
+        })
+        stateRsp,err = asyncHttpClient:do_request(req)
+    end
+    if err then
+        print("do req err", err)
+        return {body=""}
+    end
+    return stateRsp
+end
+
+
 function doRequest(method,url,data)
-    req = http.request(method,url,json.encode(data))
+    local req = http.request(method,url,json.encode(data))
     local stateRsp,err = httpClient:do_request(req)
     if err then
         error(err)
@@ -113,6 +223,7 @@ function doRequest(method,url,data)
         stateRsp,err = httpClient:do_request(req)
     end
     if err then
+        print("do req err", err)
         error(err)
     end
     return stateRsp
@@ -157,7 +268,153 @@ local function NewTransmission(ctx)
         return detail
     end
 
+    local function getList(type)
+        local list = global.allTorrentList
+        if type == "downloding" then
+            list = global.downlodingTorrentList
+        end
+        if type == "paused" then
+            list = global.pausedTorrentList
+        end
+        if type == "finished" then
+            list = global.finishedTorrentList
+        end
+        return list
+    end
+
+    local function asyncUpdate()
+        go("asyncGetAllTorrentList",function(allList)
+            local allTorrentList = {}
+            local downlodingTorrentList = {} -- 1 2 3 4
+            local pausedTorrentList = {} -- 0
+            local finishedTorrentList = {} -- 6
+            for index, value in ipairs(allList.arguments.torrents) do
+                table.insert(allTorrentList, value)
+                if value.status == 1 or value.status == 2 or value.status == 3 or value.status == 4 then
+                    table.insert(downlodingTorrentList, value)
+                end
+                if value.status == 0 then
+                    table.insert(pausedTorrentList, value)
+                end
+                if value.status == 6 then
+                    table.insert(finishedTorrentList, value)
+                end
+            end
+            global.downlodingTorrentList = downlodingTorrentList
+            global.pausedTorrentList = pausedTorrentList
+            global.finishedTorrentList = finishedTorrentList
+            global.allTorrentList = allTorrentList
+        end,self.config.UserName,self.config.Password,self.config.HostPort)
+    end
+
     function self:Update()
+        local app = NewApp()
+        local globalState = {}
+        goAndWait({
+            globalStateKey = function ()
+                local stateRsp = doRequest("POST",getUrl(),global.getGlobalState)
+                globalState = json.decode(stateRsp.body)
+            end
+        })
+        asyncUpdate()
+
+        app
+                .AddUi(
+                1,
+                NewTextUi().SetText(
+                        NewText("")
+                                .AddString(
+                                1,
+                                NewString(ByteToUiString(globalState.arguments.downloadSpeed).."/s")
+                                        .SetFontSize(global.them.infoFontSize)
+                        )
+                                .AddString(
+                                2,
+                                NewString("下载速度").SetColor(global.them.descFontColor)
+                        )
+                )
+        )
+                .AddUi(
+                1,
+                NewTextUi().SetText(
+                        NewText("")
+                                .AddString(
+                                1,
+                                NewString(ByteToUiString(globalState.arguments["cumulative-stats"].downloadedBytes))
+                                        .SetFontSize(global.them.infoFontSize)
+                        )
+                                .AddString(
+                                2,
+                                NewString("累计下载").SetColor(global.them.descFontColor)
+                        )
+                )
+        )
+                .AddUi(
+                1,
+                NewTextUi().SetText(
+                        NewText("")
+                                .AddString(
+                                1,
+                                NewString(ByteToUiString(globalState.arguments.uploadSpeed).."/s")
+                                        .SetFontSize(global.them.infoFontSize)
+                        )
+                                .AddString(
+                                2,
+                                NewString("上传速度").SetColor(global.them.descFontColor)
+                        )
+                )
+        )
+                .AddUi(
+                1,
+                NewTextUi().SetText(
+                        NewText("")
+                                .AddString(
+                                1,
+                                NewString(ByteToUiString(globalState.arguments["cumulative-stats"].uploadedBytes))
+                                        .SetFontSize(global.them.infoFontSize)
+                        )
+                                .AddString(
+                                2,
+                                NewString("累计上传").SetColor(global.them.descFontColor)
+                        )
+                )
+        )
+
+
+        for index, value in ipairs(global.allButton) do
+            local list = getList(value.arg)
+            app
+                    .AddUi(
+                    2,
+                    NewTextUi()
+                            .SetText(
+                            NewText("")
+                                    .AddString(
+                                    1,
+                                    NewString(tostring(#list))
+                                            .SetFontSize(24)
+                                            .SetColor(value.fontColor)
+                            )
+                                    .AddString(
+                                    2,
+                                    NewString(value.name).SetColor(value.descFontColor)
+                            )
+                    ).SetPage("transmission","torrentList",value,value.name)
+            )
+        end
+
+        app.AddMenu(
+                NewIconButton().SetSize(17)
+                               .SetIcon("plus.circle")
+                               .SetAction(NewAction("download",{},"")
+                        .AddInput("Path",NewInput("路径",1).SetVal(self.config.DownloadPath))
+                        .AddInput("Url",NewInput("下载链接",2))
+                )
+        )
+        return app.Data()
+    end
+
+    function self:Update1()
         local app = NewApp()
         local url = getUrl()
         local stateRsp = doRequest("POST",url,global.getListArg)
@@ -225,11 +482,249 @@ local function NewTransmission(ctx)
         addTorrentButton = NewIconButton().SetSize(buttonSize)
                                           .SetIcon("plus.circle")
                                           .SetAction(NewAction("download",{},"")
-                                              .AddInput("Path",NewInput("路径",1).SetVal(self.config.DownloadPath))
-                                              .AddInput("Url",NewInput("下载链接",2))
-                                          )
+                .AddInput("Path",NewInput("路径",1).SetVal(self.config.DownloadPath))
+                .AddInput("Url",NewInput("下载链接",2))
+        )
         app.AddMenu(addTorrentButton)
         return app.Data()
+    end
+
+    function escapePattern(text)
+        return text:gsub("([^%w])", "%%%1")
+    end
+
+    function deepCopy(obj)
+        if type(obj) ~= 'table' then return obj end
+        local res = {}
+        for k, v in pairs(obj) do
+            res[deepCopy(k)] = deepCopy(v)
+        end
+        return res
+    end
+
+    function self:TorrentDetail()
+        asyncUpdate()
+        local detail = {}
+        goAndWait({
+            setailKey = function ()
+                local getDetailArg = deepCopy(global.getDetail)
+                table.insert(getDetailArg.arguments.ids, self.arg.id)
+                local stateRsp = doRequest("POST",getUrl(), getDetailArg)
+                detail = json.decode(stateRsp.body)
+            end
+        })
+        local page = NewPage()
+        if #detail.arguments.torrents == 0 then
+            return page.AddPageSection(NewPageSection("无数据")).Data()
+        end
+        local torrent = detail.arguments.torrents[1]
+        local section = NewPageSection(torrent.name)
+
+        section.AddUiRow(
+                NewUiRow()
+                        .AddUi(
+                        NewTextUi().SetText(
+                                NewText("")
+                                        .AddString(
+                                        1,
+                                        NewString(ByteToUiString(torrent.rateDownload).."/s")
+                                                .SetColor(global.them.downloadFontColor)
+                                                .SetFontSize(global.them.infoFontSize)
+                                )
+                                        .AddString(
+                                        2,
+                                        NewString("下载速度").SetColor(global.them.descFontColor)
+                                )
+                        )
+                )
+                        .AddUi(
+                        NewTextUi().SetText(
+                                NewText("")
+                                        .AddString(
+                                        1,
+                                        NewString(ByteToUiString(torrent.rateUpload).."/s")
+                                                .SetColor(global.them.upFontColor)
+                                                .SetFontSize(global.them.infoFontSize)
+                                )
+                                        .AddString(
+                                        2,
+                                        NewString("上传速度").SetColor(global.them.descFontColor)
+                                )
+                        )
+                )
+                        .AddUi(
+                        NewTextUi().SetText(
+                                NewText("")
+                                        .AddString(
+                                        1,
+                                        NewString(ByteToUiString(torrent.downloadedEver))
+                                                .SetColor(global.them.sizeFontClolor)
+                                                .SetFontSize(global.them.infoFontSize)
+                                )
+                                        .AddString(
+                                        2,
+                                        NewString("已下载").SetColor(global.them.descFontColor)
+                                )
+                        )
+                )
+                        .AddUi(
+                        NewTextUi().SetText(
+                                NewText("")
+                                        .AddString(
+                                        1,
+                                        NewString(ByteToUiString(torrent.totalSize))
+                                                .SetColor(global.them.sizeFontClolor)
+                                                .SetFontSize(global.them.infoFontSize)
+                                )
+                                        .AddString(
+                                        2,
+                                        NewString("总大小").SetColor(global.them.descFontColor)
+                                )
+                        )
+                )
+        )
+               .AddUiRow(
+                NewUiRow().AddUi(
+                        NewProcessLineUi().SetProcessData(
+                                NewProcessData(torrent.percentDone, 1)
+                        ).SetTitle(
+                                NewText("trailing").AddString(
+                                        1,
+                                        NewString(string.format("%.2f%%", torrent.percentDone*100))
+                                                .SetColor(global.them.sizeFontClolor)
+                                                .SetFontSize(10)
+                                )
+                        )
+                )
+        )
+               .AddMenu(
+                NewIconButton()
+                        .SetIcon("doc.on.doc")
+                        .SetAction(
+                        NewAction("",{},"复制").SetCopyAction(torrent.magnetLink)
+                ).SetSize(14)
+        )
+
+
+        local content = NewPageSection("内容")
+        for index, value in ipairs(torrent.files) do
+            content.AddUiRow(
+                    NewUiRow().AddUi(
+                            NewProcessLineUi().SetDesc(
+                                    NewText("leading")
+                                            .AddString(
+                                            1,
+                                            NewString(string.gsub(value.name, escapePattern(torrent.name), "", 1))
+                                                    .SetFontSize(10)
+                                    )
+                                            .AddString(
+                                            2,
+                                            NewString(ByteToUiString(value.length))
+                                                    .SetColor(global.them.sizeFontClolor)
+                                                    .SetFontSize(10)
+                                    )
+                                            .AddString(
+                                            2,
+                                            NewString(string.format("%.2f%%",value.bytesCompleted/value.length*100))
+                                                    .SetColor(global.them.sizeFontClolor)
+                                                    .SetFontSize(10)
+                                    )
+                            )
+                                              .SetProcessData(
+                                    NewProcessData(value.bytesCompleted,value.length)
+                            )
+                    )
+            )
+        end
+
+        local peer = NewPageSection("用户")
+        page
+                .AddPageSection(
+                section
+        )
+                .AddPageSection(
+                content
+        )
+
+        return page.Data()
+    end
+
+    function self:TorrentList()
+        asyncUpdate()
+        local page = NewPage()
+        local listSection = NewPageSection("列表")
+        local list = getList(self.arg.arg)
+        for index, value in ipairs(list) do
+            local download = NewString(string.format("↓%s/S", ByteToUiString(value.rateDownload)))
+                    .SetFontSize(global.them.listDescFontSize)
+                    .SetColor(global.them.downloadFontColor)
+
+            if value.rateDownload == 0 then
+                download.SetColor(global.them.descFontColor)
+            end
+            local upload = NewString(string.format("↑%s/S", ByteToUiString(value.rateUpload)))
+                    .SetFontSize(global.them.listDescFontSize)
+                    .SetColor(global.them.upFontColor)
+            if value.rateUpload == 0 then
+                upload.SetColor(global.them.descFontColor)
+            end
+            local title = NewText("trailing")
+                    .AddString(
+                    1,
+                    NewString(string.format("%.2f%%", value.percentDone * 100 ))
+                            .SetFontSize(global.them.listDescFontSize)
+            )
+            if value.status ~= 4 then
+                title.AddString(
+                        2,
+                        NewString(global.statusName[value.status])
+                                .SetFontSize(global.them.listDescFontSize)
+                )
+            else
+                title.AddString(
+                        2,
+                        download
+                )
+                     .AddString(
+                        2,
+                        upload
+                )
+            end
+
+            local line = NewProcessLineUi().SetDesc(
+                    NewText("leading")
+                            .AddString(
+                            1,
+                            NewString(value.name).SetFontSize(10)
+                    )
+                            .AddString(
+                            2,
+                            NewString(ByteToUiString(value.totalSize)).SetFontSize(10)
+                                                                      .SetColor(global.them.descFontColor)
+                    )
+            ).SetTitle(
+                    title
+            )
+            if value.status == 0 then
+                line.AddAction(NewAction("start",{id=value.id},"继续"))
+            else
+                line.AddAction(NewAction("stop",{id=value.id},"暂停"))
+            end
+            line.AddAction(NewAction("reannounce",{id=value.id},"刷新Peers列表"))
+                .AddAction(NewAction("delete",{id=value.id},"删除").SetCheck(true))
+                .AddAction(NewAction("deleteFile",{id=value.id},"删除并清理文件").SetCheck(true))
+                .SetProcessData(NewProcessData(value.percentDone*100,100))
+                .SetPage("transmission","torrentDetail",value,"种子详情")
+            listSection.AddUiRow(
+                    NewUiRow().AddUi(
+                            line
+                    )
+            )
+        end
+        page.AddPageSection(
+                listSection
+        )
+        return page.Data()
     end
 
     function self:Start()
@@ -267,6 +762,7 @@ local function NewTransmission(ctx)
         doRequest("POST",url,getDownloadFileArg(self.input.Url,self.input.Path))
         return NewToast("下载","info.circle","#000")
     end
+
 
     return self
 end
@@ -307,4 +803,19 @@ end
 
 function  download(ctx)
     return NewTransmission(ctx):Download()
+end
+
+function asyncGetAllTorrentList(UserName,Password,HostPort)
+    local url = string.format(global.urlFormat, http.query_escape(UserName),http.query_escape(Password),HostPort)
+    local stateRsp = asyncDoRequest("POST", url, global.getListArg)
+    local data = json.decode(stateRsp.body)
+    return data
+end
+
+function torrentList(ctx)
+    return NewTransmission(ctx):TorrentList()
+end
+
+function torrentDetail(ctx)
+    return NewTransmission(ctx):TorrentDetail()
 end
