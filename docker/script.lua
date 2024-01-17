@@ -67,6 +67,10 @@ local global = {
     menu = 0, -- 0 容器 1 镜像
     searchKey = "",
     searchResult = {},
+    imageListPage = {
+        allList = {},
+        cursor = 1,
+    },
 }
 
 function asyncDoRequest(method,url,data)
@@ -310,30 +314,96 @@ function NewDocker(ctx)
 
         local page = NewPage()
         page.AddPageSection(
-                NewPageSection(readme.description).AddUiRow(
-                        NewUiRow().AddUi(
+                NewPageSection(readme.description)
+                        .AddUiRow(
+                        NewUiRow()
+                                .AddUi(
+                                NewTextUi().SetText(
+                                        NewText("")
+                                                .AddString(
+                                                1,
+                                                NewString("🌟")
+                                        )
+                                                .AddString(
+                                                2,
+                                                NewString(tostring(readme.star_count)).SetFontSize(24)
+                                        )
+
+                                )
+                        )
+                                .AddUi(
+                                NewTextUi().SetText(
+                                        NewText("")
+                                                .AddString(
+                                                1,
+                                                NewString("⏬")
+                                        )
+                                                .AddString(
+                                                2,
+                                                NewString(tostring(readme.pull_count)).SetFontSize(24)
+                                        )
+                                )
+                        )
+                )
+                        .AddUiRow(
+                        NewUiRow()
+                                .AddUi(
                                 NewMarkdownUi().SetMarkdown(readme.full_description)
                         )
                 )
         )
         return page.Data()
     end
+
+    function getLimit()
+        if Tonumber(self.config.Limit) > 0 then
+            return Tonumber(self.config.Limit)
+        end
+        return 20
+    end
+
+    function self:Pre()
+        local limit = getLimit()
+        local temp = global.imageListPage.cursor - limit
+        if temp < 1 then
+            temp = 1
+        end
+        global.imageListPage.cursor = temp
+    end
+
+    function self:Next()
+        global.imageListPage.cursor =  global.imageListPage.cursor + getLimit()
+    end
+
     function self:ImageList()
         local page = NewPage()
+        local url  = self.config.HostPort..global.api.imageList
+        go("asyncGetImageList",function (list)
+            global.imageListPage.allList = list
+            table.sort(global.imageListPage.allList,function(a, b)
+                return tonumber(a.Created) > tonumber(b.Created)
+            end)
+        end,url)
 
-        local req = http.request("GET",self.config.HostPort..global.api.imageList)
-        local stateRsp,err = httpClient:do_request(req)
-        if err then
-            error(err)
-        end
-        local data = json.decode(stateRsp.body)
-        table.sort(data,function(a, b)
-            return tonumber(a.Created) > tonumber(b.Created)
-        end)
         local images = NewPageSection("镜像")
         local nameSize = 13
 
-        for index, value in ipairs(data) do
+        if global.imageListPage.cursor > 1 then
+            images.SetPre(
+                    NewAction("pre",{},"上一页")
+            )
+        end
+        local limit = getLimit()
+        if global.imageListPage.cursor + limit <= #global.imageListPage.allList then
+            images.SetNext(
+                    NewAction("next",{},"后一页")
+            )
+        end
+        for i = global.imageListPage.cursor, global.imageListPage.cursor+limit-1 do
+            if i > #global.imageListPage.allList then
+                break
+            end
+            local value = global.imageListPage.allList[i]
             local nameVersion = string.split(value.RepoTags[1],":")
             images.AddUiRow(
                     NewUiRow().AddUi(
@@ -746,4 +816,22 @@ end
 
 function imageMd(ctx)
     return NewDocker(ctx):ImageMd()
+end
+
+function asyncGetImageList(url)
+    local req = http.request("GET", url)
+    local stateRsp,err = httpClient:do_request(req)
+    if err then
+        error(err)
+    end
+    return json.decode(stateRsp.body)
+end
+
+
+function pre(ctx)
+    return NewDocker(ctx):Pre()
+end
+
+function next(ctx)
+    return NewDocker(ctx):Next()
 end
