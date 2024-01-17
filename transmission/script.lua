@@ -126,6 +126,10 @@ local global = {
     downlodingTorrentList = {}, -- 1 2 3 4
     pausedTorrentList = {}, -- 0
     finishedTorrentList = {}, -- 6
+    listPage = {
+        curType = "",
+        cursor = 1,
+    }
 }
 
 function getStartArg(id)
@@ -501,6 +505,23 @@ local function NewTransmission(ctx)
         end
         return res
     end
+    function self:Pre()
+
+        local temp = global.listPage.cursor - getLimit()
+        if temp < 1 then
+            temp = 1
+        end
+        global.listPage.cursor = temp
+    end
+
+    function self:Next()
+        local temp = global.listPage.cursor + getLimit()
+        local list = getList(global.listPage.curType)
+        if temp > #list then
+            temp = #list
+        end
+        global.listPage.cursor = temp
+    end
 
     function self:TorrentDetail()
         asyncUpdate()
@@ -649,12 +670,42 @@ local function NewTransmission(ctx)
         return page.Data()
     end
 
+    function getLimit()
+        if Tonumber(self.config.Limit)  > 0 then
+            return Tonumber(self.config.Limit)
+        end
+        return 20
+    end
     function self:TorrentList()
         asyncUpdate()
         local page = NewPage()
         local listSection = NewPageSection("列表")
-        local list = getList(self.arg.arg)
-        for index, value in ipairs(list) do
+        if self.arg.arg ~= global.listPage.curType then
+            global.listPage.cursor = 1
+            global.listPage.curType = self.arg.arg
+        end
+        local list = getList(global.listPage.curType)
+        if global.listPage.cursor > 1 then
+            listSection.SetPre(
+                    NewAction("pre",{},"前一页")
+            )
+        end
+        listSection.SetPageInfo(tostring(global.listPage.cursor))
+        local limit = getLimit()
+        if global.listPage.cursor + limit <= #list then
+            -- 结束了
+            listSection.SetNext(
+                    NewAction("next",{},"后一页")
+            )
+        end
+        if global.listPage.cursor > #list then
+            global.listPage.cursor = #list
+        end
+        for i = global.listPage.cursor, global.listPage.cursor+limit-1 do
+            if i > #list then
+                break
+            end
+            local value = list[i]
             local download = NewString(string.format("↓%s/S", ByteToUiString(value.rateDownload)))
                     .SetFontSize(global.them.listDescFontSize)
                     .SetColor(global.them.downloadFontColor)
@@ -767,7 +818,7 @@ local function NewTransmission(ctx)
     return self
 end
 
-function register()
+function register(ctx)
     -- 初始化ui
     return {
     }
@@ -818,4 +869,12 @@ end
 
 function torrentDetail(ctx)
     return NewTransmission(ctx):TorrentDetail()
+end
+
+function pre(ctx)
+    return NewTransmission(ctx):Pre()
+end
+
+function next(ctx)
+    return NewTransmission(ctx):Next()
 end

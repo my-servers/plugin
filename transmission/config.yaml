@@ -20,3 +20,7 @@ extend:
     val: password
     desc: 密码
     priority: 160
+  Limit:
+    val: 20
+    desc: 分页大小
+    priority: 150
