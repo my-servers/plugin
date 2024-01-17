@@ -8,3 +8,7 @@ extend:
     val: "http://127.0.0.1:6666"
     desc: 接口
     priority: 200
+  Limit:
+    val: "20"
+    desc: 分页大小
+    priority: 180
