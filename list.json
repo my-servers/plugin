@@ -39,7 +39,13 @@
             "min_client_version": "1.21",
             "version": "1.6",
             "is_finished": true,
-            "img": ["en","ja"]
+            "img": ["en","ja"],
+            "img_desc": [
+                {
+                    "img": "https://plugin.codeloverme.cn/system/system.jpeg",
+                    "desc": "## 功能 \n- 监控cpu，内存，网络 \n"
+                }
+            ]
         },
         {
             "id" : "frp",
