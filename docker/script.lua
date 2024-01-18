@@ -405,7 +405,7 @@ function NewDocker(ctx)
             end
             local value = global.imageListPage.allList[i]
             local nameVersion = {string.sub(value.Id,1,20),"unknown"}
-            if #value.RepoTags > 0 then
+            if value.RepoTags ~= nil and  #value.RepoTags > 0 then
                 nameVersion = string.split(value.RepoTags[1],":")
             end
             images.AddUiRow(
