@@ -685,6 +685,9 @@ local function NewTransmission(ctx)
             global.listPage.curType = self.arg.arg
         end
         local list = getList(global.listPage.curType)
+        if #list == 0 then
+            return page.AddPageSection(listSection.AddUiRow(NewUiRow().AddUi(NewTextUi().SetText(NewText("").AddString(1,NewString("无数据").SetColor(global.them.descFontColor)))))).Data()
+        end
         if global.listPage.cursor > 1 then
             listSection.SetPre(
                     NewAction("pre",{},"前一页")
