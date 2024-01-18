@@ -404,7 +404,10 @@ function NewDocker(ctx)
                 break
             end
             local value = global.imageListPage.allList[i]
-            local nameVersion = string.split(value.RepoTags[1],":")
+            local nameVersion = {string.sub(value.Id,1,20),"unknown"}
+            if #value.RepoTags > 0 then
+                nameVersion = string.split(value.RepoTags[1],":")
+            end
             images.AddUiRow(
                     NewUiRow().AddUi(
                             NewProcessLineUi().SetDesc(
