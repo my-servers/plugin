@@ -13,7 +13,17 @@
             "min_client_version": "1.21",
             "version": "1.8",
             "is_finished": true,
-            "img": ["en","ja"]
+            "img": ["en","ja"],
+            "img_desc": [
+                {
+                    "img": "https://plugin.codeloverme.cn/qbittorrent/qb.jpeg",
+                    "desc": "## 功能 \n- 下载列表信息 \n"
+                },
+                {
+                    "img": "https://plugin.codeloverme.cn/qbittorrent/qb1.jpeg",
+                    "desc": "## [详细教程](https://docs.qq.com/aio/DTGdndmFVZlZldEJS?p=tlQjEYph504aaFCUvjucWD&client_hint=0&client_hint=0)"
+                }
+            ]
         },
         {
             "id" : "docker",
@@ -26,7 +36,17 @@
             "min_client_version": "1.21",
             "version": "1.9",
             "is_finished": true,
-            "img": ["en","ja"]
+            "img": ["en","ja"],
+            "img_desc": [
+                {
+                    "img": "https://plugin.codeloverme.cn/docker/docker.jpeg",
+                    "desc": "## 功能 \n- 监控docker运行状态 \n"
+                },
+                {
+                    "img": "https://plugin.codeloverme.cn/docker/docker1.jpeg",
+                    "desc": "## [详细教程](https://docs.qq.com/aio/DTGdndmFVZlZldEJS?p=qIZWN8Pp1EiBUZLJEWhGWR&client_hint=0&client_hint=0)"
+                }
+            ]
         },
         {
             "id" : "system",
@@ -44,6 +64,10 @@
                 {
                     "img": "https://plugin.codeloverme.cn/system/system.jpeg",
                     "desc": "## 功能 \n- 监控cpu，内存，网络 \n"
+                },
+                {
+                    "img": "https://plugin.codeloverme.cn/system/system1.jpeg",
+                    "desc": "## [详细教程](https://docs.qq.com/aio/DTGdndmFVZlZldEJS?p=Z6Ifvgjh60KdKlde7ZVAiF&client_hint=0&client_hint=0) \n"
                 }
             ]
         },
@@ -57,7 +81,7 @@
             "min_server_version": "1.0",
             "min_client_version": "1.0",
             "version": "1.0",
-            "is_finished": true,
+            "is_finished": false,
             "img": ["en","ja"]
         },
         {
@@ -84,7 +108,17 @@
             "min_client_version": "1.26",
             "version": "1.6",
             "is_finished": true,
-            "img": ["en","ja"]
+            "img": ["en","ja"],
+            "img_desc": [
+                {
+                    "img": "https://plugin.codeloverme.cn/transmission/tr.jpeg",
+                    "desc": "## 功能 \n- 下载列表 \n"
+                },
+                {
+                    "img": "https://plugin.codeloverme.cn/transmission/tr1.jpeg",
+                    "desc": "## [详细教程](https://docs.qq.com/aio/DTGdndmFVZlZldEJS?p=eMtwtwBOU6UYqfZK3uJR1i&client_hint=0&client_hint=0)"
+                }
+            ]
         },
         {
             "id" : "wordpress",
