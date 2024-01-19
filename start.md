@@ -1,6 +1,8 @@
 
 # 快速开始
 
+## [点我查看最新更详细的文档](https://docs.qq.com/aio/DTGdndmFVZlZldEJS?p=dKEREAv71e2G6cpIU9cMtW)
+
 ## 整体架构
 [![](https://plugin.codeloverme.cn/img/myservers.png)](https://plugin.codeloverme.cn/img/myservers.png)
 
