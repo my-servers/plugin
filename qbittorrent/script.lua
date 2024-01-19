@@ -84,7 +84,7 @@ local global = {
     },
     them = {
         descFontColor = "#b8b8b8",
-        infoFontSize = 18,
+        infoFontSize = 16,
         buttonSize = 28,
         listInfoFontSize = 11,
         listDescFontSize = 10,
@@ -260,7 +260,7 @@ local function NewQBittorrent(ctx)
         end
         line.AddAction(NewAction("delete", { hash = d.hash,clean = "false" }, "删除").SetIcon("trash.circle").SetCheck(true))
         line.AddAction(NewAction("delete", { hash = d.hash,clean = "true" }, "删除并清理文件").SetIcon("trash.circle").SetCheck(true))
-            .SetPage("qbittorrent","torrentDetail",d,"Torrent详情")
+            .SetPage("qbittorrent","torrentDetail",d,"任务详情")
         return line
     end
 
@@ -844,6 +844,9 @@ local function NewQBittorrent(ctx)
         local list = json.decode(data.body)
         local hasNext = true
         local isEmpty = true
+        if #list == 0 then
+            return page.AddPageSection(listSection.AddUiRow(NewUiRow().AddUi(NewTextUi().SetText(NewText("").AddString(1,NewString("无数据").SetColor(global.them.descFontColor)))))).Data()
+        end
         for index, value in ipairs(list) do
             if  global.listPageArg.offset == 0 and index == 1 then
                 global.listPageArg.firstHash = value.hash

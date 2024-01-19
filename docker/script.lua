@@ -698,6 +698,10 @@ function NewDocker(ctx)
         })
         local page = NewPage()
         local section = NewPageSection(global.containersPage.stateMap[global.containersPage.curType])
+
+        if #list == 0 then
+            return page.AddPageSection(section.AddUiRow(NewUiRow().AddUi(NewTextUi().SetText(NewText("").AddString(1,NewString("无数据").SetColor(global.them.systemInfoDescFontColor)))))).Data()
+        end
         for index, value in ipairs(list) do
             local fontColor = global.them.allRunningContainersColor
             if value.State == "paused" then
