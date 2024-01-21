@@ -4,11 +4,15 @@ priority: 70
 height: 6
 padding: 3
 extend:
-  HostPort:
-    val: "http://127.0.0.1:6800/jsonrpc"
-    desc: Api地址
+  Host:
+    val: 127.0.0.1
+    desc: IP
     priority: 200
+  Port:
+    val: 6800
+    desc: 端口
+    priority: 100
   Token:
-    val: "test"
+    val: prc_password
     desc: 密钥
-    priority: 200
+    priority: 0

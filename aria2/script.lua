@@ -1,3 +1,4 @@
+-- 根据aria2的文档开发 https://aria2.github.io/manual/en/html/aria2c.html#methods
 local http = require("http")
 local json = require("json")
 local httpClient = http.client({
@@ -7,6 +8,7 @@ local httpClient = http.client({
 local global = {
     addDownloadUrl = "aria2.addUri",
     getDownloading = "aria2.tellActive",
+    getState = "aria2.getGlobalStat",
     getDownloadDingArg  = {
         "gid",
         "totalLength",
@@ -29,8 +31,33 @@ local global = {
     deleteUrl = "aria2.forceRemove",
     stopUrl = "aria2.tellStopped",
     waitingUrl = "aria2.tellWaiting",
+    detailUrl = "aria2.tellStatus",
     deleteDownloadResult= "aria2.removeDownloadResult",
-    menu = 1,
+    them = {
+        descFontColor = "#b8b8b8",
+        infoFontSize = 16,
+        descFontSize = 12,
+        downloadingFontColor = "#4285f4",
+        finishedFontColor = "#fbbc07",
+        stopFontColor = "#ea4335",
+        downloadFontColor = "#4dbf7a",
+        upFontColor = "#ff4f00",
+        sizeFontClolor = "#6348f2"
+    },
+    type = {
+        active = {
+            id = "active",
+            name = "活动中"
+        },
+        stop =  {
+            id = "stop",
+            name = "已完成",
+        },
+        waiting =  {
+            id = "waiting",
+            name = "等待中",
+        },
+    }
 }
 
 
@@ -57,221 +84,347 @@ function NewAria2(ctx)
         }
     end
 
-    local function getDetail(info)
-        local detail = string.format([[
-### %s
-|  项   | 值  |
-|  ----  | ----  |
-| 已下载 | %s |
-| 大小  | %s |
-| 下载速度  | %s |
-| 发送者/总数  | %s/%s |
-| 状态  | %s |
-]],
-                getName(info),
-                ByteToUiString(tonumber(info.completedLength)),
-                ByteToUiString(tonumber(info.totalLength)),
-                ByteToUiString(tonumber(info.downloadSpeed)),
-                info.numSeeders,info.connections,info.status
-        )
-        if type(info.files) == "table" then
-            for i = 1, #info.files do
-                local f = info.files[i]
-                detail = detail .. string.format([[| 文件  | %s<br><br>已下载/总大小: %s/%s |
-]], f.path,ByteToUiString(f.completedLength),ByteToUiString(f.length))
-            end
-        end
-        return detail
-    end
     function getName(info)
         local name = "unknown"
         if info.bittorrent and info.bittorrent.info then
             name = info.bittorrent.info.name
         end
+        if name == "unknown" and #info.files > 0 then
+            name = info.files[1].path
+        end
         return name
     end
-    ---@param app AppUI
-    function getDownloadingInfo(app)
-        local dataJson = getApi(global.getDownloading,global.getDownloadDingArg)
-        local req = http.request("POST",self.config.HostPort,json.encode(dataJson))
+
+    function doRequest(data)
+        local api = string.format("http://%s:%s/jsonrpc",self.config.Host,self.config.Port)
+        local req = http.request("POST",api,json.encode(data))
         local stateRsp,err = httpClient:do_request(req)
         if err then
             error(err)
         end
-        local data  = json.decode(stateRsp.body)
-        local index = 1
-        local fontSize = 10
-        for i = 1, #data.result do
-            local info = data.result[i]
-            app.AddUi(
-                    index,
-                    NewProcessLineUi()
-                            .SetDesc(NewText("leading")
-                            .AddString(1,
-                            NewString(getName(info))
-                                    .SetFontSize(fontSize)
-                    )
-                            .AddString(2,
-                            NewString(ByteToUiString(info.totalLength))
-                                    .SetFontSize(8)
-                                    .SetBackendColor("#333366")
-                                    .SetColor("#FFF")
-                    )
-                            .AddString(2,
-                            NewString(string.format("↓%s/S ↑%s/S", ByteToUiString(info.downloadSpeed), ByteToUiString(info.uploadSpeed)))
-                                    .SetFontSize(8)
-                                    .SetBackendColor("#663366")
-                                    .SetColor("#FFF")
-                    )
-                    )
-                            .SetTitle(NewText("trailing")
-                            .AddString(1,
-                            NewString(string.format("%.2f%%", info.completedLength * 100 / info.totalLength))
-                                    .SetFontSize(8)
-                                    .SetOpacity(0.5)
-                    )
-                    )
-                            .SetProcessData(NewProcessData(info.completedLength,info.totalLength))
-                            .AddAction(NewAction("pause",{gid=info.gid},"暂停"))
-                            .AddAction(NewAction("delete",{gid=info.gid},"删除").SetCheck(true))
-                            .SetDetail(getDetail(info))
-            )
-
-            if i%2 == 0 then
-                index = index+1
-            end
+        if stateRsp.code == 400 then
+            error("密钥验证失败")
         end
-    end
-
-    ---@param app AppUI
-    function getFinishedInfo(app)
-        local dataJson = getApi(global.stopUrl,-1,1000,global.getDownloadDingArg)
-        local req = http.request("POST",self.config.HostPort,json.encode(dataJson))
-        local stateRsp,err = httpClient:do_request(req)
-        if err then
-            error(err)
-        end
-        local data = json.decode(stateRsp.body)
-        local index = 1
-        local fontSize = 10
-        for i = 1, #data.result do
-            local info = data.result[i]
-            local name = "unknown"
-            if #info.files > 0 then
-                name = info.files[1].path
-            end
-            if info.bittorrent and info.bittorrent.info and info.bittorrent.info.name then
-                name = info.bittorrent.info.name
-            end
-            app.AddUi(
-                    index,
-                    NewProcessLineUi()
-                            .SetDesc(NewText("leading")
-                            .AddString(1,
-                            NewString(name)
-                                    .SetFontSize(fontSize)
-                    )
-                            .AddString(2,
-                            NewString(ByteToUiString(info.totalLength))
-                                    .SetFontSize(8)
-                                    .SetBackendColor("#333366")
-                                    .SetColor("#FFF")
-                    )
-                    )
-                            .SetTitle(NewText("trailing")
-                            .AddString(1,
-                            NewString(string.format("%.2f%%", info.completedLength * 100 / info.totalLength))
-                                    .SetFontSize(8)
-                                    .SetOpacity(0.5)
-                    )
-                    )
-                            .SetProcessData(NewProcessData(tonumber(info.completedLength),tonumber(info.totalLength)))
-                            .AddAction(NewAction("deleteDownloadResult",{gid=info.gid},"删除任务").SetCheck(true))
-                            .SetDetail(getDetail(info))
-            )
-
-            if i%2 == 0 then
-                index = index+1
-            end
-        end
-    end
-
-    ---@param app AppUI
-    function getWaitingInfo(app)
-        local dataJson = getApi(global.waitingUrl,0,1000,global.getDownloadDingArg)
-        local req = http.request("POST",self.config.HostPort,json.encode(dataJson))
-        local stateRsp,err = httpClient:do_request(req)
-        if err then
-            error(err)
-        end
-        local data  = json.decode(stateRsp.body)
-        local index = 1
-        local fontSize = 10
-        for i = 1, #data.result do
-            local info = data.result[i]
-            app.AddUi(
-                    index,
-                    NewProcessLineUi()
-                            .SetDesc(NewText("leading")
-                            .AddString(1,
-                            NewString(info.bittorrent.info.name)
-                                    .SetFontSize(fontSize)
-                    )
-                            .AddString(2,
-                            NewString(ByteToUiString(info.totalLength))
-                                    .SetFontSize(8)
-                                    .SetBackendColor("#333366")
-                                    .SetColor("#FFF")
-                    )
-                            .AddString(2,
-                            NewString(string.format("↓%s/S ↑%s/S", ByteToUiString(info.downloadSpeed), ByteToUiString(info.uploadSpeed)))
-                                    .SetFontSize(8)
-                                    .SetBackendColor("#663366")
-                                    .SetColor("#FFF")
-                    )
-                    )
-                            .SetTitle(NewText("trailing")
-                            .AddString(1,
-                            NewString(string.format("%.2f%%", info.completedLength * 100 / info.totalLength))
-                                    .SetFontSize(8)
-                                    .SetOpacity(0.5)
-                    )
-                    )
-                            .SetProcessData(NewProcessData(info.completedLength,info.totalLength))
-                            .AddAction(NewAction("unpause",{gid=info.gid},"继续"))
-                            .AddAction(NewAction("delete",{gid=info.gid},"删除").SetCheck(true))
-                            .SetDetail(getDetail(info))
-            )
-
-            if i%2 == 0 then
-                index = index+1
-            end
-        end
+        return json.decode(stateRsp.body)
     end
 
     function self:Update()
         local app = NewApp()
-        local buttonSize = 17
-        local play = NewIconButton().SetIcon("play.circle").SetAction(NewAction("changeMenu",{id=1},"")).SetSize(buttonSize)
-        local pause = NewIconButton().SetIcon("pause.circle").SetAction(NewAction("changeMenu",{id=2},"")).SetSize(buttonSize)
-        local finished = NewIconButton().SetIcon("list.bullet.circle").SetAction(NewAction("changeMenu",{id=3},"")).SetSize(buttonSize)
-        local plus = NewIconButton().SetIcon("plus.circle")
-                .SetAction(
-                    NewAction("add",{},"").AddInput("Url",NewInput("下载url",1))
-                ).SetSize(buttonSize)
+        local state = {}
+        local dataJson = getApi(global.getState)
+        state = doRequest(dataJson)
+        app
+                .AddUi(
+                1,
+                NewTextUi().SetText(
+                        NewText("")
+                                .AddString(
+                                1,
+                                NewString(ByteToUiString(state.result.downloadSpeed))
+                                        .SetFontSize(global.them.infoFontSize)
+                        )
+                                .AddString(
+                                2,
+                                NewString("下载速度")
+                                        .SetColor(global.them.descFontColor)
+                                        .SetFontSize(global.them.descFontSize)
+                        )
+                )
+        )
+                .AddUi(
+                1,
+                NewTextUi().SetText(
+                        NewText("")
+                                .AddString(
+                                1,
+                                NewString(ByteToUiString(state.result.uploadSpeed))
+                                        .SetFontSize(global.them.infoFontSize)
+                        )
+                                .AddString(
+                                2,
+                                NewString("上传速度")
+                                        .SetColor(global.them.descFontColor)
+                                        .SetFontSize(global.them.descFontSize)
+                        )
+                )
+        )
+                .AddUi(
+                1,
+                NewTextUi().SetText(
+                        NewText("").AddString(
+                                1,
+                                NewString(tostring(state.result.numActive))
+                                        .SetFontSize(global.them.infoFontSize)
+                                        .SetColor(global.them.downloadingFontColor)
+                        )
+                                   .AddString(
+                                2,
+                                NewString(global.type.active.name)
+                                        .SetColor(global.them.descFontColor)
+                                        .SetFontSize(global.them.descFontSize)
+                        )
+                ).SetPage("aria2","torrentList",global.type.active,global.type.active.name)
+        )
 
-        if global.menu == 1 then
-            getDownloadingInfo(app)
-            play.SetColor("#F00")
-        elseif global.menu == 2 then
-            pause.SetColor("#F00")
-            getWaitingInfo(app)
-        elseif global.menu == 3 then
-            --getWaitingInfo(app)
-            getFinishedInfo(app)
-            finished.SetColor("#F00")
+                .AddUi(
+                1,
+                NewTextUi().SetText(
+                        NewText("").AddString(
+                                1,
+                                NewString(tostring(state.result.numStopped))
+                                        .SetFontSize(global.them.infoFontSize)
+                                        .SetColor(global.them.finishedFontColor)
+                        )
+                                   .AddString(
+                                2,
+                                NewString(global.type.stop.name)
+                                        .SetColor(global.them.descFontColor)
+                                        .SetFontSize(global.them.descFontSize)
+                        )
+                ).SetPage("aria2","torrentList",global.type.stop,global.type.stop.name)
+        )
+                .AddUi(
+                1,
+                NewTextUi().SetText(
+                        NewText("").AddString(
+                                1,
+                                NewString(tostring(state.result.numWaiting))
+                                        .SetFontSize(global.them.infoFontSize)
+                                        .SetColor(global.them.stopFontColor)
+                        )
+                                   .AddString(
+                                2,
+                                NewString(global.type.waiting.name)
+                                        .SetColor(global.them.descFontColor)
+                                        .SetFontSize(global.them.descFontSize)
+                        )
+                ).SetPage("aria2","torrentList",global.type.waiting,global.type.waiting.name)
+        )
+                .AddMenu(
+                NewIconButton().SetIcon("plus.circle")
+                               .SetAction(
+                        NewAction("add",{},"").AddInput("Url",NewInput("下载url",1))
+                ).SetSize(17)
+        )
+        return app.Data()
+    end
+
+    function self:TorrentDeail()
+        local page = NewPage()
+        local dataJson = getApi(global.detailUrl,self.arg.gid)
+        local detail = doRequest(dataJson)
+
+        local section = NewPageSection(getName(detail.result))
+        section.AddUiRow(
+                NewUiRow()
+                        .AddUi(
+                        NewTextUi().SetText(
+                                NewText("")
+                                        .AddString(
+                                        1,
+                                        NewString(ByteToUiString(detail.result.downloadSpeed).."B/s")
+                                                .SetColor(global.them.downloadFontColor)
+                                                .SetFontSize(global.them.infoFontSize)
+                                )
+                                        .AddString(
+                                        2,
+                                        NewString("下载速度")
+                                                .SetColor(global.them.descFontColor)
+                                )
+                        )
+                )
+                        .AddUi(
+                        NewTextUi().SetText(
+                                NewText("")
+                                        .AddString(
+                                        1,
+                                        NewString(ByteToUiString(detail.result.uploadSpeed).."B/s")
+                                                .SetColor(global.them.upFontColor)
+                                                .SetFontSize(global.them.infoFontSize)
+                                )
+                                        .AddString(
+                                        2,
+                                        NewString("上传速度")
+                                                .SetColor(global.them.descFontColor)
+                                )
+                        )
+                )
+                        .AddUi(
+                        NewTextUi().SetText(
+                                NewText("")
+                                        .AddString(
+                                        1,
+                                        NewString(ByteToUiString(detail.result.completedLength))
+                                                .SetColor(global.them.sizeFontClolor)
+                                                .SetFontSize(global.them.infoFontSize)
+                                )
+                                        .AddString(
+                                        2,
+                                        NewString("已下载")
+                                                .SetColor(global.them.descFontColor)
+                                )
+                        )
+                )
+                        .AddUi(
+                        NewTextUi().SetText(
+                                NewText("")
+                                        .AddString(
+                                        1,
+                                        NewString(ByteToUiString(detail.result.totalLength))
+                                                .SetColor(global.them.sizeFontClolor)
+                                                .SetFontSize(global.them.infoFontSize)
+                                )
+                                        .AddString(
+                                        2,
+                                        NewString("总大小")
+                                                .SetColor(global.them.descFontColor)
+                                )
+                        )
+                )
+        )
+               .AddUiRow(
+                NewUiRow().AddUi(
+                        NewProcessLineUi()
+                                .SetProcessData(
+                                NewProcessData(detail.result.completedLength,detail.result.totalLength)
+                        )
+                                .SetTitle(
+                                NewText("").AddString(
+                                        1,
+                                        NewString(string.format("%.2f%%",detail.result.completedLength/detail.result.totalLength*100))
+                                                .SetColor(global.them.sizeFontClolor)
+                                                .SetFontSize(10)
+                                )
+                        )
+                )
+        )
+
+        local files = NewPageSection("内容")
+        for index, value in ipairs(detail.result.files) do
+            files.AddUiRow(
+                    NewUiRow().AddUi(
+                            NewProcessLineUi()
+                                    .SetProcessData(
+                                    NewProcessData(value.completedLength, value.length)
+                            )
+                                    .SetDesc(
+                                    NewText("leading")
+                                            .AddString(
+                                            1,
+                                            NewString(value.path)
+                                                    .SetFontSize(10)
+                                    )
+                                            .AddString(
+                                            2,
+                                            NewString(ByteToUiString(value.length))
+                                                    .SetFontSize(10)
+                                                    .SetColor(global.them.sizeFontClolor)
+                                    )
+                                            .AddString(
+                                            2,
+                                            NewString(string.format("%.2f%%",value.completedLength/value.length*100))
+                                                    .SetFontSize(10)
+                                                    .SetColor(global.them.sizeFontClolor)
+                                    )
+                            )
+                    )
+            )
         end
-        return app.AddMenu(plus).AddMenu(play).AddMenu(pause).AddMenu(finished).Data()
+        page.AddPageSection(
+                section
+        ).AddPageSection(
+                files
+        )
+        return page.Data()
+    end
+
+    function self:TorrentList()
+        local page = NewPage()
+        local section = NewPageSection("列表")
+        local list = {}
+        if self.arg.id == global.type.active.id then
+            local dataJson = getApi(global.getDownloading,global.getDownloadDingArg)
+            list = doRequest(dataJson)
+        elseif self.arg.id == global.type.waiting.id then
+            local dataJson = getApi(global.waitingUrl,0,1000,global.getDownloadDingArg)
+            list = doRequest(dataJson)
+        else
+            local dataJson = getApi(global.stopUrl,-1,1000,global.getDownloadDingArg)
+            list = doRequest(dataJson)
+        end
+        if #list.result == 0 then
+            return page.AddPageSection(section.AddUiRow(NewUiRow().AddUi(NewTextUi().SetText(NewText("").AddString(1,NewString("无数据").SetColor(global.them.descFontColor)))))).Data()
+        end
+        for index, value in ipairs(list.result) do
+            local download = NewString(ByteToUiString(value.downloadSpeed).."/s")
+                    .SetFontSize(10)
+                    .SetColor(global.them.descFontColor)
+
+            local up = NewString(ByteToUiString(value.uploadSpeed).."/s")
+                    .SetFontSize(10)
+                    .SetColor(global.them.descFontColor)
+            if tonumber(value.downloadSpeed) > 0 then
+                download.SetColor(global.them.downloadFontColor)
+            end
+            if tonumber(value.uploadSpeed) > 0 then
+                up.SetColor(global.them.upFontColor)
+            end
+            local torrent = NewProcessLineUi()
+                    .SetDesc(
+                    NewText("leading").AddString(
+                            1,
+                            NewString(getName(value))
+                                    .SetFontSize(10)
+                    )
+                                      .AddString(2,
+                            NewString(ByteToUiString(value.totalLength))
+                                    .SetFontSize(10)
+                                    .SetColor(global.them.descFontColor)
+                    )
+            )
+                    .SetTitle(
+                    NewText("trailing")
+                            .AddString(2,
+                            download
+                    )
+                            .AddString(2,
+                            up
+                    )
+                            .AddString(1,
+                            NewString(string.format("%.2f%%", value.completedLength * 100 / value.totalLength))
+                                    .SetFontSize(10)
+                    )
+            )
+                    .SetProcessData(
+                    NewProcessData(value.completedLength,value.totalLength)
+            )
+
+            if self.arg.id == global.type.stop.id then
+                torrent.AddAction(
+                        NewAction("deleteDownloadResult",{gid=value.gid},"删除任务").SetCheck(true)
+                )
+            elseif self.arg.id == global.type.active.id  then
+                torrent
+                        .AddAction(NewAction("pause",{gid=value.gid},"暂停"))
+                        .AddAction(NewAction("delete",{gid=value.gid},"删除").SetCheck(true))
+            elseif self.arg.id == global.type.waiting.id then
+                torrent
+                        .AddAction(NewAction("unpause",{gid=value.gid},"继续"))
+                        .AddAction(NewAction("delete",{gid=value.gid},"删除").SetCheck(true))
+            end
+
+            torrent.SetPage("aria2","torrentDeail",{gid=value.gid},"下载详情")
+
+            section.AddUiRow(
+                    NewUiRow().AddUi(
+                            torrent
+                    )
+            )
+        end
+        page.AddPageSection(
+                section
+        )
+        return page.Data()
     end
 
 
@@ -332,11 +485,6 @@ function NewAria2(ctx)
         return NewToast("添加下载成功","info.circle","#000")
     end
 
-    function self:ChangeMenu()
-        global.menu = tonumber(self.arg.id)
-    end
-
-
     return self
 end
 
@@ -355,9 +503,6 @@ function pause(ctx)
     return NewAria2(ctx):Pause()
 end
 
-function changeMenu(ctx)
-    return NewAria2(ctx):ChangeMenu()
-end
 
 function unpause(ctx)
     return NewAria2(ctx):Unpause()
@@ -373,4 +518,12 @@ end
 
 function deleteDownloadResult(ctx)
     return NewAria2(ctx):DeleteDownloadResult()
+end
+
+function torrentList(ctx)
+    return NewAria2(ctx):TorrentList()
+end
+
+function torrentDeail(ctx)
+    return NewAria2(ctx):TorrentDeail()
 end
