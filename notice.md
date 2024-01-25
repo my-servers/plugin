@@ -1,2 +1,2 @@
 - 💬💬建立了一个[微信群](https://plugin.codeloverme.cn/img/wechat.jpg)和[Tg群](https://t.me/+TpAft0JOKUY4M2Q1)，欢迎进来吐槽
-- 打折预告：春节🧨期间终身版会有折扣，新用户可以先体验下app
+- 🎉🎉春节折扣提前开启啦！！4.9折甩卖app了！龙年祝大家龙行龘龘，前程朤朤！
