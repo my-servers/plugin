@@ -744,9 +744,12 @@ local function NewSystem(ctx)
         return page.Data()
     end
 
-    function checkDiskNeedShow(type)
+    function checkDiskNeedShow(v)
+        if v.Path == "/app/config" or strings.contains(v.Path, "/etc/")  then
+            return false
+        end
         for index, value in ipairs(global.allNeedShowDisk) do
-            if strings.contains(type, value) then
+            if strings.contains(v.Fstype, value) then
                 return true
             end
         end
@@ -763,7 +766,7 @@ local function NewSystem(ctx)
             if value.UsedPercent > 90 then
                 fontColor = "#F00"
             end
-            if checkDiskNeedShow(value.Fstype) then
+            if checkDiskNeedShow(value) then
                 local name = string.format("%s (%.2f%%)",value.Path,value.UsedPercent)
                 page.AddPageSection(
                         NewPageSection(name).AddUiRow(
@@ -829,13 +832,6 @@ local function NewSystem(ctx)
                                         NewAction("",{},"复制").SetCopyAction(value.Path)
                                 ).SetSize(14)
                         )
-                        --.AddMenu(
-                        --        NewIconButton()
-                        --                .SetIcon("terminal")
-                        --                .SetAction(
-                        --                NewAction("",{},"复制").SetTerminalAction("cd "..value.Path)
-                        --        ).SetSize(14)
-                        --)
                 )
             end
 
