@@ -351,7 +351,7 @@ local global = {
                 color = "#4285f4"
             },
             available = {
-                name = "可用",
+                name = "正常",
                 color = "#4285f4"
             }
         }
@@ -631,6 +631,17 @@ local function NewPve(ctx)
         if Tonumber(data.swapTotal) > 0 then
             swapUsedPercent = data.swapUsed/data.swapTotal*100
         end
+
+        local rootFsPercent = 0
+        if Tonumber(data.rootfsTotal) > 0 then
+            rootFsPercent = data.rootfsUsed/data.rootfsTotal*100
+        end
+
+        local memPercent = 0
+        if Tonumber(data.memoryTotal) > 0 then
+            memPercent = data.memoryUsed/data.memoryTotal*100
+        end
+
         return NewPageSection("运行状态")
                 .AddUiRow(
                 NewUiRow()
@@ -674,7 +685,7 @@ local function NewPve(ctx)
                                 )
                                         .AddString(
                                         2,
-                                        NewString(string.format("%.1f%%", data.memoryUsed/data.memoryTotal*100))
+                                        NewString(string.format("%.1f%%", memPercent))
                                                 .SetFontSize(fontSize)
                                                 .SetColor(global.allResourcesState.buttonDescFontColor)
                                 )
@@ -700,7 +711,7 @@ local function NewPve(ctx)
                                 )
                                         .AddString(
                                         2,
-                                        NewString(string.format("%.1f%%",data.rootfsUsed/data.rootfsTotal*100))
+                                        NewString(string.format("%.1f%%",rootFsPercent))
                                                 .SetFontSize(fontSize)
                                                 .SetColor(global.allResourcesState.buttonDescFontColor)
                                 )
