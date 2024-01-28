@@ -1,9 +1,16 @@
 local json = require("json")
 local black = "#000"
 
+function Tonumber(num)
+    if num == nil then
+        return 0
+    end
+    return tonumber(num)
+end
+
 local ByteToOther = { "B", "K", "M", "G", "T", "P" }
 function ByteToUiString(number)
-    local  num = tonumber(number)
+    local  num = Tonumber(number)
     if num <= 0 then
         return "0B"
     end
@@ -16,15 +23,10 @@ function ByteToUiString(number)
 end
 
 function getKeyByRowCol(row, col)
-    return string.format("_%d_%d", tonumber(row), tonumber(col))
+    return string.format("_%d_%d", Tonumber(row), Tonumber(col))
 end
 
-function Tonumber(num)
-    if num == nil then
-        return 0
-    end
-    return tonumber(num)
-end
+
 
 function string.split(input, delimiter)
     input = tostring(input)
@@ -106,7 +108,7 @@ function NewPoint(val, x)
     local point = {
         ---@class PointData
         data = {
-            val = tonumber(val),
+            val = Tonumber(val),
             x = tostring(x),
         }
     }
@@ -114,7 +116,7 @@ function NewPoint(val, x)
     ---@param val number 值
     ---@return Point
     local function SetVal(val)
-        point.data.val = tonumber(val)
+        point.data.val = Tonumber(val)
         return point
     end
 
@@ -317,7 +319,7 @@ function NewString(str)
     ---@param opacity number 透明度
     ---@return String
     local function SetOpacity(opacity)
-        s.strData.opacity = tonumber(opacity)
+        s.strData.opacity = Tonumber(opacity)
         return s
     end
 
@@ -325,7 +327,7 @@ function NewString(str)
     ---@param size number 字体大小
     ---@return String
     local function SetFontSize(size)
-        s.strData.font_size = tonumber(size)
+        s.strData.font_size = Tonumber(size)
         return s
     end
 
@@ -347,7 +349,7 @@ end
 ---@return ProcessData 进度数据
 function NewProcessData(cur, total)
     local percent = 0
-    if tonumber(total) > 0 then
+    if Tonumber(total) > 0 then
         percent = math.ceil(cur * 100 / total)
     end
     ---@class ProcessData
@@ -355,7 +357,7 @@ function NewProcessData(cur, total)
         ---@class ProcessDataData
         data = {
             total = 100,
-            cur = tonumber(percent),
+            cur = Tonumber(percent),
         }
     }
 
@@ -402,7 +404,7 @@ function NewText(alignment)
     local function AddString(row, str)
         rowStr = tostring(row)
         if text.rowColIndex[rowStr] == nil then
-            text.rowColIndex[rowStr] = tonumber(0)
+            text.rowColIndex[rowStr] = Tonumber(0)
         end
         text.rowColIndex[rowStr] = text.rowColIndex[rowStr] + 1
         SetString(row, text.rowColIndex[rowStr], str)
@@ -440,7 +442,7 @@ function NewInput(desc, priority)
         data = {
             val = "",
             desc = tostring(desc),
-            priority = tonumber(priority),
+            priority = Tonumber(priority),
             input_type = 0,
             input_list = nil
         }
@@ -509,7 +511,7 @@ function NewIconButton()
     ---@param size number icon大小
     ---@return IconButton
     local function SetSize(size)
-        iconButton.data.size = tonumber(size)
+        iconButton.data.size = Tonumber(size)
         return iconButton
     end
 
@@ -1107,7 +1109,7 @@ function NewApp()
     ---@return AppUI
     local function AddUi(row, ui)
         if app.rowColIndex[row] == nil then
-            app.rowColIndex[row] = tonumber(0)
+            app.rowColIndex[row] = Tonumber(0)
         end
         app.rowColIndex[row] = app.rowColIndex[row] + 1
         SetUi(row, app.rowColIndex[row], ui)

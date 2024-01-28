@@ -169,15 +169,21 @@
         {
             "id" : "proxmox",
             "name": "Proxmox",
-            "introduce" : "虚拟机管理系统：\n1.监控节点，存储，虚拟机\n2.管理虚拟机",
+            "introduce" : "新增二级页支持，需要配置最新版服务端食用",
             "author" : "admin",
             "home_url": "",
             "download_url":"https://plugin.codeloverme.cn/proxmox",
-            "min_server_version": "1.0",
-            "min_client_version": "1.0",
-            "version": "1.1",
+            "min_server_version": "1.16",
+            "min_client_version": "1.28",
+            "version": "1.2",
             "is_finished": true,
-            "img": ["en","ja"]
+            "img": ["en","ja"],
+            "img_desc": [
+                {
+                    "img": "https://plugin.codeloverme.cn/proxmox/pve.jpeg",
+                    "desc": "## [详细教程](https://docs.qq.com/aio/DTGdndmFVZlZldEJS?p=hr1rmqOROGTlrwHHHw43k2)"
+                }
+            ]
         }
     ]
 }

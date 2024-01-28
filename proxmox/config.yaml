@@ -15,3 +15,7 @@ extend:
     val: root@pam
     desc: 用户名
     priority: 200
+  TaskMaxNum:
+    val: 20
+    desc: 任务最大展示数量
+    priority: 170
