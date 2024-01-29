@@ -51,13 +51,13 @@
         {
             "id" : "system",
             "name": "系统监控",
-            "introduce" : "新增展示宿主机磁盘信息，需要重新安装服务端生效",
+            "introduce" : "新增展示宿主机磁盘信息，需要重新安装服务端生效，新增cpu温度",
             "author" : "admin",
             "home_url": "",
             "download_url":"https://plugin.codeloverme.cn/system",
             "min_server_version": "1.16",
             "min_client_version": "1.21",
-            "version": "1.9",
+            "version": "1.20",
             "is_finished": true,
             "img": ["en","ja"],
             "img_desc": [

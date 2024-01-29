@@ -177,8 +177,20 @@ local function NewSystem(ctx)
 
     ---@return LineChartUi
     local function getCpuLineChart()
-        title = NewText("").AddString(1, NewString("cpu走势").SetFontSize(8).SetOpacity(0.8))
-        cpuLineChart = NewLineChartUi()
+        local file = io.popen("cat /sys/class/thermal/thermal_zone0/temp", "r")
+        local output = file:read("*all")
+        file:close()
+        local color = ""
+        if Tonumber(output)/1000 > 80 then
+            color = "#F00"
+        end
+        local title = NewText("").AddString(
+                1,
+                NewString(string.format("cpu走势 %d°C",Tonumber(output)/1000))
+                        .SetFontSize(8).SetOpacity(0.8)
+                        .SetColor(color)
+        )
+        local cpuLineChart = NewLineChartUi()
         cpuLineChart.SetTitle(title)
         for i, v in ipairs(calCpuPoint()) do
             cpuLineChart.AddPoint(NewPoint(v, tostring(i)))
@@ -353,19 +365,14 @@ local function NewSystem(ctx)
 
     function self:GetUi()
         local app = NewApp()
-        if global.menu == global.menuInfo then
-            app.AddUi(1, getNetUi())
-            app.AddUi(1, getMemUi())
-            app.AddUi(1, getCpuUi())
-            app.AddUi(1, getNasUi())
-            app.AddUi(2, getCpuLineChart())
-            local info = cpu.Percent(0, true)
-            calAllCpuPoint(info)
-            updateNetWin()
-        else
-            self:addAllFileUi(app)
-        end
-        getAllMenu(app)
+        app.AddUi(1, getNetUi())
+        app.AddUi(1, getMemUi())
+        app.AddUi(1, getCpuUi())
+        app.AddUi(1, getNasUi())
+        app.AddUi(2, getCpuLineChart())
+        local info = cpu.Percent(0, true)
+        calAllCpuPoint(info)
+        updateNetWin()
         return app.Data()
     end
 
