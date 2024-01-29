@@ -2,9 +2,11 @@ local http = require("http")
 local json = require("json")
 local httpClient = http.client({
     timeout = 2, -- 超时1s
+    insecure_ssl=true,
 })
 local asyncHttpClient = http.client({
     timeout = 5, -- 超时1s
+    insecure_ssl=true,
 })
 local global = {
     urlFormat = "http://%s:%s@%s/transmission/rpc",

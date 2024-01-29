@@ -3,6 +3,7 @@ local http = require("http")
 local httpClient = http.client({
     timeout = 1, -- 超时1s
     headers = {["Content-Type"]="application/x-www-form-urlencoded"},
+    insecure_ssl=true,
 })
 
 local global = {

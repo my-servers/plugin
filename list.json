@@ -5,13 +5,13 @@
         {
             "id" : "qbittorrent",
             "name": "qBittorrent",
-            "introduce" : "qBittorrent下载工具:\n1.修改字体大小\n2.优化空数据展示",
+            "introduce" : "允许不校验ssl",
             "author" : "admin",
             "home_url": "",
             "download_url":"https://plugin.codeloverme.cn/qbittorrent",
             "min_server_version": "1.12",
             "min_client_version": "1.21",
-            "version": "1.8",
+            "version": "1.9",
             "is_finished": true,
             "img": ["en","ja"],
             "img_desc": [
@@ -28,13 +28,13 @@
         {
             "id" : "docker",
             "name": "Docker",
-            "introduce" : "docker管理:\n1.优化空数据展示",
+            "introduce" : "允许不校验ssl",
             "author" : "admin",
             "home_url": "",
             "download_url":"https://plugin.codeloverme.cn/docker",
             "min_server_version": "1.13",
             "min_client_version": "1.21",
-            "version": "1.9",
+            "version": "1.10",
             "is_finished": true,
             "img": ["en","ja"],
             "img_desc": [
@@ -87,13 +87,13 @@
         {
             "id" : "aria2",
             "name": "Aria2",
-            "introduce" : "1.支持二级页面",
+            "introduce" : "允许不校验ssl",
             "author" : "admin",
             "home_url": "",
             "download_url":"https://plugin.codeloverme.cn/aria2",
             "min_server_version": "1.11",
             "min_client_version": "1.21",
-            "version": "1.1",
+            "version": "1.2",
             "is_finished": true,
             "img": ["en","ja"],
             "img_desc": [
@@ -106,13 +106,13 @@
         {
             "id" : "transmission",
             "name": "Transmission",
-            "introduce" : "transmission下载工具：\n1.新增下载\n2.暂停/删除下载任务\n3.查看下载进度",
+            "introduce" : "允许不校验ssl",
             "author" : "admin",
             "home_url": "",
             "download_url":"https://plugin.codeloverme.cn/transmission",
             "min_server_version": "1.14",
             "min_client_version": "1.26",
-            "version": "1.6",
+            "version": "1.7",
             "is_finished": true,
             "img": ["en","ja"],
             "img_desc": [

@@ -3,6 +3,7 @@ local http = require("http")
 local json = require("json")
 local httpClient = http.client({
     timeout = 2, -- 超时1s
+    insecure_ssl=true,
 })
 
 local global = {

@@ -4,10 +4,12 @@ local time = require("time")
 local strings = require("strings")
 local httpClient = http.client({
     timeout = 2, -- 超时1s
+    insecure_ssl=true,
 })
 local backendHttpClient = http.client({
     timeout = 300, -- 超时300s
     headers = {["Content-Type"]="application/x-www-form-urlencoded"},
+    insecure_ssl=true,
 })
 
 local global = {
