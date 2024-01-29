@@ -782,7 +782,7 @@ local function NewPve(ctx)
                                         .SetTitle(
                                         NewText("trailing").AddString(
                                                 1,
-                                                NewString(string.format("%d * %s", nodeDetail.data.cpuinfo.cpus, nodeDetail.data.cpuinfo.model))
+                                                NewString(string.format("%d * %s", nodeDetail.data.cpuinfo.cpus, tostring(nodeDetail.data.cpuinfo.model)))
                                                         .SetFontSize(10)
                                         )
                                 )
@@ -802,7 +802,7 @@ local function NewPve(ctx)
                                         .SetTitle(
                                         NewText("trailing").AddString(
                                                 1,
-                                                NewString(nodeDetail.data.kversion)
+                                                NewString(tostring(nodeDetail.data.kversion))
                                                         .SetFontSize(10)
                                         )
                                 )
@@ -822,7 +822,7 @@ local function NewPve(ctx)
                                         .SetTitle(
                                         NewText("trailing").AddString(
                                                 1,
-                                                NewString(nodeDetail.data["boot-info"].mode)
+                                                NewString(tostring(nodeDetail.data["boot-info"].mode))
                                                         .SetFontSize(10)
                                         )
                                 )
@@ -842,7 +842,7 @@ local function NewPve(ctx)
                                         .SetTitle(
                                         NewText("trailing").AddString(
                                                 1,
-                                                NewString(nodeDetail.data.pveversion)
+                                                NewString(tostring(nodeDetail.data.pveversion))
                                                         .SetFontSize(10)
                                         )
                                 )
