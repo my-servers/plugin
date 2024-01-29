@@ -19,6 +19,12 @@ local global = {
     page = 0,
     pageSize = 20,
     isConfigInterface = false,
+    allNotShowDir = {
+        ["/etc/resolv.conf"] = "",
+        ["/etc/hostname"] = "",
+        ["/etc/hosts"] = "",
+        ["/app/config"] = "",
+    },
     allNeedShowDisk = {
         "ext",
         "xfs",
@@ -29,6 +35,7 @@ local global = {
         "btrfs",
         "zfs",
         "ufs",
+        "msdos",
     },
 }
 
@@ -745,7 +752,13 @@ local function NewSystem(ctx)
     end
 
     function checkDiskNeedShow(v)
-        if v.Path == "/app/config" or strings.contains(v.Path, "/etc/")  then
+        for key, value in pairs(global.allNotShowDir) do
+            if v.Path == key then
+                return false
+            end
+        end
+        if strings.contains(v.Path, "docker/") and v.Fstype == "btrfs" then
+            -- 特殊逻辑，过滤下docker的磁盘
             return false
         end
         for index, value in ipairs(global.allNeedShowDisk) do
@@ -772,6 +785,9 @@ local function NewSystem(ctx)
             end
             if checkDiskNeedShow(value) and uniq[value.Path] == nil then
                 local name = string.format("%s (%.2f%%)",string.gsub(value.Path,"/hostDisk","主机目录:",1),value.UsedPercent)
+                if value.Path == "/app/apps" then
+                    name = "容器磁盘"
+                end
                 page.AddPageSection(
                         NewPageSection(name).AddUiRow(
                                 NewUiRow().AddUi(
