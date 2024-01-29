@@ -760,14 +760,18 @@ local function NewSystem(ctx)
         local page = NewPage()
         local disk = disk.IOCountersList()
         local fontSize = 18
+        local uniq = {}
+        table.sort(disk, function (a, b)
+            return a.Total > b.Total
+        end)
         for i=1, #disk do
             local value = disk[i]
             local fontColor = global.fontColor
             if value.UsedPercent > 90 then
                 fontColor = "#F00"
             end
-            if checkDiskNeedShow(value) then
-                local name = string.format("%s (%.2f%%)",value.Path,value.UsedPercent)
+            if checkDiskNeedShow(value) and uniq[value.Path] == nil then
+                local name = string.format("%s (%.2f%%)",string.gsub(value.Path,"/hostDisk","主机目录:",1),value.UsedPercent)
                 page.AddPageSection(
                         NewPageSection(name).AddUiRow(
                                 NewUiRow().AddUi(
@@ -834,7 +838,7 @@ local function NewSystem(ctx)
                         )
                 )
             end
-
+            uniq[value.Path] = value.Path
         end
         return page.Data()
     end

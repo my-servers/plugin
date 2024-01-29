@@ -86,14 +86,20 @@ if [ ${#secret_key} -ne 32 ]; then
 fi
 
 # 查看宿主机所有挂载的磁盘，需要挂载到容器，这样系统监控才会显示这些磁盘的信息
-allMount=$(mount | grep "^/dev" | awk '{ print $3 }')
+mounts=""
+allMount=$(mount | grep "^/dev" | awk '{ print $1,$3 }')
 myServersAllDisk=""
-for path in $allMount; do
-  if [ "$path" == "/"  ]; then
+while read -r dev path; do
+  if [ "$path" = "/" ]; then
     continue
   fi
-  myServersAllDisk="$myServersAllDisk -v $path:/hostDisk$path "
-done
+  if ! echo "$mounts" | grep -q "$dev"; then
+    mounts="$mounts $dev $path"
+    myServersAllDisk="$myServersAllDisk -v $path:/hostDisk$path "
+  fi
+done <<EOF
+$(mount | grep "^/dev" | awk '{ print $1,$3 }')
+EOF
 
 # 拉取Docker镜像（替换为你的Docker镜像名称）
 docker pull myservers/my_servers
