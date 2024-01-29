@@ -5,7 +5,11 @@ function Tonumber(num)
     if num == nil then
         return 0
     end
-    return tonumber(num)
+    local res = tonumber(num)
+    if res == nil then
+        return 0
+    end
+    return res
 end
 
 local ByteToOther = { "B", "K", "M", "G", "T", "P" }
