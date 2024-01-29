@@ -764,7 +764,7 @@ local function NewPve(ctx)
         page.AddPageSection(
                 self:getStatePageSection({
                     cpu = nodeDetail.data.cpu,
-                    cpus = nodeDetail.data.cpuinfo.cores,
+                    cpus = nodeDetail.data.cpuinfo.cpus,
                     memoryUsed = nodeDetail.data.memory.used,
                     memoryTotal = nodeDetail.data.memory.total,
                     rootfsUsed = nodeDetail.data.rootfs.used,
