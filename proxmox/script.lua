@@ -757,6 +757,10 @@ local function NewPve(ctx)
         local nodeDetailUrl = string.format(self.config.HostPort .. global.api.nodeDetail,self.arg.node)
         local nodeDetailRsp = get(nodeDetailUrl,{})
         local nodeDetail = json.decode(nodeDetailRsp.body)
+        local bootMode = "unknown"
+        if nodeDetail.data["boot-info"] ~= nil then
+            bootMode = tostring(nodeDetail.data["boot-info"].mode)
+        end
         page.AddPageSection(
                 self:getStatePageSection({
                     cpu = nodeDetail.data.cpu,
@@ -822,7 +826,7 @@ local function NewPve(ctx)
                                         .SetTitle(
                                         NewText("trailing").AddString(
                                                 1,
-                                                NewString(tostring(nodeDetail.data["boot-info"].mode))
+                                                NewString(tostring(bootMode))
                                                         .SetFontSize(10)
                                         )
                                 )
