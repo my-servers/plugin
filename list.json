@@ -55,9 +55,9 @@
             "author" : "admin",
             "home_url": "",
             "download_url":"https://plugin.codeloverme.cn/system",
-            "min_server_version": "1.16",
+            "min_server_version": "1.17",
             "min_client_version": "1.21",
-            "version": "1.21",
+            "version": "1.22",
             "is_finished": true,
             "img": ["en","ja"],
             "img_desc": [
@@ -70,19 +70,6 @@
                     "desc": "## [详细教程](https://docs.qq.com/aio/DTGdndmFVZlZldEJS?p=Z6Ifvgjh60KdKlde7ZVAiF&client_hint=0&client_hint=0) \n"
                 }
             ]
-        },
-        {
-            "id" : "frp",
-            "name": "Frp",
-            "introduce" : "frp内网穿透：\n1.检查端口存活状态\n2.增加/删除/修改端口",
-            "author" : "admin",
-            "home_url": "",
-            "download_url":"https://plugin.codeloverme.cn/frp",
-            "min_server_version": "1.0",
-            "min_client_version": "1.0",
-            "version": "1.0",
-            "is_finished": false,
-            "img": ["en","ja"]
         },
         {
             "id" : "aria2",
@@ -173,9 +160,9 @@
             "author" : "admin",
             "home_url": "",
             "download_url":"https://plugin.codeloverme.cn/proxmox",
-            "min_server_version": "1.16",
+            "min_server_version": "1.17",
             "min_client_version": "1.28",
-            "version": "1.7",
+            "version": "1.8",
             "is_finished": true,
             "img": ["en","ja"],
             "img_desc": [

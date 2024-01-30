@@ -768,6 +768,10 @@ local function NewSystem(ctx)
             -- 特殊逻辑，过滤下docker的磁盘
             return false
         end
+        if strings.contains(v.Path, "docker/btrfs") then
+            -- 特殊逻辑，过滤下docker的磁盘
+            return false
+        end
         for index, value in ipairs(global.allNeedShowDisk) do
             if strings.contains(v.Fstype, value) then
                 return true
