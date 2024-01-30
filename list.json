@@ -174,8 +174,8 @@
             "home_url": "",
             "download_url":"https://plugin.codeloverme.cn/proxmox",
             "min_server_version": "1.16",
-            "min_client_version": "1.29",
-            "version": "1.6",
+            "min_client_version": "1.28",
+            "version": "1.7",
             "is_finished": true,
             "img": ["en","ja"],
             "img_desc": [
