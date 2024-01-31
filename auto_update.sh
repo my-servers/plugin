@@ -87,7 +87,6 @@ fi
 
 # 查看宿主机所有挂载的磁盘，需要挂载到容器，这样系统监控才会显示这些磁盘的信息
 mounts=""
-allMount=$(mount | grep "^/dev" | grep -v "boot" | awk '{ print $1,$3 }')
 myServersAllDisk=""
 while read -r dev path; do
   if [ "$path" = "/" ]; then
@@ -98,7 +97,7 @@ while read -r dev path; do
     myServersAllDisk="$myServersAllDisk -v $path:/hostDisk$path "
   fi
 done <<EOF
-$(mount | grep "^/dev" | awk '{ print $1,$3 }')
+$(mount | grep "^/dev" | grep -v "boot" | awk '{ print $1,$3 }')
 EOF
 
 # 拉取Docker镜像（替换为你的Docker镜像名称）
