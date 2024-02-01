@@ -358,6 +358,9 @@ local global = {
     }
 }
 
+function tsToString(ts)
+    return string.format("%d天%d小时%d分钟%d秒", ts/86400, (ts%86400)/3600, (ts%3600)/60 , ts%60)
+end
 
 ---@param ctx Ctx
 ---@return Pve
@@ -423,7 +426,6 @@ local function NewPve(ctx)
         local results = json.decode(loginRsp.body)
         global.ticket = "PVEAuthCookie=" .. results["data"]["ticket"]
         global.CSRFPreventionToken = results["data"]["CSRFPreventionToken"]
-        print("update pve cookie---------", json.encode(loginRsp),global.ticket)
     end
 
     ---@param url string
@@ -468,7 +470,6 @@ local function NewPve(ctx)
         req:header_set("Csrfpreventiontoken",global.CSRFPreventionToken)
         local rsp,err = httpClient:do_request(req)
         if err then
-            print("do post err------",err)
             error(err)
         end
         if rsp.code == 401 then
@@ -476,7 +477,6 @@ local function NewPve(ctx)
             rsp,err = httpClient:do_request(req)
         end
         if err then
-            print("do post err------",err)
             error(err)
         end
         return rsp
@@ -498,7 +498,6 @@ local function NewPve(ctx)
         req:header_set("Csrfpreventiontoken",global.CSRFPreventionToken)
         local rsp,err = httpClient:do_request(req)
         if err then
-            print("do post err------",err)
             error(err)
         end
         if rsp.code == 401 then
@@ -506,7 +505,6 @@ local function NewPve(ctx)
             rsp,err = httpClient:do_request(req)
         end
         if err then
-            print("do post err------",err)
             error(err)
         end
         return rsp
@@ -535,7 +533,6 @@ local function NewPve(ctx)
         local status = self.arg
         local url = string.format(global.api.start,status.node,status.id)
         local res = post(self.config.HostPort .. url,{},{})
-        print("shutdown vm----", json.encode(res))
         return NewToast("启动成功","info","")
     end
 
@@ -543,7 +540,6 @@ local function NewPve(ctx)
         local status = self.arg
         local url = string.format(global.api.shutdown,status.node,status.id)
         local res = post(self.config.HostPort .. url,{},{})
-        print("shutdown vm----", json.encode(res))
         return NewToast("关机成功","info","")
     end
 
@@ -551,7 +547,6 @@ local function NewPve(ctx)
         local status = self.arg
         local url = string.format(global.api.stop,status.node,status.id)
         local res = post(self.config.HostPort .. url,{},{})
-        print("stop vm----", json.encode(res))
         return NewToast("暂停成功","info","")
     end
 
@@ -559,7 +554,6 @@ local function NewPve(ctx)
         local status = self.arg
         local url = string.format(global.api.reboot,status.node,status.id)
         local res = post(self.config.HostPort .. url,{},{})
-        print("reboot vm----", json.encode(res))
         return NewToast("重启成功","info","")
     end
 
@@ -567,7 +561,6 @@ local function NewPve(ctx)
         local status = self.arg
         local url = string.format(global.api.delete,status.node,status.id)
         local res = delete(self.config.HostPort .. url,{},{})
-        print("delete vm----", json.encode(res))
         return NewToast("删除成功","info","")
     end
 
@@ -852,6 +845,26 @@ local function NewPve(ctx)
                                 )
                         )
                 )
+                    .AddUiRow(
+                        NewUiRow()
+                                .AddUi(
+                                NewProcessLineUi()
+                                        .SetDesc(
+                                        NewText("leading").AddString(
+                                                1,
+                                                NewString("运行时间")
+                                                        .SetColor(global.allResourcesState.buttonDescFontColor)
+                                        )
+                                )
+                                        .SetTitle(
+                                        NewText("trailing").AddString(
+                                                1,
+                                                NewString(tsToString(Tonumber(nodeDetail.data.uptime)))
+                                                        .SetFontSize(10)
+                                        )
+                                )
+                        )
+                )
         )
 
         page.AddPageSection(getTimeInfo())
@@ -955,7 +968,6 @@ local function NewPve(ctx)
         local status = self.arg
         local url = string.format(global.api.deleteTask,status.node,http.query_escape(status.upid))
         local res = delete(self.config.HostPort .. url,{},{})
-        print("delete vm----",url, json.encode(res))
         return NewToast("删除成功","info","")
     end
 
@@ -996,6 +1008,12 @@ local function NewPve(ctx)
                                     1,
                                     NewString(value.id)
                                             .SetColor(color)
+                            ).AddString(
+                                    2,
+                                    NewString(os.date("%Y-%m-%d %H:%M:%S", Tonumber(value.endtime)))
+                                            .SetColor(global.allResourcesState.buttonDescFontColor)
+                                            .SetFontSize(8)
+
                             )
                     )
                             .SetTitle(
@@ -1073,7 +1091,26 @@ local function NewPve(ctx)
             rootfsTotal = lxcInfo.maxdisk,
             swapUsed = lxcInfo.swap,
             swapTotal = lxcInfo.maxswap,
-        })
+        }).AddUiRow(
+                NewUiRow()
+                        .AddUi(
+                        NewProcessLineUi()
+                                .SetDesc(
+                                NewText("leading").AddString(
+                                        1,
+                                        NewString("运行时间")
+                                                .SetColor(global.allResourcesState.buttonDescFontColor)
+                                )
+                        )
+                                .SetTitle(
+                                NewText("trailing").AddString(
+                                        1,
+                                        NewString(tsToString(Tonumber(lxcInfo.uptime)))
+                                                .SetFontSize(10)
+                                )
+                        )
+                )
+        )
         )
         page.AddPageSection(getTimeInfo())
 
