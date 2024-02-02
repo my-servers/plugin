@@ -184,7 +184,7 @@ function NewDocker(ctx)
                                 2,
                                 NewString("全部").SetColor(global.them.systemInfoDescFontColor)
                         )
-                ).SetPage("docker","containersList",{type="all"},"全部")
+                ).SetPage("","containersList",{type="all"},"全部")
         ).AddUi(
                 1,
                 NewTextUi().SetText(
@@ -199,7 +199,7 @@ function NewDocker(ctx)
                                 2,
                                 NewString("运行中").SetColor(global.them.systemInfoDescFontColor)
                         )
-                ).SetPage("docker","containersList",{type="running"},"运行中")
+                ).SetPage("","containersList",{type="running"},"运行中")
         ).AddUi(
                 1,
                 NewTextUi().SetText(
@@ -214,7 +214,7 @@ function NewDocker(ctx)
                                 2,
                                 NewString("暂停").SetColor(global.them.systemInfoDescFontColor)
                         )
-                ).SetPage("docker","containersList",{type="paused"},"暂停")
+                ).SetPage("","containersList",{type="paused"},"暂停")
         ).AddUi(
                 1,
                 NewTextUi().SetText(
@@ -229,7 +229,7 @@ function NewDocker(ctx)
                                 2,
                                 NewString("停止").SetColor(global.them.systemInfoDescFontColor)
                         )
-                ).SetPage("docker","containersList",{type="exited"},"停止")
+                ).SetPage("","containersList",{type="exited"},"停止")
         ).AddUi(
                 1,
                 NewTextUi()
@@ -245,7 +245,7 @@ function NewDocker(ctx)
                                 NewString("镜像")
                                         .SetColor(global.them.systemInfoDescFontColor)
                         )
-                ).SetPage("docker","imageList",{},"镜像列表")
+                ).SetPage("","imageList",{},"镜像列表")
         )
         return app.Data()
     end
@@ -436,7 +436,7 @@ function NewDocker(ctx)
                                     NewAction("delete",{id=value.Id},"删除")
                                             .SetCheck(true)
                             )
-                                              .SetPage("docker","imageMd",{name=nameVersion[1]},"镜像详情")
+                                              .SetPage("","imageMd",{name=nameVersion[1]},"镜像详情")
                     )
             )
         end
@@ -470,7 +470,7 @@ function NewDocker(ctx)
                                     )
                             )
                                               .AddAction(NewAction("pull",{name=value.name},"拉取镜像"))
-                                              .SetPage("docker","imageMd",{name=value.name},"镜像详情")
+                                              .SetPage("","imageMd",{name=value.name},"镜像详情")
                     )
             )
         end
@@ -746,7 +746,7 @@ function NewDocker(ctx)
                                                 .AddAction(NewAction("",{},"容器日志").SetTerminalAction("docker logs -n 10 -f " .. value.Id.." \n"))
                                                 .AddAction(NewAction("",{},"登陆容器").SetTerminalAction("docker exec -it " .. value.Id .. " sh \n"))
             -- if value.State == "running" then
-            container.SetPage("docker","containerDetail",value,name)
+            container.SetPage("","containerDetail",value,name)
             -- end
             section.AddUiRow(
                     NewUiRow().AddUi(

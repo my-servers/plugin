@@ -164,7 +164,7 @@ function NewAria2(ctx)
                                         .SetColor(global.them.descFontColor)
                                         .SetFontSize(global.them.descFontSize)
                         )
-                ).SetPage("aria2","torrentList",global.type.active,global.type.active.name)
+                ).SetPage("","torrentList",global.type.active,global.type.active.name)
         )
 
                 .AddUi(
@@ -182,7 +182,7 @@ function NewAria2(ctx)
                                         .SetColor(global.them.descFontColor)
                                         .SetFontSize(global.them.descFontSize)
                         )
-                ).SetPage("aria2","torrentList",global.type.stop,global.type.stop.name)
+                ).SetPage("","torrentList",global.type.stop,global.type.stop.name)
         )
                 .AddUi(
                 1,
@@ -199,7 +199,7 @@ function NewAria2(ctx)
                                         .SetColor(global.them.descFontColor)
                                         .SetFontSize(global.them.descFontSize)
                         )
-                ).SetPage("aria2","torrentList",global.type.waiting,global.type.waiting.name)
+                ).SetPage("","torrentList",global.type.waiting,global.type.waiting.name)
         )
                 .AddMenu(
                 NewIconButton().SetIcon("plus.circle")
@@ -414,7 +414,7 @@ function NewAria2(ctx)
                         .AddAction(NewAction("delete",{gid=value.gid},"删除").SetCheck(true))
             end
 
-            torrent.SetPage("aria2","torrentDeail",{gid=value.gid},"下载详情")
+            torrent.SetPage("","torrentDeail",{gid=value.gid},"下载详情")
 
             section.AddUiRow(
                     NewUiRow().AddUi(

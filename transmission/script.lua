@@ -405,7 +405,7 @@ local function NewTransmission(ctx)
                                     2,
                                     NewString(value.name).SetColor(value.descFontColor)
                             )
-                    ).SetPage("transmission","torrentList",value,value.name)
+                    ).SetPage("","torrentList",value,value.name)
             )
         end
 
@@ -770,7 +770,7 @@ local function NewTransmission(ctx)
                 .AddAction(NewAction("delete",{id=value.id},"删除").SetCheck(true))
                 .AddAction(NewAction("deleteFile",{id=value.id},"删除并清理文件").SetCheck(true))
                 .SetProcessData(NewProcessData(value.percentDone*100,100))
-                .SetPage("transmission","torrentDetail",value,"种子详情")
+                .SetPage("","torrentDetail",value,"种子详情")
             listSection.AddUiRow(
                     NewUiRow().AddUi(
                             line

@@ -261,7 +261,7 @@ local function NewQBittorrent(ctx)
         end
         line.AddAction(NewAction("delete", { hash = d.hash,clean = "false" }, "删除").SetIcon("trash.circle").SetCheck(true))
         line.AddAction(NewAction("delete", { hash = d.hash,clean = "true" }, "删除并清理文件").SetIcon("trash.circle").SetCheck(true))
-            .SetPage("qbittorrent","torrentDetail",d,"任务详情")
+            .SetPage("","torrentDetail",d,"任务详情")
         return line
     end
 
@@ -344,7 +344,7 @@ local function NewQBittorrent(ctx)
                                     2,
                                     NewString(value.name).SetColor(global.them.descFontColor)
                             )
-                    ).SetPage("qbittorrent","moreList",{type=value.pageArg},value.name)
+                    ).SetPage("","moreList",{type=value.pageArg},value.name)
             )
         end
         app
@@ -680,7 +680,7 @@ local function NewQBittorrent(ctx)
                                     2,
                                     NewString(key)
                             )
-                    ).SetPage("qbittorrent","peersCountry",{hash=self.arg.hash, country=key},key.."用户")
+                    ).SetPage("","peersCountry",{hash=self.arg.hash, country=key},key.."用户")
             )
             if index % 4 == 0 then
                 peersSection.AddUiRow(row)
