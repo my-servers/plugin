@@ -43,49 +43,40 @@ local global = {
         storage = "storage",
     },
     allResourcesState = {
-        allTimeType = {
-            {
-                type = "?timeframe=hour&cf=AVERAGE",
-                name = {"小时","平均"}
+        timeframe = "hour",
+        cf = "AVERAGE",
+        allTimeframeType = {
+            hour = {
+                name = "小时",
+                id = "hour",
             },
-            {
-                type = "?timeframe=hour&cf=MAX",
-                name = {"小时","最大"}
+            day = {
+                name = "天",
+                id = "day",
             },
-            {
-                type = "?timeframe=day&cf=AVERAGE",
-                name = {"天","平均"}
+            week = {
+                name = "周",
+                id = "week",
             },
-            {
-                type = "?timeframe=day&cf=MAX",
-                name = {"天","最大"}
+            month = {
+                name = "月",
+                id = "month",
             },
-            {
-                type = "?timeframe=week&cf=AVERAGE",
-                name = {"周","平均"}
-            },
-            {
-                type = "?timeframe=week&cf=MAX",
-                name = {"周","最大"}
-            },
-            {
-                type = "?timeframe=month&cf=AVERAGE",
-                name = {"月","平均"}
-            },
-            {
-                type = "?timeframe=month&cf=MAX",
-                name = {"月","最大"}
-            },
-            {
-                type = "?timeframe=year&cf=AVERAGE",
-                name = {"年","平均"}
-            },
-            {
-                type = "?timeframe=year&cf=MAX",
-                name = {"年","最大"}
+            year = {
+                name = "年",
+                id = "year",
             },
         },
-        timeType = "?timeframe=hour&cf=AVERAGE",
+        allCfTYpe = {
+            MAX = {
+                id = "MAX",
+                name = "最大值"
+            },
+            AVERAGE = {
+                id = "AVERAGE",
+                name = "平均值"
+            },
+        },
         taskTypes = {
             vzcreate = {id = "vzcreate", name = "创建新的容器"},
             vzdestroy = {id = "vzdestroy", name = "删除容器"},
@@ -373,45 +364,6 @@ local function NewPve(ctx)
         runCtx = ctx.ctx     -- 运行上下文
     }
 
-
-    function getTimeInfo()
-        local uiRow = NewUiRow()
-        local section = NewPageSection("时间周期")
-        for index, value in ipairs(global.allResourcesState.allTimeType) do
-            local color = global.allResourcesState.buttonDescFontColor
-            if value.type == global.allResourcesState.timeType then
-                color = "#F00"
-            end
-            if index == 6 then
-                section.AddUiRow(uiRow)
-                uiRow = NewUiRow()
-                section.AddUiRow(uiRow)
-            end
-            uiRow.AddUi(
-                    NewIconButtonUi().SetIconButton(
-                            NewIconButton().SetDesc(
-                                    NewText("")
-                                            .AddString(
-                                            1,
-                                            NewString(value.name[1])
-                                                    .SetColor(color)
-                                                    .SetFontSize(10)
-                                    )
-                                            .AddString(
-                                            2,
-                                            NewString(value.name[2])
-                                                    .SetColor(color)
-                                                    .SetFontSize(10)
-                                    )
-                            ).SetAction(
-                                    NewAction("changeTime",{type=value.type},"")
-                            )
-                    )
-            )
-        end
-
-        return section
-    end
     function self:updateCookie()
         local username = self.config.Username
         if strings.contains(self.config.Username,"@") == false then
@@ -519,7 +471,9 @@ local function NewPve(ctx)
     end
 
     function self:ChangeTime()
-        global.allResourcesState.timeType = self.arg.type
+        global.allResourcesState.timeframe = self.input.timeframe
+        global.allResourcesState.cf = self.input.cf
+        print("change time type: ",global.allResourcesState.timeframe, global.allResourcesState.cf )
     end
 
     function self:StopAll()
@@ -588,33 +542,89 @@ local function NewPve(ctx)
                 end
             end
         end
+        local filter = NewIconButton()
+                .SetDesc(
+                NewText("")
+                        .AddString(
+                        1,
+                        NewString(global.allResourcesState.allTimeframeType[global.allResourcesState.timeframe].name)
+                                .SetColor("#00F")
+                )
+                        .AddString(
+                        1,
+                        NewString(global.allResourcesState.allCfTYpe[global.allResourcesState.cf].name)
+                                .SetColor("#00F")
+                )
+        ).SetAction(
+                NewAction("changeTime",{},"")
+                        .AddInput(
+                        "timeframe",
+                        NewInput("时间周期",3)
+                                .SetVal(global.allResourcesState.timeframe)
+                                .AddList(
+                                global.allResourcesState.allTimeframeType.hour.name,
+                                global.allResourcesState.allTimeframeType.hour.id
+                        )
+                                .AddList(
+                                global.allResourcesState.allTimeframeType.day.name,
+                                global.allResourcesState.allTimeframeType.day.id
+                        )
+                                .AddList(
+                                global.allResourcesState.allTimeframeType.week.name,
+                                global.allResourcesState.allTimeframeType.week.id
+                        )
+                                .AddList(
+                                global.allResourcesState.allTimeframeType.month.name,
+                                global.allResourcesState.allTimeframeType.month.id
+                        )
+                                .AddList(
+                                global.allResourcesState.allTimeframeType.year.name,
+                                global.allResourcesState.allTimeframeType.year.id
+                        )
+                )
+                        .AddInput(
+                        "cf",
+                        NewInput("类型",2)
+                                .SetVal(global.allResourcesState.cf)
+                                .AddList(
+                                global.allResourcesState.allCfTYpe.AVERAGE.name,
+                                global.allResourcesState.allCfTYpe.AVERAGE.id
+                        )
+                                .AddList(
+                                global.allResourcesState.allCfTYpe.MAX.name,
+                                global.allResourcesState.allCfTYpe.MAX.id
+                        )
+                )
+        )
         for index, value in ipairs(chart) do
-            page.AddPageSection(
-                    NewPageSection(global.allResourcesState.chartType[value].name)
-                            .AddUiRow(
-                            NewUiRow().AddUi(
-                                    allChart[value].SetTitle(
-                                            NewText("").AddString(
-                                                    1,
-                                                    NewString(os.date("%Y-%m-%d %H:%M:%S",allStartEndTs[value].startTs))
-                                                            .SetColor(global.allResourcesState.buttonDescFontColor)
-                                                            .SetFontSize(10)
-                                            ).AddString(
-                                                    1,
-                                                    NewString("->")
-                                                            .SetBackendColor(global.allResourcesState.buttonDescFontColor)
-                                                            .SetFontSize(10)
-                                                            .SetColor("#FFF")
-                                            ).AddString(
-                                                    1,
-                                                    NewString(os.date("%Y-%m-%d %H:%M:%S",allStartEndTs[value].endTs))
-                                                            .SetColor(global.allResourcesState.buttonDescFontColor)
-                                                            .SetFontSize(10)
-                                            )
+            local section = NewPageSection(global.allResourcesState.chartType[value].name)
+                    .AddUiRow(
+                    NewUiRow().AddUi(
+                            allChart[value].SetTitle(
+                                    NewText("").AddString(
+                                            1,
+                                            NewString(os.date("%Y-%m-%d %H:%M:%S",allStartEndTs[value].startTs))
+                                                    .SetColor(global.allResourcesState.buttonDescFontColor)
+                                                    .SetFontSize(10)
+                                    ).AddString(
+                                            1,
+                                            NewString("->")
+                                                    .SetBackendColor(global.allResourcesState.buttonDescFontColor)
+                                                    .SetFontSize(10)
+                                                    .SetColor("#FFF")
+                                    ).AddString(
+                                            1,
+                                            NewString(os.date("%Y-%m-%d %H:%M:%S",allStartEndTs[value].endTs))
+                                                    .SetColor(global.allResourcesState.buttonDescFontColor)
+                                                    .SetFontSize(10)
                                     )
                             )
                     )
             )
+            if index == 1 then
+                section.AddMenu(filter)
+            end
+            page.AddPageSection(section)
         end
     end
 
@@ -867,9 +877,9 @@ local function NewPve(ctx)
                 )
         )
 
-        page.AddPageSection(getTimeInfo())
-        local chartUrl = string.format(self.config.HostPort .. global.api.rrdData..global.allResourcesState.timeType,self.arg.node)
-        setChart(page, chartUrl,global.allResourcesState.allChart)
+        local filter = string.format("?timeframe=%s&cf=%s", global.allResourcesState.timeframe, global.allResourcesState.cf)
+        local chartUrl = string.format(self.config.HostPort .. global.api.rrdData..filter,self.arg.node)
+        setChart(page, chartUrl, global.allResourcesState.allChart)
         return page.Data()
     end
 
@@ -1112,12 +1122,9 @@ local function NewPve(ctx)
                 )
         )
         )
-        page.AddPageSection(getTimeInfo())
-
-        local lxcRddUrl = string.format(self.config.HostPort .. global.api.lxcRrdData..global.allResourcesState.timeType,self.arg.id)
+        local filter = string.format("?timeframe=%s&cf=%s", global.allResourcesState.timeframe, global.allResourcesState.cf)
+        local lxcRddUrl = string.format(self.config.HostPort .. global.api.lxcRrdData..filter,self.arg.id)
         setChart(page, lxcRddUrl, global.allResourcesState.lxcAllChart)
-
-
         return page.Data()
     end
 
