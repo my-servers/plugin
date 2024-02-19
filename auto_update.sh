@@ -97,7 +97,7 @@ while read -r dev path; do
     myServersAllDisk="$myServersAllDisk -v $path:/hostDisk$path "
   fi
 done <<EOF
-$(mount | grep "^/dev" | grep -v "boot" | awk '{ print $1,$3 }')
+$(mount | grep "^/dev" | grep -v "boot" | grep -v "/etc/" | awk '{ print $1,$3 }')
 EOF
 
 # 拉取Docker镜像（替换为你的Docker镜像名称）
