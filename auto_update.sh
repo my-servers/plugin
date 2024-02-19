@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # 随机密钥生成
 generate_random_string() {
