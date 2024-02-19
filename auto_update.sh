@@ -44,15 +44,10 @@ if ! [ -d "$app_dir" ]; then
   mkdir $app_dir
 fi
 
-# 迁移下老数据，大概率不会用到了
+# 插件目录
 apps_dir=$app_dir"/app"
 if ! [ -d "$apps_dir" ]; then
   mkdir -p $apps_dir
-  for item in ${app_dir}/*; do
-  if [ "${item}" != "$apps_dir" ]; then
-    mv "${item}" "${apps_dir}/"
-  fi
-done
 fi
 
 # 删除下依赖的基本库，服务端启动的时候没有会自动下载最新的
