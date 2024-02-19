@@ -15,5 +15,8 @@ extend:
     val: /
     desc: 磁盘
     priority: 100
-
+  TempFile:
+    val: /sys/class/thermal/thermal_zone0/temp
+    desc: 温度接口文件
+    priority: 70
 height: 4

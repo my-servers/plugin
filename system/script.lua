@@ -177,7 +177,7 @@ local function NewSystem(ctx)
 
     ---@return LineChartUi
     local function getCpuLineChart()
-        local file = io.popen("cat /sys/class/thermal/thermal_zone0/temp", "r")
+        local file = io.popen("cat "..self.config.TempFile, "r")
         local output = file:read("*all")
         file:close()
         local color = ""
