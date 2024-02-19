@@ -5,7 +5,7 @@ local httpClient = http.client({
     insecure_ssl=true,
 })
 local asyncHttpClient = http.client({
-    timeout = 5, -- 超时1s
+    timeout = 300, -- 超时1s
     insecure_ssl=true,
 })
 local global = {
@@ -198,7 +198,8 @@ function asyncDoRequest(method,url,data)
     end
     if stateRsp.code == 409 then
         asyncHttpClient = http.client({
-            timeout = 5, -- 超时1s
+            insecure_ssl = true,
+            timeout = 300, -- 超时1s
             headers = {
                 [global.sessionKey] = stateRsp.headers[global.sessionKey]
             }
