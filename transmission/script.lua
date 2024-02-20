@@ -1,7 +1,7 @@
 local http = require("http")
 local json = require("json")
 local httpClient = http.client({
-    timeout = 2, -- 超时1s
+    timeout = 3, -- 超时1s
     insecure_ssl=true,
 })
 local asyncHttpClient = http.client({
@@ -222,7 +222,8 @@ function doRequest(method,url,data)
     end
     if stateRsp.code == 409 then
         httpClient = http.client({
-            timeout = 2, -- 超时1s
+            timeout = 3, -- 超时1s
+            insecure_ssl = true,
             headers = {
                 [global.sessionKey] = stateRsp.headers[global.sessionKey]
             }
