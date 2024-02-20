@@ -316,15 +316,9 @@ local function NewTransmission(ctx)
 
     function self:Update()
         local app = NewApp()
-        local globalState = {}
-        goAndWait({
-            globalStateKey = function ()
-                local stateRsp = doRequest("POST",getUrl(),global.getGlobalState)
-                globalState = json.decode(stateRsp.body)
-            end
-        })
+        local stateRsp = doRequest("POST",getUrl(),global.getGlobalState)
+        local globalState = json.decode(stateRsp.body)
         asyncUpdate()
-
         app
                 .AddUi(
                 1,

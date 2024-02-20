@@ -93,13 +93,13 @@
         {
             "id" : "transmission",
             "name": "Transmission",
-            "introduce" : "更新：修改超时时间",
+            "introduce" : "更新：优化状态获取逻辑",
             "author" : "admin",
             "home_url": "",
             "download_url":"https://plugin.codeloverme.cn/transmission",
             "min_server_version": "1.17",
             "min_client_version": "1.29",
-            "version": "1.9",
+            "version": "1.10",
             "is_finished": true,
             "img": ["en","ja"],
             "img_desc": [
