@@ -19,4 +19,9 @@ extend:
     val: /sys/class/thermal/thermal_zone0/temp
     desc: 温度接口文件
     priority: 70
+  CloseCpuLine:
+    val: "true"
+    desc: 关闭显示cpu走势
+    priority: 60
+    input_type: 2
 height: 4

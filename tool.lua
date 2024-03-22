@@ -103,6 +103,24 @@ local ctx = {
 
 -----------------------------------基础数据-------------------------------------------------
 
+
+function NewPieChartData(value,name,desc,color)
+    local pieData = {
+        data = {
+            value = value,
+            name = name,
+            desc = desc,
+            color = color
+        }
+    }
+    function Data()
+        return pieData.data
+    end
+
+    pieData.Data = Data
+    return pieData
+end
+
 -- NewPoint 坐标点
 ---@param val number 值
 ---@param x string x
@@ -567,6 +585,84 @@ function NewIconButton()
 end
 
 -----------------------------------所有ui-------------------------------------------------
+
+function AddBaseFunc(ui)
+    -- AddAction 添加动作
+    ---@param action Action 动作
+    local function AddAction(action)
+        if ui.data.actions == nil then
+            ui.data.actions = {}
+        end
+        table.insert(ui.data.actions, action.Data())
+        return ui
+    end
+
+    -- SetPage 设置二级页跳转
+    local function SetPage(app,func,arg,name)
+        ui.data.page = {
+            app = app,
+            func = func,
+            arg = json.encode(arg),
+            name = name,
+        }
+        return ui
+    end
+
+    -- SetHeight 添加动作
+    ---@param height number 高度
+    local function SetHeight(height)
+        ui.data.height = height
+        return ui
+    end
+
+    -- SetWidth 设置ui宽度
+    local function SetWidth(width)
+        ui.data.width = width
+        return ui
+    end
+
+    -- SetOpacity 设置ui透明度
+    local function SetOpacity(opacity)
+        ui.data.opacity = opacity
+        return ui
+    end
+
+    -- SetCornerRadius 设置ui圆角
+    local function SetCornerRadius(radius)
+        ui.data.corner_radius = radius
+        return ui
+    end
+
+    -- SetBackgroundColor 设置ui背景
+    local function SetBackgroundColor(color)
+        ui.data.background_color = color
+        return ui
+    end
+
+    -- SetDetail 添加详情
+    ---@param detail string 详情 markdown
+    local function SetDetail(detail)
+        ui.data.detail = detail
+        return ui
+    end
+
+    local function Data()
+        return ui.data
+    end
+
+    ui.SetWidth = SetWidth
+    ui.AddAction = AddAction
+    ui.SetPage = SetPage
+    ui.SetHeight = SetHeight
+    ui.SetOpacity = SetOpacity
+    ui.SetCornerRadius = SetCornerRadius
+    ui.SetBackgroundColor = SetBackgroundColor
+    ui.SetDetail = SetDetail
+    ui.Data = Data
+    return ui
+end
+
+
 ---@return LineChartUi
 function NewLineChartUi()
     ---@class LineChartUi
@@ -581,17 +677,6 @@ function NewLineChartUi()
             page = {},
         }
     }
-
-    -- AddAction 添加动作
-    ---@param action Action 动作
-    ---@return LineChartUi
-    local function AddAction(action)
-        if lineChart.data.actions == nil then
-            lineChart.data.actions = {}
-        end
-        table.insert(lineChart.data.actions, action.Data())
-        return lineChart
-    end
 
     -- SetTitle 设置标题
     ---@param data Text 文本段
@@ -615,44 +700,10 @@ function NewLineChartUi()
         return lineChart
     end
 
-    -- SetHeight 添加动作
-    ---@param height number 高度
-    ---@return LineChartUi
-    local function SetHeight(height)
-        lineChart.data.height = height
-        return lineChart
-    end
+    lineChart = AddBaseFunc(lineChart)
 
-    -- SetDetail 添加详情
-    ---@param detail string 详情 markdown
-    ---@return LineChartUi
-    local function SetDetail(detail)
-        lineChart.data.detail = detail
-        return lineChart
-    end
-
-    ---@return LineChartUiData
-    local function Data()
-        return lineChart.data
-    end
-
-    local function SetPage(app,func,arg,name)
-        lineChart.data.page = {
-            app = app,
-            func = func,
-            arg = json.encode(arg),
-            name = name,
-        }
-        return lineChart
-    end
-
-    lineChart.SetPage = SetPage
-    lineChart.AddAction = AddAction
     lineChart.SetTitle = SetTitle
     lineChart.AddPoint = AddPoint
-    lineChart.Data = Data
-    lineChart.SetHeight = SetHeight
-    lineChart.SetDetail = SetDetail
     return lineChart
 end
 
@@ -661,7 +712,7 @@ function NewProcessCircleUi()
     ---@class ProcessCircleUi
     local processCircle = {
         ---@class ProcessCircleUiData
-        processCircleUiData = {
+        data = {
             ui_type = 1,
             actions = nil,
             ui_process_circle = {},
@@ -669,25 +720,15 @@ function NewProcessCircleUi()
         }
     }
 
-    -- AddAction 添加动作
-    ---@param action Action 动作
-    ---@return ProcessCircleUi
-    local function AddAction(action)
-        if processCircle.processCircleUiData.actions == nil then
-            processCircle.processCircleUiData.actions = {}
-        end
-        table.insert(processCircle.processCircleUiData.actions, action.Data())
-        return processCircle
-    end
 
     -- SetProcessData 设置进度数据
     ---@param data ProcessData 文本段
     ---@return ProcessCircleUi
     local function SetProcessData(data)
-        if processCircle.processCircleUiData.ui_process_circle.process_data == nil then
-            processCircle.processCircleUiData.ui_process_circle.process_data = {}
+        if processCircle.data.ui_process_circle.process_data == nil then
+            processCircle.data.ui_process_circle.process_data = {}
         end
-        processCircle.processCircleUiData.ui_process_circle.process_data = data.Data()
+        processCircle.data.ui_process_circle.process_data = data.Data()
         return processCircle
     end
 
@@ -695,10 +736,10 @@ function NewProcessCircleUi()
     ---@param data Text 文本段
     ---@return ProcessCircleUi
     local function SetDesc(data)
-        if processCircle.processCircleUiData.ui_process_circle.process_desc == nil then
-            processCircle.processCircleUiData.ui_process_circle.process_desc = {}
+        if processCircle.data.ui_process_circle.process_desc == nil then
+            processCircle.data.ui_process_circle.process_desc = {}
         end
-        processCircle.processCircleUiData.ui_process_circle.process_desc = data.Data()
+        processCircle.data.ui_process_circle.process_desc = data.Data()
         return processCircle
     end
 
@@ -706,53 +747,23 @@ function NewProcessCircleUi()
     ---@param data Text 文本段
     ---@return ProcessCircleUi
     local function SetTitle(data)
-        if processCircle.processCircleUiData.ui_process_circle.title == nil then
-            processCircle.processCircleUiData.ui_process_circle.title = {}
+        if processCircle.data.ui_process_circle.title == nil then
+            processCircle.data.ui_process_circle.title = {}
         end
-        processCircle.processCircleUiData.ui_process_circle.title = data.Data()
+        processCircle.data.ui_process_circle.title = data.Data()
         return processCircle
     end
 
-    -- SetHeight 添加动作
-    ---@param height number 高度
-    ---@return ProcessCircleUi
-    local function SetHeight(height)
-        processCircle.processCircleUiData.height = height
+    local function SetProcessLineColor(color)
+        processCircle.data.ui_process_circle.color = color
         return processCircle
     end
 
-    -- SetDetail 添加详情
-    ---@param detail string 详情 markdown
-    ---@return ProcessCircleUi
-    local function SetDetail(detail)
-        processCircle.processCircleUiData.detail = detail
-        return processCircle
-    end
-
-
-    ---@return ProcessCircleUiData
-    local function Data()
-        return processCircle.processCircleUiData
-    end
-
-    local function SetPage(app,func,arg,name)
-        processCircle.processCircleUiData.page = {
-            app = app,
-            func = func,
-            arg = json.encode(arg),
-            name = name,
-        }
-        return processCircle
-    end
-
-    processCircle.SetPage = SetPage
+    processCircle = AddBaseFunc(processCircle)
+    processCircle.SetProcessLineColor = SetProcessLineColor
     processCircle.SetProcessData = SetProcessData
     processCircle.SetDesc = SetDesc
     processCircle.SetTitle = SetTitle
-    processCircle.Data = Data
-    processCircle.AddAction = AddAction
-    processCircle.SetHeight = SetHeight
-    processCircle.SetDetail = SetDetail
     return processCircle
 end
 
@@ -761,7 +772,7 @@ function NewProcessLineUi()
     ---@class ProcessLineUi
     local processLine = {
         ---@class ProcessLineUiData
-        processLineUiData = {
+        data = {
             ui_type = 2,
             actions = nil,
             ui_process_line = {},
@@ -771,25 +782,14 @@ function NewProcessLineUi()
         }
     }
 
-    -- AddAction 添加动作
-    ---@param action Action 动作
-    ---@return ProcessLineUi
-    local function AddAction(action)
-        if processLine.processLineUiData.actions == nil then
-            processLine.processLineUiData.actions = {}
-        end
-        table.insert(processLine.processLineUiData.actions, action.Data())
-        return processLine
-    end
-
     -- SetProcessData 设置进度数据
     ---@param data ProcessData 文本段
     ---@return ProcessLineUi
     local function SetProcessData(data)
-        if processLine.processLineUiData.ui_process_line.process_data == nil then
-            processLine.processLineUiData.ui_process_line.process_data = {}
+        if processLine.data.ui_process_line.process_data == nil then
+            processLine.data.ui_process_line.process_data = {}
         end
-        processLine.processLineUiData.ui_process_line.process_data = data.Data()
+        processLine.data.ui_process_line.process_data = data.Data()
         return processLine
     end
 
@@ -797,10 +797,10 @@ function NewProcessLineUi()
     ---@param data Text 文本段
     ---@return ProcessLineUi
     local function SetDesc(data)
-        if processLine.processLineUiData.ui_process_line.process_desc == nil then
-            processLine.processLineUiData.ui_process_line.process_desc = {}
+        if processLine.data.ui_process_line.process_desc == nil then
+            processLine.data.ui_process_line.process_desc = {}
         end
-        processLine.processLineUiData.ui_process_line.process_desc = data.Data()
+        processLine.data.ui_process_line.process_desc = data.Data()
         return processLine
     end
 
@@ -808,52 +808,23 @@ function NewProcessLineUi()
     ---@param data Text 文本段
     ---@return ProcessLineUi
     local function SetTitle(data)
-        if processLine.processLineUiData.ui_process_line.title == nil then
-            processLine.processLineUiData.ui_process_line.title = {}
+        if processLine.data.ui_process_line.title == nil then
+            processLine.data.ui_process_line.title = {}
         end
-        processLine.processLineUiData.ui_process_line.title = data.Data()
+        processLine.data.ui_process_line.title = data.Data()
         return processLine
     end
 
-    -- SetHeight 添加动作
-    ---@param height number 高度
-    ---@return ProcessLineUi
-    local function SetHeight(height)
-        processLine.processLineUiData.height = height
+    local function SetProcessLineColor(color)
+        processLine.data.ui_process_line.color = color
         return processLine
     end
 
-    -- SetDetail 添加详情
-    ---@param detail string 详情 markdown
-    ---@return ProcessLineUi
-    local function SetDetail(detail)
-        processLine.processLineUiData.detail = detail
-        return processLine
-    end
-
-    ---@return ProcessLineUiData
-    local function Data()
-        return processLine.processLineUiData
-    end
-
-    local function SetPage(app,func,arg,name)
-        processLine.processLineUiData.page = {
-            app = app,
-            func = func,
-            arg = json.encode(arg),
-            name = name,
-        }
-        return processLine
-    end
-
-    processLine.SetPage = SetPage
+    processLine = AddBaseFunc(processLine)
+    processLine.SetProcessLineColor = SetProcessLineColor
     processLine.SetProcessData = SetProcessData
     processLine.SetDesc = SetDesc
     processLine.SetTitle = SetTitle
-    processLine.Data = Data
-    processLine.AddAction = AddAction
-    processLine.SetHeight = SetHeight
-    processLine.SetDetail = SetDetail
     return processLine
 end
 
@@ -863,7 +834,7 @@ function NewMarkdownUi()
     ---@class MarkdownUi
     local markdownUi = {
         ---@class NewMarkdownUiData
-        uiMarkdownData = {
+        data = {
             ui_type = 5,
             ui_markdown = {
                 markdown = ""
@@ -879,61 +850,46 @@ function NewMarkdownUi()
     ---@param text string 文本段
     ---@return MarkdownUi
     local function SetMarkdown(text)
-        markdownUi.uiMarkdownData.ui_markdown.markdown = text
+        markdownUi.data.ui_markdown.markdown = text
         return markdownUi
     end
 
-    -- AddAction 添加动作
-    ---@param action Action 动作
-    ---@return MarkdownUi
-    local function AddAction(action)
-        if markdownUi.uiMarkdownData.actions == nil then
-            markdownUi.uiMarkdownData.actions = {}
-        end
-        table.insert(markdownUi.uiMarkdownData.actions, action.Data())
-        return markdownUi
-    end
-
-    -- SetHeight 添加动作
-    ---@param height number 高度
-    ---@return MarkdownUi
-    local function SetHeight(height)
-        markdownUi.uiMarkdownData.height = height
-        return markdownUi
-    end
-
-    -- SetDetail 添加详情
-    ---@param detail string 详情 markdown
-    ---@return MarkdownUi
-    local function SetDetail(detail)
-        markdownUi.uiMarkdownData.detail = detail
-        return markdownUi
-    end
-
-    ---@return NewMarkdownUiData
-    local function Data()
-        return markdownUi.uiMarkdownData
-    end
-
-
-    local function SetPage(app,func,arg,name)
-        markdownUi.uiMarkdownData.page = {
-            app = app,
-            func = func,
-            arg = json.encode(arg),
-            name = name,
-        }
-        return markdownUi
-    end
-
-    markdownUi.SetPage = SetPage
+    markdownUi = AddBaseFunc(markdownUi)
     markdownUi.SetMarkdown   = SetMarkdown
-    markdownUi.Data      = Data
-    markdownUi.AddAction = AddAction
-    markdownUi.SetHeight = SetHeight
-    markdownUi.SetDetail = SetDetail
     return markdownUi
 end
+
+function NewChildUi()
+    local child = {
+        data = {
+            ui_type = 100,
+            ui_child = {
+                ui_row = nil
+            },
+            actions = nil,
+            height = 0,
+            width = 0,
+            background_color = "",
+            corner_radius = 0,
+            opacity = 0,
+            page = {},
+        }
+    }
+
+    local function AddChildUi(uiRow)
+        if child.data.ui_child.ui_row == nil then
+            child.data.ui_child.ui_row  = {}
+        end
+        table.insert(child.data.ui_child.ui_row, uiRow.Data())
+        return child
+    end
+
+    child = AddBaseFunc(child)
+
+    child.AddChildUi = AddChildUi
+    return child
+end
+
 
 -- NewTextUi textui
 ---@return TextUi 文本ui
@@ -941,11 +897,15 @@ function NewTextUi()
     ---@class TextUi
     local textUi = {
         ---@class TextUiData
-        uiTextData = {
+        data = {
             ui_type = 0,
             ui_text = nil,
             actions = nil,
             height = 0,
+            width = 0,
+            background_color = "",
+            corner_radius = 0,
+            opacity = 0,
             detail = "",
             page = {},
         }
@@ -955,60 +915,15 @@ function NewTextUi()
     ---@param text Text 文本段
     ---@return TextUi
     local function SetText(text)
-        textUi.uiTextData.ui_text = text.Data()
+        textUi.data.ui_text = text.Data()
         return textUi
     end
 
-    -- AddAction 添加动作
-    ---@param action Action 动作
-    ---@return TextUi
-    local function AddAction(action)
-        if textUi.uiTextData.actions == nil then
-            textUi.uiTextData.actions = {}
-        end
-        table.insert(textUi.uiTextData.actions, action.Data())
-        return textUi
-    end
-
-    -- SetHeight 添加动作
-    ---@param height number 高度
-    ---@return TextUi
-    local function SetHeight(height)
-        textUi.uiTextData.height = height
-        return textUi
-    end
-
-    -- SetDetail 添加详情
-    ---@param detail string 详情 markdown
-    ---@return TextUi
-    local function SetDetail(detail)
-        textUi.uiTextData.detail = detail
-        return textUi
-    end
-
-    ---@return TextUiData
-    local function Data()
-        return textUi.uiTextData
-    end
-
-    local function SetPage(app,func,arg,name)
-        textUi.uiTextData.page = {
-            app = app,
-            func = func,
-            arg = json.encode(arg),
-            name = name,
-        }
-        return textUi
-    end
-
-    textUi.SetPage = SetPage
-    textUi.SetDetail = SetDetail
+    textUi = AddBaseFunc(textUi)
     textUi.SetText   = SetText
-    textUi.Data      = Data
-    textUi.AddAction = AddAction
-    textUi.SetHeight = SetHeight
     return textUi
 end
+
 
 -- NewIconButtonUi 创建button ui
 ---@return IconButtonUi
@@ -1024,16 +939,7 @@ function NewIconButtonUi()
             page = {},
         }
     }
-    -- AddAction 添加动作
-    ---@param action Action 动作
-    ---@return IconButtonUi
-    local function AddAction(action)
-        if iconButtonUi.data.actions == nil then
-            iconButtonUi.data.actions = {}
-        end
-        table.insert(iconButtonUi.data.actions, action.Data())
-        return iconButtonUi
-    end
+
 
     -- SetIconButtonUi 添加文本
     ---@param iconButton IconButton 按钮
@@ -1048,34 +954,8 @@ function NewIconButtonUi()
         return iconButtonUi
     end
 
-    -- SetHeight 添加动作
-    ---@param height number 高度
-    ---@return IconButtonUi
-    local function SetHeight(height)
-        iconButtonUi.data.height = height
-        return iconButtonUi
-    end
-
-    ---@return IconButtonUiData
-    local function Data()
-        return iconButtonUi.data
-    end
-
-    local function SetPage(app,func,arg,name)
-        iconButtonUi.data.page = {
-            app = app,
-            func = func,
-            arg = json.encode(arg),
-            name = name,
-        }
-        return iconButtonUi
-    end
-
-    iconButtonUi.SetPage = SetPage
+    iconButtonUi = AddBaseFunc(iconButtonUi)
     iconButtonUi.SetIconButton = SetIconButton
-    iconButtonUi.Data = Data
-    iconButtonUi.AddAction = AddAction
-    iconButtonUi.SetHeight = SetHeight
     return iconButtonUi
 end
 
@@ -1155,12 +1035,12 @@ function NewUiRow()
         }
     }
 
-    function AddUi(ui)
+    local function AddUi(ui)
         table.insert(uiRoW.data.uis, ui.Data())
         return uiRoW
     end
 
-    function Data()
+    local function Data()
         return uiRoW.data
     end
 
@@ -1237,12 +1117,12 @@ function NewPage()
         }
     }
 
-    function AddPageSection(pageSection)
+    local function AddPageSection(pageSection)
         table.insert(page.data.page_section_data, pageSection.Data())
         return page
     end
 
-    function Data()
+    local function Data()
         return page.data
     end
 
@@ -1267,3 +1147,132 @@ function NewMarkdown(text)
         show_result_type = 2,
     }
 end
+
+function NewWidget()
+    local widget = {
+        data = {
+            medium = nil,
+            small = nil,
+            large = nil,
+        }
+    }
+
+    local function AddSmallWidget(uiRow)
+        if widget.data.small == nil then
+            widget.data.small = {}
+        end
+        table.insert(widget.data.small, uiRow.Data())
+        return widget
+    end
+
+    local function AddMediumWidget(uiRow)
+        if widget.data.medium == nil then
+            widget.data.medium = {}
+        end
+        table.insert(widget.data.medium, uiRow.Data())
+        return widget
+    end
+
+    local function AddLargeWidget(uiRow)
+        if widget.data.large == nil then
+            widget.data.large = {}
+        end
+        table.insert(widget.data.large, uiRow.Data())
+        return widget
+    end
+
+    local function Data()
+        return widget.data
+    end
+
+    widget.AddSmallWidget = AddSmallWidget
+    widget.AddMediumWidget = AddMediumWidget
+    widget.AddLargeWidget = AddLargeWidget
+    widget.Data = Data
+    return widget
+end
+
+function NewImageUi(url)
+    local img = {
+        data = {
+            ui_type = 6,
+            ui_image = {
+                color = "",
+                url = url,
+                corner_radius = 0,
+            },
+            actions = nil,
+            height = 0,
+            width = 0,
+            background_color = "",
+            corner_radius = 0,
+            opacity = 0,
+            detail = "",
+            page = {},
+        }
+    }
+
+    local function SetUrl(url)
+        img.data.ui_image.url = url
+        return img
+    end
+
+
+    local function SetColor(color)
+        img.data.ui_image.color = color
+        return img
+    end
+    img = AddBaseFunc(img)
+    img.SetUrl = SetUrl
+    img.SetColor = SetColor
+    return img
+end
+
+function NewPieChart()
+    local pie = {
+        data = {
+            ui_type = 7,
+            ui_pie_chart = {
+                inner_radius = 0,
+                pie_chart_data = nil,
+                desc = {},
+            },
+            actions = nil,
+            height = 0,
+            width = 0,
+            background_color = "",
+            corner_radius = 0,
+            opacity = 0,
+            detail = "",
+            page = {},
+        }
+    }
+
+    local function SetInnerRadius(radius)
+        pie.data.ui_pie_chart.inner_radius = radius
+        return pie
+    end
+
+    local function AddPieChartData(data)
+        if pie.data.ui_pie_chart.pie_chart_data == nil then
+            pie.data.ui_pie_chart.pie_chart_data = {}
+        end
+        table.insert(pie.data.ui_pie_chart.pie_chart_data, data.Data())
+        return pie
+    end
+
+    local function AddDesc(text)
+        pie.data.ui_pie_chart.desc = text.Data()
+        return pie
+    end
+
+    pie = AddBaseFunc(pie)
+    pie.AddPieChartData = AddPieChartData
+    pie.SetInnerRadius = SetInnerRadius
+    pie.AddDesc = AddDesc
+    return pie
+end
+
+
+
+

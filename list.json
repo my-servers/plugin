@@ -51,15 +51,16 @@
         {
             "id" : "system",
             "name": "系统监控",
-            "introduce" : "更新：温度接口可配置化",
+            "introduce" : "更新：适配小组件",
             "author" : "admin",
             "home_url": "",
             "download_url":"https://plugin.codeloverme.cn/system",
-            "min_server_version": "1.17",
-            "min_client_version": "1.21",
-            "version": "1.23",
+            "min_server_version": "1.18",
+            "min_client_version": "1.33",
+            "version": "1.24",
             "is_finished": true,
             "img": ["en","ja"],
+            "support_widget": true,
             "img_desc": [
                 {
                     "img": "https://plugin.codeloverme.cn/system/system.jpeg",
