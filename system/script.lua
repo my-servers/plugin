@@ -1,7 +1,10 @@
 local json = require("json")
 local lfs = require("lfs")
 local strings = require("strings")
+local db = require("db")
+
 local global = {
+    db = {},
     fontColor = "#000",
     fontDescColor = "#b8b8b8",
     cpuPoints = {},
@@ -11,13 +14,6 @@ local global = {
         send = 0,
         ts = 0,
     },
-    menuInfo = "info",
-    menuFile = "file",
-    menu = "info",
-    curDir = "/",
-    pageStart = 1,
-    page = 0,
-    pageSize = 20,
     isConfigInterface = false,
     allNotShowDir = {
         ["/etc/resolv.conf"] = "",
@@ -37,7 +33,29 @@ local global = {
         "ufs",
         "msdos",
     },
+
+    curCpuRate = {},
+    curCpuTimes = {},
+    lastCpuTimes = {},
+    allCpuTimesKey = {
+        "Idle",
+        "System",
+        "User",
+        "Irq",
+        "Softirq",
+        "Iowait",
+        "Guest",
+        "GuestNice",
+        "Nice",
+        "Steal",
+    },
+    recvSpeed = 0,
+    sendSpeed = 0,
 }
+
+function tsToString(ts)
+    return string.format("%d天%d小时%d分钟%d秒", ts/86400, (ts%86400)/3600, (ts%3600)/60 , ts%60)
+end
 
 ---@param ctx Ctx
 ---@return System
@@ -73,6 +91,8 @@ local function NewSystem(ctx)
         if diffTs == 0 then
             diffTs = 1
         end
+        global.sendSpeed =  diffSend / diffTs
+        global.recvSpeed = diffRecv / diffTs
         return diffRecv / diffTs, diffSend / diffTs
     end
 
@@ -114,7 +134,7 @@ local function NewSystem(ctx)
 
     ---@return ProcessCircleUi
     local function getNetUi()
-        local recvSpeed, sendSpeed = calNetSpeed()
+        local recvSpeed, sendSpeed = global.recvSpeed,global .sendSpeed
         local title = NewText("")
         if global.isConfigInterface then
             title.AddString(1, NewString(self.config.Interface)
@@ -130,6 +150,7 @@ local function NewSystem(ctx)
         local netUi = NewProcessCircleUi().SetTitle(title)
                                           .SetDesc(desc)
                                           .SetProcessData(NewProcessData(recvSpeed, recvSpeed + sendSpeed))
+                                          .SetProcessLineColor("#F00")
                                           .SetPage("","netDetail",{},"网络")
 
         return netUi
@@ -157,6 +178,7 @@ local function NewSystem(ctx)
                                           .SetDesc(cpuDesc)
                                           .SetProcessData(NewProcessData(self.runCtx.cpuPercent[1], 100))
                                           .SetPage("","cpuDetail",{},"CPU")
+                                          .SetProcessLineColor("#4285f4")
         return cpuUi
     end
 
@@ -172,6 +194,7 @@ local function NewSystem(ctx)
                                           .SetDesc(nasDesc)
                                           .SetProcessData(NewProcessData(self.runCtx.diskInfo[diskName].Used, self.runCtx.diskInfo[diskName].Total))
                                           .SetPage("","diskDetail",{},"磁盘")
+                                          .SetProcessLineColor("#fbbc07")
         return nasUi
     end
 
@@ -198,195 +221,286 @@ local function NewSystem(ctx)
         return cpuLineChart.SetPage("","cpuDetail",{},"cpu详情")
     end
 
-    ---@param app AppUI
-    local function getAllMenu(app)
-        -- 文件
-        local fileButton = NewIconButton()
-                .SetAction(NewAction("changeMenu",{},"").SetArg({id=global.menuFile}))
-                .SetIcon("folder.circle")
-                .SetSize(17)
-        if global.menu == global.menuFile then
-            fileButton.SetColor("#F00")
-        end
-        app.AddMenu(fileButton)
-
-        -- 信息
-        local infoButton = NewIconButton()
-                .SetAction(NewAction("changeMenu",{},"").SetArg({id=global.menuInfo}))
-                .SetIcon("chart.line.uptrend.xyaxis.circle")
-                .SetSize(17)
-        if global.menu == global.menuInfo then
-            infoButton.SetColor("#F00")
-        end
-        app.AddMenu(infoButton)
-
-        --  运行命令
-        local button = NewIconButton()
-                .SetAction(NewAction("exec",{},"").AddInput("Cmd",NewInput("命令",1)))
-                .SetIcon("terminal")
-                .SetSize(15)
-        app.AddMenu(button)
+    function getMemUiNew ()
+        local mem = NewPieChart()
+                .AddPieChartData(
+                NewPieChartData(self.runCtx.memInfo.Used,"已使用",ByteToUiString(self.runCtx.memInfo.Used),"#fab1a0")
+        )
+                .AddPieChartData(
+                NewPieChartData(self.runCtx.memInfo.Free,"空闲",ByteToUiString(self.runCtx.memInfo.Free),"#DCDCDC")
+        )
+                .AddPieChartData(
+                NewPieChartData(self.runCtx.memInfo.Cached,"cache",ByteToUiString(self.runCtx.memInfo.Cached),"#81ecec")
+        )
+                .AddDesc(
+                NewText("").AddString(
+                        1,
+                        NewString("内存")
+                )
+        )
+                .SetPage("","memDetail",{},"内存")
+                .SetInnerRadius(0.05)
+        return mem
     end
 
+    function getUpDownloadloadUi()
+        local recvSpeed,sendSpeed = global.recvSpeed,global.sendSpeed
+        return NewUiRow()
+                .AddUi(
+                NewTextUi()
+                        .SetText(
+                        NewText("")
+                                .AddString(
+                                2,
+                                NewString("↑").SetColor("#C7C8CC")
+                        )
+                                .AddString(
+                                1,
+                                NewString(ByteToUiString(sendSpeed)).SetFontSize(16).SetColor("#008DDA")
+                        )
 
-    function  self:ChangeMenu()
-        global.menu = self.arg.id
+                )
+                        .SetBackgroundColor("#DCDCDC")
+                        .SetOpacity(0.3)
+                        .SetCornerRadius(10)
+                        .SetWidth(80)
+                        .SetHeight(60)
+                        .SetPage("","netDetail",{},"网络")
+        )
+                .AddUi(
+                NewTextUi()
+                        .SetText(
+                        NewText("")
+                                .AddString(
+                                2,
+                                NewString("↓").SetColor("#C7C8CC")
+                        )
+                                .AddString(
+                                1,
+                                NewString(ByteToUiString(recvSpeed)).SetFontSize(16).SetColor("#FF204E")
+                        )
+
+                )
+                        .SetBackgroundColor("#DCDCDC")
+                        .SetOpacity(0.3)
+                        .SetCornerRadius(10)
+                        .SetWidth(80)
+                        .SetHeight(60)
+                        .SetPage("","netDetail",{},"网络")
+        )
     end
 
-    function  self:ChoiceDir()
-        if  self.arg["mode"] == "file" then
-            return
-        end
-        global.curDir = self.arg["path"].."/"
-        global.pageStart = 1
+    function getNetUiNew()
+        local download = NewChildUi()
+                .AddChildUi(
+                NewUiRow()
+                        .AddUi(
+                        getCpuUi()
+                )
+                        .AddUi(
+                        getNasUi()
+                )
+        )
+                .AddChildUi(
+                getUpDownloadloadUi()
+        )
+
+        local net = NewChildUi()
+                .AddChildUi(
+                NewUiRow()
+                        .AddUi(
+                        download
+                )
+        )
+        return net
     end
 
-    function  self:Back()
-        local arr = string.split(global.curDir,"/")
-        local res = {}
-        for i = 1, #arr do
-            if i < #arr-1 then
-                res[i] = arr[i]
-            end
-        end
-        global.curDir = string.join(res,"/").."/"
-        global.pageStart = 1
-        print("path-------", global.curDir )
+    function getSystemInfo(app)
+        local info = host.Info()
+        local logo = NewImageUi("https://www.kernel.org/theme/images/logos/tux.png").SetWidth(40)
+        local system = NewChildUi()
+                .AddChildUi(
+                NewUiRow()
+                        .AddUi(logo)
+                        .AddUi(
+                        NewTextUi().SetText(
+                                NewText("leading")
+                                        .AddString(
+                                        1,
+                                        NewString(info.OS).SetFontSize(10).SetColor("#B4B4B8")
+                                )
+                                        .AddString(
+                                        1,
+                                        NewString(info.Hostname).SetFontSize(10).SetColor("#B4B4B8")
+                                )
+                                        .AddString(
+                                        1,
+                                        NewString(info.KernelArch).SetFontSize(10).SetColor("#B4B4B8")
+                                )
+                                        .AddString(
+                                        1,
+                                        NewString(info.Platform).SetFontSize(10).SetColor("#B4B4B8")
+                                )
+                                        .AddString(
+                                        1,
+                                        NewString(info.PlatformFamily).SetFontSize(10).SetColor("#B4B4B8")
+                                )
+                                        .AddString(
+                                        1,
+                                        NewString(info.VirtualizationSystem).SetFontSize(10).SetColor("#B4B4B8")
+                                )
 
-    end
-
-    function  self:Next()
-        global.pageStart = global.pageStart+global.pageSize
-    end
-
-    function  self:Pre()
-        global.pageStart = global.pageStart-global.pageSize
-        if global.pageStart <= 0 then
-            global.pageStart = 1
-        end
-    end
-
-
-    function self:remove_dir(path)
-        for entry in lfs.dir(path) do
-            if entry ~= "." and entry ~= ".." then
-                local entry_path = path .. "/" .. entry
-                local attr = lfs.attributes(entry_path)
-
-                if attr.mode == "directory" then
-                    self:remove_dir(entry_path) -- 递归删除子目录
-                else
-                    os.remove(entry_path) -- 删除文件
-                end
-            end
-        end
-
-        local result, err = os.remove(path) -- 删除空目录
-    end
-
-    function  self:Delete()
-        if self.arg["mode"] == "file" then
-            os.remove(self.arg["path"])
-            return
-        end
-        self:remove_dir(self.arg["path"])
-    end
-    ---@return table
-    function self:getAllFiles(dir)
-        local allFiles = {}
-        for file in lfs.dir(dir) do
-            if file ~= "." and file ~= ".." then
-                local path = dir .. file
-                local attr = lfs.attributes(path)
-                if (attr["mode"] == "file" or attr["mode"] == "directory") then
-                    attr["path"] = path
-                    attr["name"] = file
-                    -- print("file:-------",json.encode(attr))
-                    table.insert(allFiles, attr)
-                end
-            end
-        end
-        return allFiles
-    end
-
-    ---@param app AppUI
-    function self:addAllFileUi(app)
-        local allFile = self:getAllFiles(global.curDir)
-        local row = 101
-
-        local pageStart = global.pageStart
-        local pageEnd =  global.pageStart + global.pageSize
-        if pageStart > #allFile then
-            pageStart = 1
-            pageEnd = global.pageSize
-        end
-        if pageEnd > #allFile then
-            pageEnd = #allFile
-        end
-        if global.pageStart > 1 then
-            local pre = NewIconButton()
-                    .SetAction(NewAction("pre",{},""))
-                    .SetIcon("chevron.left.circle")
-                    .SetSize(17)
-            app.AddMenu(pre)
-        end
-        local back = NewIconButton()
-                .SetAction(NewAction("back",{},""))
-                .SetIcon("arrowshape.turn.up.backward.circle")
-                .SetSize(17)
-        app.AddMenu(back)
-        if pageEnd < #allFile then
-            local next = NewIconButton()
-                    .SetAction(NewAction("next",{},""))
-                    .SetIcon("chevron.right.circle")
-                    .SetSize(17)
-            app.AddMenu(next)
-        end
-
-
-
-        for i = pageStart, pageEnd do
-            local value  = allFile[i]
-            local fontColor = "#000"
-            if value["mode"] == "directory" then
-                fontColor = "#00F"
-            end
-            local fileNameText = NewText("center").AddString(0, NewString(value["name"]).SetFontSize(12).SetColor(fontColor))
-                                                  .AddString(1, NewString(ByteToUiString(value["size"])).SetBackendColor("#339999").SetFontSize(8).SetColor("#FFF"))
-            local iconButton = NewIconButtonUi().SetIconButton(NewIconButton().SetDesc(fileNameText).SetAction(NewAction("choiceDir",value,"")))
-                                                .SetHeight(50)
-                                                .AddAction(NewAction("delete",value,"删除").SetCheck(true))
-            app.AddUi(row, iconButton)
-            if i%4 == 0 then
-                row = row+1
-            end
-        end
+                        ).SetBackgroundColor("#DCDCDC").SetOpacity(0.3).SetCornerRadius(5).SetWidth(300)
+                )
+        )
+        return system
     end
 
     function self:GetUi()
+        calNetSpeed()
+        calCpuTimes()
         local app = NewApp()
-        app.AddUi(1, getNetUi())
-        app.AddUi(1, getMemUi())
-        app.AddUi(1, getCpuUi())
-        app.AddUi(1, getNasUi())
-        app.AddUi(2, getCpuLineChart())
+        if self.config.CloseCpuLine == "false" then
+            app.AddUi(4, getCpuLineChart())
+        end
+        app.AddUi(5, getSystemInfo())
+        app.AddUi(3, getMemUiNew().SetHeight(150))
+        app.AddUi(3, getNetUiNew())
         local info = cpu.Percent(0, true)
         calAllCpuPoint(info)
         updateNetWin()
         return app.Data()
     end
 
-    function self:Exec()
-        local handle = io.popen(self.input.Cmd)
-        local result = handle:read("*a")
-        handle:close()
-        return NewMarkdown(string.format("### 运行结果:\n```\n%s```",result))
+    function CpuDetailNew()
+        local page = NewPage()
+
+        page.AddPageSection(
+                NewPageSection("cpu").AddUiRow(
+                        NewUiRow().AddUi(
+                                getCpuUi()
+                        )
+                )
+        )
+        return page.Data()
     end
 
-    function self:Clear()
-        return {}
+    function getCpuTimeInfo(value,key)
+        return NewTextUi()
+                .SetText(
+                NewText("")
+                        .AddString(
+                        1,
+                        NewString(tostring(value))
+                )
+                        .AddString(
+                        2,
+                        NewString(key).SetFontSize(10).SetColor(global.fontDescColor)
+                )
+        ).SetBackgroundColor("#DCDCDC").SetOpacity(0.3).SetCornerRadius(7).SetWidth(70)
     end
 
+    function calCpuTimes()
+        local cpuTimes = cpu.Times(false)
+        if #cpuTimes == 0 then
+            return
+        end
+
+        global.curCpuTimes = cpuTimes[1]
+        local diffCpuTime = {}
+        for index, value in ipairs(global.allCpuTimesKey) do
+            diffCpuTime[value] = Tonumber(global.curCpuTimes[value]) - Tonumber(global.lastCpuTimes[value])
+        end
+
+        local sum = 0
+        for index, value in ipairs(global.allCpuTimesKey) do
+            sum = sum + diffCpuTime[value]
+        end
+
+        for index, value in ipairs(global.allCpuTimesKey) do
+            if sum > 0 then
+                global.curCpuRate[value] = diffCpuTime[value]/sum
+            else
+                global.curCpuRate[value] = 0
+            end
+        end
+        global.lastCpuTimes = global.curCpuTimes
+    end
+
+    function self:CpuDetailNew()
+        calCpuTimes()
+        local cpuInfo =  NewPageSection("cpu")
+        local tempInfo = global.curCpuRate
+        local uiRow = NewUiRow()
+        local child = NewChildUi().SetWidth(250)
+        for index, value in ipairs(global.allCpuTimesKey) do
+            if index ~= 1 then
+                uiRow.AddUi(
+                        getCpuTimeInfo(string.format("%.2f%%", tempInfo[value]*100), value)
+                )
+                if (index-1)%3 == 0 then
+                    child.AddChildUi(uiRow)
+                    uiRow = NewUiRow()
+                end
+            end
+        end
+
+        local cpuIdle = NewChildUi()
+                .AddChildUi(
+                NewUiRow().AddUi(
+                        NewImageUi("cpu")
+                                .SetWidth(100)
+                                .SetOpacity(0.001)
+                                .SetColor("#fbbc07")
+                )
+        ).AddChildUi(
+                NewUiRow()
+                        .AddUi(
+                        NewTextUi()
+                                .SetText(
+                                NewText("")
+                                        .AddString(
+                                        1,
+                                        NewString(string.format("%.1f%%", tempInfo["Idle"]*100))
+                                                .SetColor(global.fontColor)
+                                                .SetFontSize(22)
+                                )
+                                        .AddString(
+                                        2,
+                                        NewString("Idle")
+                                                .SetColor(global.fontDescColor)
+                                                .SetFontSize(16)
+                                )
+                        )
+                                .SetOpacity(0.001)
+                )
+        )
+                .SetBackgroundColor("#81ecec")
+                .SetOpacity(0.3)
+                .SetCornerRadius(7)
+                .SetHeight(140)
+                .SetWidth(100)
+        cpuInfo.AddUiRow(
+                NewUiRow()
+                        .AddUi(
+                        cpuIdle
+                )
+                        .AddUi(
+                        child
+                )
+        )
+
+        cpuInfo.AddUiRow(
+                NewUiRow().AddUi(
+                        getCpuLineChart()
+                )
+        )
+        local page = NewPage()
+        page.AddPageSection(
+                cpuInfo
+        )
+        return page.Data()
+    end
 
     function self:CpuDetail()
         local page = NewPage()
@@ -870,6 +984,59 @@ local function NewSystem(ctx)
         return page.Data()
     end
 
+
+    function self:Widget()
+        local data = {
+            medium = {},
+            small = {},
+            large = {},
+        }
+        local widget = NewWidget()
+
+        local net = getNetUi()
+        local cpu = getCpuUi()
+        widget.AddSmallWidget(
+                NewUiRow()
+                        .AddUi(
+                        getCpuUi()
+                )
+                        .AddUi(
+                        getNasUi()
+                )
+        )
+
+        local medium = NewUiRow()
+        widget.AddMediumWidget(
+                NewUiRow()
+                        .AddUi(
+                        getNetUi()
+                ).AddUi(
+                        getMemUi()
+                ).AddUi(
+                        getCpuUi()
+                ).AddUi(
+                        getNasUi()
+                )
+        )
+
+        widget
+                .AddLargeWidget(
+                NewUiRow()
+                        .AddUi(
+                        getMemUiNew()
+                ).AddUi(
+                        getNetUiNew()
+                )
+        )
+                .AddLargeWidget(
+                NewUiRow()
+                        .AddUi(
+                        getCpuLineChart()
+                )
+        )
+        return widget.Data()
+    end
+
     return self
 end
 
@@ -887,46 +1054,8 @@ function update(ctx)
     return NewSystem(ctx):GetUi()
 end
 
----@param ctx Ctx
-function exec(ctx)
-    print("exec start----")
-    return NewSystem(ctx):Exec()
-end
-
----@param ctx Ctx
-function clear(ctx)
-    print("clear start----")
-    return NewSystem(ctx):Clear()
-end
-
-
-function changeMenu(ctx)
-    return NewSystem(ctx):ChangeMenu()
-end
-
-function choiceDir(ctx)
-    return NewSystem(ctx):ChoiceDir()
-end
-
-function back(ctx)
-    return NewSystem(ctx):Back()
-end
-
-function next(ctx)
-    return NewSystem(ctx):Next()
-end
-
-function pre(ctx)
-    return NewSystem(ctx):Pre()
-end
-
-function delete(ctx)
-    return NewSystem(ctx):Delete()
-end
-
-
 function cpuDetail(ctx)
-    return NewSystem(ctx):CpuDetail()
+    return NewSystem(ctx):CpuDetailNew()
 end
 
 function memDetail(ctx)
@@ -940,4 +1069,8 @@ end
 
 function diskDetail(ctx)
     return NewSystem(ctx):DiskDetail()
+end
+
+function widget(ctx)
+    return NewSystem(ctx):Widget()
 end
