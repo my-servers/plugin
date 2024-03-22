@@ -25,3 +25,4 @@ extend:
     priority: 60
     input_type: 2
 height: 4
+support_widget: true
