@@ -56,7 +56,7 @@
             "home_url": "",
             "download_url":"https://plugin.codeloverme.cn/system",
             "min_server_version": "1.18",
-            "min_client_version": "1.33",
+            "min_client_version": "1.32",
             "version": "1.25",
             "is_finished": true,
             "img": ["en","ja"],

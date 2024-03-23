@@ -363,9 +363,14 @@ local function NewSystem(ctx)
         if self.config.CloseCpuLine == "false" then
             app.AddUi(4, getCpuLineChart())
         end
-        app.AddUi(5, getSystemInfo())
-        app.AddUi(3, getMemUiNew().SetHeight(150))
-        app.AddUi(3, getNetUiNew())
+        app.AddUi(1, getNetUi())
+        app.AddUi(1, getMemUi())
+        app.AddUi(1, getCpuUi())
+        app.AddUi(1, getNasUi())
+
+        --app.AddUi(5, getSystemInfo())
+        --app.AddUi(3, getMemUiNew().SetHeight(150))
+        --app.AddUi(3, getNetUiNew())
         local info = cpu.Percent(0, true)
         calAllCpuPoint(info)
         updateNetWin()
