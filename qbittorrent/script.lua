@@ -471,6 +471,9 @@ local function NewQBittorrent(ctx)
 
 
     function escapePattern(text)
+        if text == nil then
+            return ""
+        end
         return text:gsub("([^%w])", "%%%1")
     end
 
@@ -546,7 +549,7 @@ local function NewQBittorrent(ctx)
         local files = {}
         local peers = {}
         local trackers = {}
-        goAndWait({
+        local err = goAndWait({
             getDetail = function ()
                 local data = string.format("?hash=%s",tostring(self.arg.hash))
                 local req = http.request("GET",self.config.HostPort .. global.api.TorrentDetail .. data)
@@ -596,6 +599,9 @@ local function NewQBittorrent(ctx)
                 trackers = json.decode(detailRsp.body)
             end
         })
+        if err ~= nil then
+            return err
+        end
 
         local fontSize = 16
         local contentSection = NewPageSection("内容")
