@@ -360,9 +360,9 @@ local function NewSystem(ctx)
         calNetSpeed()
         calCpuTimes()
         local app = NewApp()
-        if self.config.CloseCpuLine == "false" then
-            app.AddUi(4, getCpuLineChart())
-        end
+        --if self.config.CloseCpuLine == "false" then
+        app.AddUi(4, getCpuLineChart())
+        --end
         app.AddUi(1, getNetUi())
         app.AddUi(1, getMemUi())
         app.AddUi(1, getCpuUi())

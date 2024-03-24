@@ -5,7 +5,7 @@
         {
             "id" : "qbittorrent",
             "name": "qBittorrent",
-            "introduce" : "修复详情无法显示的问题",
+            "introduce" : "回滚旧版本",
             "author" : "admin",
             "home_url": "",
             "download_url":"https://plugin.codeloverme.cn/qbittorrent",
