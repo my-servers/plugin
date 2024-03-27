@@ -73,6 +73,7 @@ local global = {
         allList = {},
         cursor = 1,
     },
+    dataCache = {},
 }
 
 function asyncDoRequest(method,url,data)
@@ -161,6 +162,87 @@ function NewDocker(ctx)
             end
         end
     end
+
+    function getAllUi()
+        return NewTextUi().SetText(
+                NewText("")
+                        .AddString(
+                        1,
+                        NewString(tostring(global.dataCache.Containers))
+                                .SetFontSize(global.them.systemInfoNumFrontSize)
+                                .SetColor(global.them.allContainersColor)
+                )
+                        .AddString(
+                        2,
+                        NewString("全部").SetColor(global.them.systemInfoDescFontColor)
+                )
+        ).SetPage("","containersList",{type="all"},"全部")
+    end
+
+    function getRunningUi()
+        return NewTextUi().SetText(
+                NewText("")
+                        .AddString(
+                        1,
+                        NewString(tostring(global.dataCache.ContainersRunning))
+                                .SetFontSize(global.them.systemInfoNumFrontSize)
+                                .SetColor(global.them.allRunningContainersColor)
+                )
+                        .AddString(
+                        2,
+                        NewString("运行中").SetColor(global.them.systemInfoDescFontColor)
+                )
+        ).SetPage("","containersList",{type="running"},"运行中")
+    end
+
+    function getPauseUi()
+        return NewTextUi().SetText(
+                NewText("")
+                        .AddString(
+                        1,
+                        NewString(tostring(global.dataCache.ContainersPaused))
+                                .SetFontSize(global.them.systemInfoNumFrontSize)
+                                .SetColor(global.them.allPausedContainersColor)
+                )
+                        .AddString(
+                        2,
+                        NewString("暂停").SetColor(global.them.systemInfoDescFontColor)
+                )
+        ).SetPage("","containersList",{type="paused"},"暂停")
+    end
+
+    function getStopUi()
+        return NewTextUi().SetText(
+                NewText("")
+                        .AddString(
+                        1,
+                        NewString(tostring(global.dataCache.ContainersStopped))
+                                .SetFontSize(global.them.systemInfoNumFrontSize)
+                                .SetColor(global.them.allStoppedontainersColor)
+                )
+                        .AddString(
+                        2,
+                        NewString("停止").SetColor(global.them.systemInfoDescFontColor)
+                )
+        ).SetPage("","containersList",{type="exited"},"停止")
+    end
+
+    function getImageListUi()
+        return NewTextUi()
+                .SetText(
+                NewText("")
+                        .AddString(
+                        1,
+                        NewString(tostring(global.dataCache.Images))
+                                .SetFontSize(global.them.systemInfoNumFrontSize)
+                )
+                        .AddString(
+                        2,
+                        NewString("镜像")
+                                .SetColor(global.them.systemInfoDescFontColor)
+                )
+        ).SetPage("","imageList",{},"镜像列表")
+    end
     function self:GetUi()
         local app = NewApp()
         local req = http.request("GET",self.config.HostPort..global.api.systemInfo)
@@ -169,84 +251,24 @@ function NewDocker(ctx)
             error(err)
         end
         local data = json.decode(stateRsp.body)
-
+        global.dataCache = data
         app.AddUi(
                 1,
-                NewTextUi().SetText(
-                        NewText("")
-                                .AddString(
-                                1,
-                                NewString(tostring(data.Containers))
-                                        .SetFontSize(global.them.systemInfoNumFrontSize)
-                                        .SetColor(global.them.allContainersColor)
-                        )
-                                .AddString(
-                                2,
-                                NewString("全部").SetColor(global.them.systemInfoDescFontColor)
-                        )
-                ).SetPage("","containersList",{type="all"},"全部")
+                getAllUi()
         ).AddUi(
                 1,
-                NewTextUi().SetText(
-                        NewText("")
-                                .AddString(
-                                1,
-                                NewString(tostring(data.ContainersRunning))
-                                        .SetFontSize(global.them.systemInfoNumFrontSize)
-                                        .SetColor(global.them.allRunningContainersColor)
-                        )
-                                .AddString(
-                                2,
-                                NewString("运行中").SetColor(global.them.systemInfoDescFontColor)
-                        )
-                ).SetPage("","containersList",{type="running"},"运行中")
+                getRunningUi()
         ).AddUi(
                 1,
-                NewTextUi().SetText(
-                        NewText("")
-                                .AddString(
-                                1,
-                                NewString(tostring(data.ContainersPaused))
-                                        .SetFontSize(global.them.systemInfoNumFrontSize)
-                                        .SetColor(global.them.allPausedContainersColor)
-                        )
-                                .AddString(
-                                2,
-                                NewString("暂停").SetColor(global.them.systemInfoDescFontColor)
-                        )
-                ).SetPage("","containersList",{type="paused"},"暂停")
+                getPauseUi()
         ).AddUi(
                 1,
-                NewTextUi().SetText(
-                        NewText("")
-                                .AddString(
-                                1,
-                                NewString(tostring(data.ContainersStopped))
-                                        .SetFontSize(global.them.systemInfoNumFrontSize)
-                                        .SetColor(global.them.allStoppedontainersColor)
-                        )
-                                .AddString(
-                                2,
-                                NewString("停止").SetColor(global.them.systemInfoDescFontColor)
-                        )
-                ).SetPage("","containersList",{type="exited"},"停止")
+                getStopUi()
         ).AddUi(
                 1,
-                NewTextUi()
-                        .SetText(
-                        NewText("")
-                                .AddString(
-                                1,
-                                NewString(tostring(data.Images))
-                                        .SetFontSize(global.them.systemInfoNumFrontSize)
-                        )
-                                .AddString(
-                                2,
-                                NewString("镜像")
-                                        .SetColor(global.them.systemInfoDescFontColor)
-                        )
-                ).SetPage("","imageList",{},"镜像列表")
+                getImageListUi()
         )
+
         return app.Data()
     end
 
@@ -759,6 +781,40 @@ function NewDocker(ctx)
         )
         return page.Data()
     end
+
+    function self:Widget()
+        local uiRow = NewUiRow().AddUi(
+                getAllUi()
+        ).AddUi(
+                getRunningUi()
+        ).AddUi(
+                getPauseUi()
+        ).AddUi(
+                getStopUi()
+        ).AddUi(
+                getImageListUi()
+        )
+
+        local uiRowSmall1 = NewUiRow()
+                .AddUi(
+                getRunningUi()
+        ).AddUi(
+                getStopUi()
+        )
+
+        local uiRowSmall2 = NewUiRow()
+                .AddUi(
+                getAllUi()
+        ).AddUi(
+                getPauseUi()
+        )
+
+        return NewWidget()
+                .AddMediumWidget(uiRow)
+                .AddLargeWidget(uiRow)
+                .AddSmallWidget(uiRowSmall2).AddSmallWidget(uiRowSmall1)
+                .Data()
+    end
     return self
 end
 
@@ -844,4 +900,8 @@ end
 
 function next(ctx)
     return NewDocker(ctx):Next()
+end
+
+function widget(ctx)
+    return NewDocker(ctx):Widget()
 end

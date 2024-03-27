@@ -3,6 +3,7 @@ enable: true
 priority: 80
 height: 6
 padding: 3
+support_widget: true
 extend:
   HostPort:
     val: "http://127.0.0.1:6666"
