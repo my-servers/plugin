@@ -199,7 +199,7 @@ local function NewSystem(ctx)
     end
 
     ---@return LineChartUi
-    local function getCpuLineChart()
+    local function getCpuLineChart(needPage)
         local file = io.popen("cat "..self.config.TempFile, "r")
         local output = file:read("*all")
         file:close()
@@ -218,7 +218,10 @@ local function NewSystem(ctx)
         for i, v in ipairs(calCpuPoint()) do
             cpuLineChart.AddPoint(NewPoint(v, tostring(i)))
         end
-        return cpuLineChart.SetPage("","cpuDetail",{},"cpu详情")
+        if needPage then
+            cpuLineChart.SetPage("","cpuDetail",{},"cpu详情")
+        end
+        return cpuLineChart
     end
 
     function getMemUiNew ()
@@ -361,7 +364,7 @@ local function NewSystem(ctx)
         calCpuTimes()
         local app = NewApp()
         --if self.config.CloseCpuLine == "false" then
-        app.AddUi(4, getCpuLineChart())
+        app.AddUi(4, getCpuLineChart(true))
         --end
         app.AddUi(1, getNetUi())
         app.AddUi(1, getMemUi())
@@ -497,7 +500,7 @@ local function NewSystem(ctx)
 
         cpuInfo.AddUiRow(
                 NewUiRow().AddUi(
-                        getCpuLineChart()
+                        getCpuLineChart(false)
                 )
         )
         local page = NewPage()
@@ -1036,7 +1039,7 @@ local function NewSystem(ctx)
                 .AddLargeWidget(
                 NewUiRow()
                         .AddUi(
-                        getCpuLineChart()
+                        getCpuLineChart(false)
                 )
         )
         return widget.Data()
