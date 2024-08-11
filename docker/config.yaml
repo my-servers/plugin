@@ -1,15 +1,34 @@
+app: docker
 name: docker
 enable: true
 priority: 80
-height: 6
-padding: 3
-support_widget: true
 extend:
   HostPort:
-    val: "http://127.0.0.1:6666"
-    desc: 接口
+    desc: ip端口（http方式访问）
     priority: 200
   Limit:
-    val: "20"
-    desc: 分页大小
+    val: "20.0"
+    desc: 镜像列表分页大小
     priority: 180
+    input_type: 3
+    slider_data:
+      start: 1
+      end: 20
+      step: 1
+      val: 20
+  SockAddr:
+    val: /var/run/docker.sock
+    desc: sock地址
+    priority: 160
+  UseSock:
+    val: "true"
+    desc: 是否使用sock访问
+    priority: 170
+    input_type: 1
+    input_list:
+      - name: 是
+        val: "true"
+      - name: 否
+        val: "false"
+height: 6
+support_widget: true

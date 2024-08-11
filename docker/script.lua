@@ -2,16 +2,6 @@ local http = require("http")
 local json = require("json")
 local time = require("time")
 local strings = require("strings")
-local httpClient = http.client({
-    timeout = 2, -- 超时1s
-    insecure_ssl=true,
-})
-local backendHttpClient = http.client({
-    timeout = 300, -- 超时300s
-    headers = {["Content-Type"]="application/x-www-form-urlencoded"},
-    insecure_ssl=true,
-})
-
 local global = {
     api = {
         containersList = "/containers/json?all=1",
@@ -76,18 +66,24 @@ local global = {
     dataCache = {},
 }
 
-function asyncDoRequest(method,url,data)
+function asyncDoRequest(method,url,data,use_sock, sockAddr)
     req = http.request(method,url,data)
-    local rsp,err = httpClient:do_request(req)
+    local cli = getClient(use_sock, sockAddr, 10)
+    local rsp,err = cli:do_request(req)
     if err then
         return {}
     end
     return rsp
 end
 
-function asyncDoRequestWithBackendClient(method,url,data)
-    req = http.request(method,url,data)
-    local rsp,err = backendHttpClient:do_request(req)
+function asyncDoRequestWithBackendClient(method,url,data, useSock, sockAddr)
+    local use_sock = false
+    if useScok == "true" then
+        use_sock = true
+    end
+    local req = http.request(method,url,data)
+    local cli = getClient(use_sock, sockAddr, 300)
+    local rsp,err = cli:do_request(req)
     if err then
         return {}
     end
@@ -117,12 +113,15 @@ function NewDocker(ctx)
         config = ctx.config,
         runCtx = ctx.ctx,
     }
+    if self.config.HostPort == "" then
+        self.config.HostPort = "http://local"
+    end
 
     function self:Stop()
         local url = string.format(self.config.HostPort..global.api.stopContainer,self.arg.id)
         go("asyncDoRequest",function()
 
-        end,"POST",url,"")
+        end,"POST",url,"",self.config.UseSock, self.config.SockAddr)
         return NewToast("暂停成功","info.circle","#000")
     end
 
@@ -130,7 +129,7 @@ function NewDocker(ctx)
         local url = string.format(self.config.HostPort..global.api.restartContainer, self.arg.id)
         go("asyncDoRequest",function()
 
-        end,"POST",url,"")
+        end,"POST",url,"",self.config.UseSock, self.config.SockAddr)
         return NewToast("重启成功","info.circle","#000")
     end
 
@@ -138,7 +137,7 @@ function NewDocker(ctx)
         local url = string.format(self.config.HostPort..global.api.startContainer,self.arg.id)
         go("asyncDoRequest",function()
 
-        end,"POST",url,"")
+        end,"POST",url,"",self.config.UseSock, self.config.SockAddr)
         return NewToast("启动成功","info.circle","#000")
     end
 
@@ -246,8 +245,10 @@ function NewDocker(ctx)
     function self:GetUi()
         local app = NewApp()
         local req = http.request("GET",self.config.HostPort..global.api.systemInfo)
-        local stateRsp,err = httpClient:do_request(req)
+        local cli = getClient(self.config.UseSock, self.config.SockAddr, 2)
+        local stateRsp,err = cli:do_request(req)
         if err then
+            print("---------err",err)
             error(err)
         end
         local data = json.decode(stateRsp.body)
@@ -280,7 +281,7 @@ function NewDocker(ctx)
         local url = string.format(self.config.HostPort..global.api.deleteImage,self.arg.id)
         go("asyncDoRequest",function()
         end,"DELETE",url,"")
-        print("delete image ------",self.arg.id)
+        print("delete image ------",self.arg.id,self.config.UseSock, self.config.SockAddr)
         return NewToast("删除镜像","info.circle","#000")
     end
 
@@ -288,7 +289,7 @@ function NewDocker(ctx)
         print("delete Container ------",self.arg.id)
         local url = string.format(self.config.HostPort..global.api.deleteContainer,self.arg.id)
         go("asyncDoRequest",function()
-        end,"DELETE",url,"")
+        end,"DELETE",url,"",self.config.UseSock, self.config.SockAddr)
         return NewToast("删除容器","info.circle","#000")
     end
 
@@ -312,7 +313,7 @@ function NewDocker(ctx)
         end
 
         local url = string.format(self.config.HostPort..global.api.searchImage,strings.trim_space(global.searchKey))
-        go("asyncDoRequestWithBackendClient",callback,"GET",url,"")
+        go("asyncDoRequestWithBackendClient",callback,"GET",url,"", self.config.UseSock, self.config.SockAddr)
     end
 
     function self:StopSearch()
@@ -324,13 +325,14 @@ function NewDocker(ctx)
         local url = self.config.HostPort .. global.api.pullImage
         local data = string.format("fromImage=%s:latest",self.arg.name)
         go("asyncDoRequestWithBackendClient",function()
-        end,"POST",url,data)
+        end,"POST",url,data,self.config.UseSock, self.config.SockAddr)
         return NewToast("拉取镜像","info.circle","#000")
     end
 
     function self:ImageMd()
+        local cli = http.client()
         local req = http.request("GET","https://hub.docker.com/v2/repositories/"..self.arg.name)
-        local stateRsp,err = httpClient:do_request(req)
+        local stateRsp,err = cli:do_request(req)
         if err then
             error(err)
         end
@@ -407,7 +409,7 @@ function NewDocker(ctx)
             table.sort(global.imageListPage.allList,function(a, b)
                 return tonumber(a.Created) > tonumber(b.Created)
             end)
-        end,url)
+        end,url,self.config.UseSock, self.config.SockAddr)
 
         local images = NewPageSection("镜像")
         local nameSize = 13
@@ -516,11 +518,12 @@ function NewDocker(ctx)
         local page = NewPage()
         local state  = {}
         local inspect = {}
+        local cli = getClient(self.config.UseSock, self.config.SockAddr, 2)
         goAndWait({
             stateKey = function ()
                 local url = string.format(self.config.HostPort..global.api.containersStatsFormat,self.arg.Id)
                 local req = http.request("GET",url)
-                local stateRsp,err = httpClient:do_request(req)
+                local stateRsp,err = cli:do_request(req)
                 if err then
                     error(err)
                 end
@@ -529,7 +532,7 @@ function NewDocker(ctx)
             inspectKey = function ()
                 local url = string.format(self.config.HostPort..global.api.containersInspect,self.arg.Id)
                 local req = http.request("GET",url)
-                local stateRsp,err = httpClient:do_request(req)
+                local stateRsp,err = cli:do_request(req)
                 if err then
                     error(err)
                 end
@@ -698,10 +701,11 @@ function NewDocker(ctx)
         local state = {}
         local list = {}
         global.containersPage.curType = self.arg.type
+        local cli = getClient(self.config.UseSock, self.config.SockAddr, 2)
         goAndWait({
             stateKey = function ()
                 local req = http.request("GET",self.config.HostPort..global.api.systemInfo)
-                local stateRsp,err = httpClient:do_request(req)
+                local stateRsp,err = cli:do_request(req)
                 if err then
                     error(err)
                 end
@@ -713,7 +717,7 @@ function NewDocker(ctx)
                     url = string.format(self.config.HostPort..global.api.containersListFilter,json.encode({status={global.containersPage.curType}}))
                 end
                 local req = http.request("GET", url)
-                local stateRsp,err = httpClient:do_request(req)
+                local stateRsp,err = cli:do_request(req)
                 if err then
                     error(err)
                 end
@@ -818,8 +822,22 @@ function NewDocker(ctx)
     return self
 end
 
+function getClient(useScok, sockAdrr, timeOut)
+    local use_sock = false
+    if useScok == "true" or useScok == true then
+        use_sock = true
+    end
+    return http.client({
+        timeout = timeOut, -- 超时1s
+        insecure_ssl=true,
+        headers = {["Content-Type"]="application/x-www-form-urlencoded"},
+        use_sock=use_sock,
+        sock_addr=sockAdrr,
+    })
+end
 
-function register()
+
+function register(ctx)
     return {
     }
 end
@@ -884,9 +902,10 @@ function imageMd(ctx)
     return NewDocker(ctx):ImageMd()
 end
 
-function asyncGetImageList(url)
+function asyncGetImageList(url, use_sock, sockAddr)
     local req = http.request("GET", url)
-    local stateRsp,err = httpClient:do_request(req)
+    local cli = getClient(use_sock, sockAddr, 300)
+    local stateRsp,err = cli:do_request(req)
     if err then
         error(err)
     end

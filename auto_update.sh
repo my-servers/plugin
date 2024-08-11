@@ -98,7 +98,7 @@ EOF
 # 拉取Docker镜像（替换为你的Docker镜像名称）
 docker pull myservers/my_servers
 # # 运行Docker容器（替换为你的Docker镜像名称和需要的环境变量）
-docker run -d --network=host -v ${apps_dir}:/app/apps -v ${config_dir}:/app/config $myServersAllDisk --name myServers --restart=always myservers/my_servers /app/app -k $secret_key -c /app/config/config.yaml
+docker run -d --network=host -v /var/run/docker.sock:/var/run/docker.sock -v ${apps_dir}:/app/apps -v ${config_dir}:/app/config $myServersAllDisk --name myServers --restart=always myservers/my_servers /app/app -k $secret_key -c /app/config/config.yaml
 
 # 检查是否正常启动
 hasServer=`docker ps --filter ancestor=myservers/my_servers --format "{{.ID}}"`
@@ -110,7 +110,7 @@ fi
 #clear
 docker ps | grep myServers
 echo -e "服务器程序已成功升级！"
-echo "本次运行脚本：docker run -d --network=host -v ${apps_dir}:/app/apps -v ${config_dir}:/app/config $myServersAllDisk --name myServers --restart=always myservers/my_servers /app/app -k $secret_key -c /app/config/config.yaml"
+echo "本次运行脚本：docker run -d --network=host -v /var/run/docker.sock:/var/run/docker.sock -v ${apps_dir}:/app/apps -v ${config_dir}:/app/config $myServersAllDisk --name myServers --restart=always myservers/my_servers /app/app -k $secret_key -c /app/config/config.yaml"
 echo "密钥: $secret_key"
 echo "插件目录: $apps_dir"
 echo "配置文件目录: $config_dir"
