@@ -149,8 +149,8 @@ local function NewSystem(ctx)
 
         local netUi = NewProcessCircleUi().SetTitle(title)
                                           .SetDesc(desc)
-                                          .SetProcessData(NewProcessData(recvSpeed, recvSpeed + sendSpeed))
-                                          .SetProcessLineColor("#F00")
+                                          .SetProcessData(NewProcessData(recvSpeed, 100*1024*1024))
+                                          .SetProcessLineColor("#34a853")
                                           .SetPage("","netDetail",{},"网络")
 
         return netUi
@@ -165,6 +165,7 @@ local function NewSystem(ctx)
         local memUi = NewProcessCircleUi().SetTitle(memTitle)
                                           .SetDesc(memDesc)
                                           .SetProcessData(NewProcessData(self.runCtx.memInfo.Used, self.runCtx.memInfo.Total))
+                                          .SetProcessLineColor("#666666")
                                           .SetPage("","memDetail",{},"内存")
         return memUi
     end
@@ -363,17 +364,14 @@ local function NewSystem(ctx)
         calNetSpeed()
         calCpuTimes()
         local app = NewApp()
-        --if self.config.CloseCpuLine == "false" then
-        app.AddUi(4, getCpuLineChart(true))
-        --end
+        if self.config.CloseCpuLine == "false" then
+            app.AddUi(4, getCpuLineChart(true))
+        end
         app.AddUi(1, getNetUi())
         app.AddUi(1, getMemUi())
         app.AddUi(1, getCpuUi())
         app.AddUi(1, getNasUi())
 
-        --app.AddUi(5, getSystemInfo())
-        --app.AddUi(3, getMemUiNew().SetHeight(150))
-        --app.AddUi(3, getNetUiNew())
         local info = cpu.Percent(0, true)
         calAllCpuPoint(info)
         updateNetWin()
