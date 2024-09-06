@@ -53,8 +53,8 @@ download_myservers() {
   url="${base_url}/${filename}"
 
   # Download the binary
-  echo "Downloading $appPath from $url"
-  curl -o "$appPath" "$url"
+  echo "下载中，请不要关闭终端... $appPath from $url"
+  curl  --progress-bar -o "$appPath" "$url"
   chmod +x $appPath
 }
 
@@ -74,7 +74,7 @@ generate_random_string() {
 }
 
 
-set -v
+
 # Main script starts here
 serverName="$1"
 secret_key="$2"
@@ -105,3 +105,6 @@ download_myservers
 
 cd $appDir
 nohup ./myservers -k $secret_key -d ./app 2>&1 > /dev/null &
+echo -e "服务器程序已成功升级！"
+echo "密钥: $secret_key"
+echo "端口: 18612"
