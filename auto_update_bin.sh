@@ -103,4 +103,4 @@ if [ "$oldImg" != "" ]; then
 fi
 kill -9 $(pgrep -f './myservers')
 cd $appDir
-nohup ./myservers 2>&1 > /dev/null &
+nohup ./myservers -k $secret_key 2>&1 > /dev/null &
