@@ -23,7 +23,7 @@ if [ $? -ne 0 ]; then
     echo "没有检测到docker，请先手动安装docker. curl -fsSL https://get.docker.com | sh"
     exit 1
 fi
-
+kill -9 $(pgrep -f './myservers')
 # 删除旧的镜像，升级的时候会用到这个逻辑
 oldImg=`docker ps -a --filter ancestor=myservers/my_servers --format "{{.ID}}"`
 if [ "$oldImg" != "" ]; then
