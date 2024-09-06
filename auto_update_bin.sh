@@ -94,13 +94,14 @@ pidFile="$appDir/pid"
 rm -rf "$appPath/app/tool.lua"
 rm -rf "$appPath/app/ctx.lua"
 
-download_myservers
-
 oldImg=`docker ps -a --filter ancestor=myservers/my_servers --format "{{.ID}}"`
 if [ "$oldImg" != "" ]; then
   docker stop ${oldImg}
   docker rm ${oldImg}
 fi
+
 kill -9 $(pgrep -f './myservers')
+download_myservers
+
 cd $appDir
 nohup ./myservers -k $secret_key 2>&1 > /dev/null &
