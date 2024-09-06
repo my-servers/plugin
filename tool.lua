@@ -305,7 +305,7 @@ function NewString(str)
     local s = {
         ---@class StringData
         strData = {
-            content   = str,
+            content   = tostring(str),
             color     = black,
             opacity   = 1,
             font_size = 12,
@@ -372,7 +372,7 @@ end
 function NewProcessData(cur, total)
     local percent = 0
     if Tonumber(total) > 0 then
-        percent = math.ceil(cur * 100 / total)
+        percent = math.ceil(Tonumber(cur) * 100 / total)
     end
     ---@class ProcessData
     local processData = {

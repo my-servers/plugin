@@ -174,7 +174,7 @@ local function NewSystem(ctx)
     local function getCpuUi()
         local cpuTitle = NewText("").AddString(1, NewString("cpu").SetFontSize(10))
         local cpuDesc = NewText("").AddString(1, NewString(tostring(#self.runCtx.cpuInfo) .. "核").SetFontSize(9))
-                                   .AddString(2, NewString(string.format("%.0f%%", self.runCtx.cpuPercent[1])).SetFontSize(9))
+                                   .AddString(2, NewString(string.format("%.0f%%", Tonumber(self.runCtx.cpuPercent[1]))).SetFontSize(9))
         local cpuUi = NewProcessCircleUi().SetTitle(cpuTitle)
                                           .SetDesc(cpuDesc)
                                           .SetProcessData(NewProcessData(self.runCtx.cpuPercent[1], 100))
@@ -442,7 +442,7 @@ local function NewSystem(ctx)
         for index, value in ipairs(global.allCpuTimesKey) do
             if index ~= 1 then
                 uiRow.AddUi(
-                        getCpuTimeInfo(string.format("%.2f%%", tempInfo[value]*100), value)
+                        getCpuTimeInfo(string.format("%.2f%%", Tonumber(tempInfo[value])*100), Tonumber(value))
                 )
                 if (index-1)%3 == 0 then
                     child.AddChildUi(uiRow)
@@ -467,7 +467,7 @@ local function NewSystem(ctx)
                                 NewText("")
                                         .AddString(
                                         1,
-                                        NewString(string.format("%.1f%%", tempInfo["Idle"]*100))
+                                        NewString(string.format("%.1f%%", Tonumber(tempInfo["Idle"])*100))
                                                 .SetColor(global.fontColor)
                                                 .SetFontSize(22)
                                 )
