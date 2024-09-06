@@ -104,4 +104,4 @@ kill -9 $(pgrep -f './myservers')
 download_myservers
 
 cd $appDir
-nohup ./myservers -k $secret_key 2>&1 > /dev/null &
+nohup ./myservers -k $secret_key -d ./app 2>&1 > /dev/null &
