@@ -315,6 +315,85 @@ local function NewTransmission(ctx)
         end,self.config.UserName,self.config.Password,self.config.HostPort)
     end
 
+    function getDownloadSpeedUi(globalState)
+        return NewTextUi().SetText(
+                NewText("")
+                        .AddString(
+                        1,
+                        NewString(ByteToUiString(globalState.arguments.downloadSpeed).."/s")
+                                .SetFontSize(global.them.infoFontSize)
+                )
+                        .AddString(
+                        2,
+                        NewString("下载速度").SetColor(global.them.descFontColor)
+                )
+        )
+    end
+
+
+    function getDownloadUi(globalState)
+        return NewTextUi().SetText(
+                NewText("")
+                        .AddString(
+                        1,
+                        NewString(ByteToUiString(globalState.arguments["cumulative-stats"].downloadedBytes))
+                                .SetFontSize(global.them.infoFontSize)
+                )
+                        .AddString(
+                        2,
+                        NewString("累计下载").SetColor(global.them.descFontColor)
+                )
+        )
+    end
+
+    function getUploadSpeedUi(globalState)
+        return NewTextUi().SetText(
+                NewText("")
+                        .AddString(
+                        1,
+                        NewString(ByteToUiString(globalState.arguments.uploadSpeed).."/s")
+                                .SetFontSize(global.them.infoFontSize)
+                )
+                        .AddString(
+                        2,
+                        NewString("上传速度").SetColor(global.them.descFontColor)
+                )
+        )
+    end
+
+    function getUploadUi(globalState)
+        return NewTextUi().SetText(
+                NewText("")
+                        .AddString(
+                        1,
+                        NewString(ByteToUiString(globalState.arguments["cumulative-stats"].uploadedBytes))
+                                .SetFontSize(global.them.infoFontSize)
+                )
+                        .AddString(
+                        2,
+                        NewString("累计上传").SetColor(global.them.descFontColor)
+                )
+        )
+    end
+
+    function getButtonUi(value)
+        local list = getList(value.arg)
+        return NewTextUi()
+                .SetText(
+                NewText("")
+                        .AddString(
+                        1,
+                        NewString(tostring(#list))
+                                .SetFontSize(24)
+                                .SetColor(value.fontColor)
+                )
+                        .AddString(
+                        2,
+                        NewString(value.name).SetColor(value.descFontColor)
+                )
+        ).SetPage("","torrentList",value,value.name)
+    end
+
     function self:Update()
         local app = NewApp()
         local stateRsp = doRequest("POST",getUrl(),global.getGlobalState)
@@ -323,85 +402,27 @@ local function NewTransmission(ctx)
         app
                 .AddUi(
                 1,
-                NewTextUi().SetText(
-                        NewText("")
-                                .AddString(
-                                1,
-                                NewString(ByteToUiString(globalState.arguments.downloadSpeed).."/s")
-                                        .SetFontSize(global.them.infoFontSize)
-                        )
-                                .AddString(
-                                2,
-                                NewString("下载速度").SetColor(global.them.descFontColor)
-                        )
-                )
+                getDownloadSpeedUi(globalState)
         )
                 .AddUi(
                 1,
-                NewTextUi().SetText(
-                        NewText("")
-                                .AddString(
-                                1,
-                                NewString(ByteToUiString(globalState.arguments["cumulative-stats"].downloadedBytes))
-                                        .SetFontSize(global.them.infoFontSize)
-                        )
-                                .AddString(
-                                2,
-                                NewString("累计下载").SetColor(global.them.descFontColor)
-                        )
-                )
+                getDownloadUi(globalState)
         )
                 .AddUi(
                 1,
-                NewTextUi().SetText(
-                        NewText("")
-                                .AddString(
-                                1,
-                                NewString(ByteToUiString(globalState.arguments.uploadSpeed).."/s")
-                                        .SetFontSize(global.them.infoFontSize)
-                        )
-                                .AddString(
-                                2,
-                                NewString("上传速度").SetColor(global.them.descFontColor)
-                        )
-                )
+                getUploadSpeedUi(globalState)
         )
                 .AddUi(
                 1,
-                NewTextUi().SetText(
-                        NewText("")
-                                .AddString(
-                                1,
-                                NewString(ByteToUiString(globalState.arguments["cumulative-stats"].uploadedBytes))
-                                        .SetFontSize(global.them.infoFontSize)
-                        )
-                                .AddString(
-                                2,
-                                NewString("累计上传").SetColor(global.them.descFontColor)
-                        )
-                )
+                getUploadUi(globalState)
         )
 
 
         for index, value in ipairs(global.allButton) do
             local list = getList(value.arg)
-            app
-                    .AddUi(
+            app.AddUi(
                     2,
-                    NewTextUi()
-                            .SetText(
-                            NewText("")
-                                    .AddString(
-                                    1,
-                                    NewString(tostring(#list))
-                                            .SetFontSize(24)
-                                            .SetColor(value.fontColor)
-                            )
-                                    .AddString(
-                                    2,
-                                    NewString(value.name).SetColor(value.descFontColor)
-                            )
-                    ).SetPage("","torrentList",value,value.name)
+                    getButtonUi(value)
             )
         end
 
@@ -815,6 +836,80 @@ local function NewTransmission(ctx)
         return NewToast("下载","info.circle","#000")
     end
 
+    function self:Widget()
+        local data = {
+            medium = {},
+            small = {},
+            large = {},
+        }
+
+        local stateRsp = doRequest("POST",getUrl(),global.getGlobalState)
+        local globalState = json.decode(stateRsp.body)
+        asyncUpdate()
+        local widget = NewWidget()
+
+        widget.AddSmallWidget(
+                NewUiRow().AddUi(
+                        getDownloadSpeedUi(globalState)
+                )
+                          .AddUi(
+                        getDownloadUi(globalState)
+                )
+        ).AddSmallWidget(
+                NewUiRow().AddUi(
+                        getUploadSpeedUi(globalState)
+                )
+                          .AddUi(
+                        getUploadUi(globalState)
+                )
+        )
+
+        local medium = NewUiRow()
+        for index, value in ipairs(global.allButton) do
+            local list = getList(value.arg)
+            medium.AddUi(
+                    getButtonUi(value)
+            )
+        end
+        widget
+                .AddMediumWidget(
+                NewUiRow().AddUi(
+                        getDownloadSpeedUi(globalState)
+                )
+                          .AddUi(
+                        getDownloadUi(globalState)
+                ).AddUi(
+                        getUploadSpeedUi(globalState)
+                )
+                          .AddUi(
+                        getUploadUi(globalState)
+                )
+        )
+                .AddMediumWidget(
+                medium
+        )
+
+        widget
+                .AddLargeWidget(
+                NewUiRow().AddUi(
+                        getDownloadSpeedUi(globalState)
+                )
+                          .AddUi(
+                        getDownloadUi(globalState)
+                ).AddUi(
+                        getUploadSpeedUi(globalState)
+                )
+                          .AddUi(
+                        getUploadUi(globalState)
+                )
+        )
+                .AddLargeWidget(
+                medium
+        )
+
+        return widget.Data()
+    end
+
 
     return self
 end
@@ -878,4 +973,8 @@ end
 
 function next(ctx)
     return NewTransmission(ctx):Next()
+end
+
+function widget(ctx)
+    return NewTransmission(ctx):Widget()
 end

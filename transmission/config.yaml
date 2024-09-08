@@ -3,6 +3,7 @@ enable: true
 priority: 60
 padding: 3
 height: 4
+support_widget: true
 extend:
   DownloadPath:
     val: /downloads

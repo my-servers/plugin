@@ -5,15 +5,16 @@
         {
             "id" : "qbittorrent",
             "name": "qBittorrent",
-            "introduce" : "回滚旧版本",
+            "introduce" : "更新：支持小组件",
             "author" : "admin",
             "home_url": "",
             "download_url":"https://plugin.codeloverme.cn/qbittorrent",
-            "min_server_version": "1.17",
-            "min_client_version": "1.29",
-            "version": "1.11",
+            "min_server_version": "1.18",
+            "min_client_version": "1.36",
+            "version": "1.12",
             "is_finished": true,
             "img": ["en","ja"],
+            "support_widget": true,
             "img_desc": [
                 {
                     "img": "https://plugin.codeloverme.cn/qbittorrent/qb.jpeg",
@@ -95,15 +96,16 @@
         {
             "id" : "transmission",
             "name": "Transmission",
-            "introduce" : "更新：修改超时控制",
+            "introduce" : "更新：支持小组件",
             "author" : "admin",
             "home_url": "",
             "download_url":"https://plugin.codeloverme.cn/transmission",
-            "min_server_version": "1.17",
-            "min_client_version": "1.29",
-            "version": "1.11",
+            "min_server_version": "1.18",
+            "min_client_version": "1.36",
+            "version": "1.12",
             "is_finished": true,
             "img": ["en","ja"],
+            "support_widget": true,
             "img_desc": [
                 {
                     "img": "https://plugin.codeloverme.cn/transmission/tr.jpeg",

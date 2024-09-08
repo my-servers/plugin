@@ -3,6 +3,7 @@ enable: true
 priority: 90
 height: 6
 padding: 3
+support_widget: true
 extend:
   ColNum:
     val: "2"

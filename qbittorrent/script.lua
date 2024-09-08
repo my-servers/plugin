@@ -44,6 +44,7 @@ local global = {
         }
     },
     allStateButton= {},
+    firstNum = 11,
     blue = "#F00",
     black = "#000",
     stateMsg = {
@@ -295,21 +296,61 @@ local function NewQBittorrent(ctx)
         )
     end
 
+    local function getStateInfoUi(text, info)
+        local desc = tostring(text)
+        if text > global.firstNum-1 then
+            desc = tostring(text-1) .. "+"
+        end
+        return NewTextUi().SetText(
+                NewText("")
+                        .AddString(
+                        1,
+                        NewString(desc)
+                                .SetFontSize(20)
+                                .SetColor(info.fontColor)
+                )
+                        .AddString(
+                        2,
+                        NewString(info.name).SetColor(global.them.descFontColor)
+                )
+        )
+    end
+
     function GetUi()
         local app = NewApp()
         if #global.allStateButton == 0 then
             initButton()
         end
         local globalInfo = {}
-        goAndWait({
-            globalInfoKey = function ()
-                local url = string.format("%s%s",self.config.HostPort,global.api.GlobalInfo)
-                local req = http.request("GET",url)
-                local info = doRequestWithLogin(req)
-                globalInfo = json.decode(info.body)
-            end
-        })
+        local handle  = {}
+        local all = {}
+        local downloading = {}
+        local completed = {}
+        local paused = {}
+        handle["globalInfoKey"] = function()
+            local url = string.format("%s%s",self.config.HostPort,global.api.GlobalInfo)
+            local req = http.request("GET",url)
+            local info = doRequestWithLogin(req)
+            globalInfo = json.decode(info.body)
+        end
+        handle["downloading"] = function()
+            local listData = getBittorrentList("downloading", 0, global.firstNum)
+            downloading = json.decode(listData.body)
+        end
+        handle["completed"] = function()
+            local listData = getBittorrentList("completed", 0, global.firstNum)
+            completed = json.decode(listData.body)
+        end
+        handle["paused"] = function()
+            local listData = getBittorrentList("paused", 0, global.firstNum)
+            paused = json.decode(listData.body)
+        end
 
+        handle["all"] = function()
+            local listData = getBittorrentList("all", 0, global.firstNum)
+            all = json.decode(listData.body)
+        end
+        goAndWait(handle)
         app
                 .AddUi(
                 1,
@@ -328,25 +369,19 @@ local function NewQBittorrent(ctx)
                 getGlobalInfo(ByteToUiString(globalInfo.up_info_data),"累计上传")
         )
 
-        for index, value in ipairs(global.allStateButton) do
-            app
-                    .AddUi(
-                    2,
-                    NewTextUi().SetText(
-                            NewText("")
-                                    .AddString(
-                                    1,
-                                    NewString(value.icon)
-                                            .SetFontSize(global.them.buttonSize)
-                                            .SetColor(value.fontColor)
-                            )
-                                    .AddString(
-                                    2,
-                                    NewString(value.name).SetColor(global.them.descFontColor)
-                            )
-                    ).SetPage("","moreList",{type=value.pageArg},value.name)
-            )
-        end
+        app.AddUi(2,
+                getStateInfoUi( Tonumber(#all), global.allStateConfig.all)
+                        .SetPage("","moreList",{type=global.allStateConfig.all.pageArg},global.allStateConfig.all.name)
+        ).AddUi(2,
+                getStateInfoUi(Tonumber(#downloading), global.allStateConfig.downloading)
+                        .SetPage("","moreList",{type=global.allStateConfig.downloading.pageArg},global.allStateConfig.downloading.name)
+        ).AddUi(2,
+                getStateInfoUi( Tonumber(#paused), global.allStateConfig.paused)
+                        .SetPage("","moreList",{type=global.allStateConfig.paused.pageArg},global.allStateConfig.paused.name)
+        ).AddUi(2,
+                getStateInfoUi(Tonumber(#completed), global.allStateConfig.completed)
+                        .SetPage("","moreList",{type=global.allStateConfig.completed.pageArg},global.allStateConfig.completed.name)
+        )
         app
                 .AddMenu(
                 NewIconButton().SetIcon("plus.circle")
@@ -902,6 +937,99 @@ local function NewQBittorrent(ctx)
     end
 
 
+    function self:Widget()
+        local data = {
+            medium = {},
+            small = {},
+            large = {},
+        }
+        local globalInfo = {}
+        local handle  = {}
+        local all = {}
+        local downloading = {}
+        local completed = {}
+        local paused = {}
+        handle["downloading"] = function()
+            local listData = getBittorrentList("downloading", 0, global.firstNum)
+            downloading = json.decode(listData.body)
+        end
+        handle["completed"] = function()
+            local listData = getBittorrentList("completed", 0, global.firstNum)
+            completed = json.decode(listData.body)
+        end
+        handle["paused"] = function()
+            local listData = getBittorrentList("paused", 0, global.firstNum)
+            paused = json.decode(listData.body)
+        end
+
+        handle["all"] = function()
+            local listData = getBittorrentList("all", 0, global.firstNum)
+            all = json.decode(listData.body)
+        end
+        handle["globalInfoKey"] = function ()
+            local url = string.format("%s%s",self.config.HostPort,global.api.GlobalInfo)
+            local req = http.request("GET",url)
+            local info = doRequestWithLogin(req)
+            globalInfo = json.decode(info.body)
+        end
+        goAndWait(handle)
+
+        local widget = NewWidget()
+        local uiRow = NewUiRow()
+                .AddUi(
+                getGlobalInfo(ByteToUiString(globalInfo.dl_info_speed).."/s","下载速度")
+        )
+                .AddUi(
+                getGlobalInfo(ByteToUiString(globalInfo.dl_info_data),"累计下载")
+        )
+                .AddUi(
+                getGlobalInfo(ByteToUiString(globalInfo.up_info_speed).."/s","上传速度")
+        )
+                .AddUi(
+                getGlobalInfo(ByteToUiString(globalInfo.up_info_data),"累计上传")
+        )
+
+        widget.AddSmallWidget(
+                NewUiRow().AddUi(
+                        getGlobalInfo(ByteToUiString(globalInfo.dl_info_speed).."/s","下载速度")
+                )
+                          .AddUi(
+                        getGlobalInfo(ByteToUiString(globalInfo.dl_info_data),"累计下载")
+                )
+        ).AddSmallWidget(
+                NewUiRow().AddUi(
+                        getGlobalInfo(ByteToUiString(globalInfo.up_info_speed).."/s","上传速度")
+                )
+                          .AddUi(
+                        getGlobalInfo(ByteToUiString(globalInfo.up_info_data),"累计上传")
+                )
+        )
+
+        local medium = NewUiRow()
+        .AddUi(
+                getStateInfoUi( Tonumber(#all), global.allStateConfig.all)
+        ).AddUi(
+                getStateInfoUi(Tonumber(#downloading), global.allStateConfig.downloading)
+        ).AddUi(
+                getStateInfoUi( Tonumber(#paused), global.allStateConfig.paused)
+        ).AddUi(
+                getStateInfoUi(Tonumber(#completed), global.allStateConfig.completed)
+        )
+        widget.AddMediumWidget(
+                uiRow
+        ).AddMediumWidget(
+                medium
+        )
+
+        widget.AddLargeWidget(
+                uiRow
+        ).AddLargeWidget(
+                medium
+        )
+        return widget.Data()
+    end
+
+
     self.GetUi = GetUi
     self.Choice = Choice
     self.Pause = Pause
@@ -981,4 +1109,8 @@ end
 
 function pre(ctx)
     return NewQBittorrent(ctx):Pre()
+end
+
+function widget(ctx)
+    return NewQBittorrent(ctx):Widget()
 end
