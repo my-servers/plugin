@@ -1,1 +1,1 @@
-- 中秋快乐🎉
+- 由于操作失误，把app设置成了付费的，9月16前后几天有付费下载的请[联系](https://docs.qq.com/aio/DTGdndmFVZlZldEJS?p=dKEREAv71e2G6cpIU9cMtW)处理
