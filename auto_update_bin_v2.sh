@@ -104,8 +104,7 @@ ps aux | grep './myservers' | grep -v grep | awk '{print $2}' | xargs kill -9
 download_myservers
 
 cd $appDir
-nohup ./myservers -k $secret_key &
+./myservers -k $secret_key &
 echo -e "服务器程序已成功升级！"
 echo "密钥: $secret_key"
 echo "端口: 18612"
-cat nohup.out
