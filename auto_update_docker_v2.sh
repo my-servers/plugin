@@ -12,6 +12,13 @@ ps aux | grep './myservers' | grep -v grep | awk '{print $2}' | xargs kill -9
 app_dir=$2
 image=$1
 
+oldImg=`docker ps -a --filter ancestor=${image} --format "{{.ID}}"`
+if [ "$oldImg" != "" ]; then
+  docker stop ${oldImg}
+  docker rm ${oldImg}
+  echo "删除旧镜像：${image}"
+fi
+
 # 目录不存在就创建
 if [ "$app_dir" == "" ]; then
   app_dir=~/.myservers
