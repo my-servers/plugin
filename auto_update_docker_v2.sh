@@ -60,7 +60,7 @@ services:
       # 服务端所有的数据都在/app/data文件夹中，映射到主机 ~/.myservers/data，这样容器重建后数据不丢
       - ~/.myservers/data:/app/data
     # -k 密钥请自行修改
-    command: /app/app -c /app/config/config.yaml
+    command: /app/app
     restart: always
 EOF
 
