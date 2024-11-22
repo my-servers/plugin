@@ -43,6 +43,13 @@ if ! [ -d "$app_dir" ]; then
   echo "创建安装目录: ${app_dir}"
 fi
 echo "创建docker-compose.yaml: ${app_dir}/docker-compose.yaml"
+
+config_dir=$app_dir"/config"
+if ! [ -d "$config_dir" ]; then
+  mkdir $config_dir
+  touch ${config_dir}"/config.yaml"
+fi
+
 # 准备一个默认的配置文件
 cat > ${app_dir}/docker-compose.yaml << EOF
 services:
@@ -59,6 +66,8 @@ services:
       - /var/run:/var/run
       # 服务端所有的数据都在/app/data文件夹中，映射到主机 ~/.myservers/data，这样容器重建后数据不丢
       - ~/.myservers/data:/app/data
+      # 映射配置
+      - ~/.myservers/config:/app/config
     # -k 密钥请自行修改
     command: /app/app
     restart: always
