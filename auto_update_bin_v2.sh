@@ -62,13 +62,20 @@ download_myservers() {
 serverName=$1
 app_dir=$2
 
+if [ "$app_dir" == "" ]; then
+  app_dir=~/.myservers
+  echo "没有指定安装目录，使用默认目录：~/.myservers"
+fi
+echo "安装目录:${app_dir}"
+
 if [ "$serverName" == "" ]; then
   serverName="myservers"
 fi
 
-# 检查密钥长度是否为32
-if [ ${#secret_key} -ne 32 ]; then
-    secret_key=$(generate_random_string 32)
+app_dir=~/.myservers
+if ! [ -d "$app_dir" ]; then
+  mkdir $app_dir
+  echo "创建安装目录: ${app_dir}"
 fi
 
 oldImg=`docker ps -a --filter ancestor=myservers/my_servers --format "{{.ID}}"`

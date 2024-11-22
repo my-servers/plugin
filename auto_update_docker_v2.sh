@@ -38,7 +38,6 @@ if [ "$image" == "" ]; then
 fi
 echo "安装镜像：${image}"
 
-app_dir=~/.myservers
 if ! [ -d "$app_dir" ]; then
   mkdir $app_dir
   echo "创建安装目录: ${app_dir}"
