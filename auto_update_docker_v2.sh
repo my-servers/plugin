@@ -66,4 +66,4 @@ EOF
 
 cd ${app_dir}
 docker-compose up -d
-docker logs -n 100 myservers
+docker exec -it myservers /app/app -op show_config
