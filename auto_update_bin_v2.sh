@@ -53,7 +53,7 @@ download_myservers() {
   url="${base_url}/${filename}"
 
   # Download the binary
-  appName=${app_dir}"/myservers"
+  appName="${app_dir}/myservers"
   echo "下载中，请不要关闭终端... $appName from $url"
   curl  --progress-bar -o "$appName" "$url"
   chmod +x $appName
