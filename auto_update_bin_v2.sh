@@ -58,26 +58,9 @@ download_myservers() {
   chmod +x $appPath
 }
 
-# 随机密钥生成
-generate_random_string() {
-  length="${1:-32}"
-  charset="abcdefghijklmnopqrstuvwxyz0123456789"
-  result=""
-  i=0
-  while [ $i -lt $length ]; do
-    rand_index=$(( RANDOM % ${#charset} ))
-    result="${result}${charset:$rand_index:1}"
-    i=$((i+1))
-  done
-
-  echo "$result"
-}
-
-
-
 # Main script starts here
-serverName="$1"
-secret_key="$2"
+serverName=$1
+app_dir=$2
 
 if [ "$serverName" == "" ]; then
   serverName="myservers"
@@ -87,12 +70,6 @@ fi
 if [ ${#secret_key} -ne 32 ]; then
     secret_key=$(generate_random_string 32)
 fi
-
-appDir="$HOME/.myservers"
-appPath="$appDir/myservers"
-pidFile="$appDir/pid"
-rm -rf "$appPath/app/tool.lua"
-rm -rf "$appPath/app/ctx.lua"
 
 oldImg=`docker ps -a --filter ancestor=myservers/my_servers --format "{{.ID}}"`
 if [ "$oldImg" != "" ]; then
@@ -109,8 +86,5 @@ fi
 ps aux | grep './myservers' | grep -v grep | awk '{print $2}' | xargs kill -9
 download_myservers
 
-cd $appDir
-./myservers -k $secret_key &
-echo -e "服务器程序已成功升级！"
-echo "密钥: $secret_key"
-echo "端口: 18612"
+cd ${app_dir}
+./myservers &
