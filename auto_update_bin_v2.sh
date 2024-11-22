@@ -95,4 +95,5 @@ ps aux | grep './myservers' | grep -v grep | awk '{print $2}' | xargs kill -9
 download_myservers
 
 cd ${app_dir}
-./myservers &
+./myservers > /dev/null &
+./myservers -op show_config
