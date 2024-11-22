@@ -100,6 +100,12 @@ if [ "$oldImg" != "" ]; then
   docker rm ${oldImg}
 fi
 
+oldImg=`docker ps -a --filter ancestor=myservers/my_servers:dev --format "{{.ID}}"`
+if [ "$oldImg" != "" ]; then
+  docker stop ${oldImg}
+  docker rm ${oldImg}
+fi
+
 ps aux | grep './myservers' | grep -v grep | awk '{print $2}' | xargs kill -9
 download_myservers
 

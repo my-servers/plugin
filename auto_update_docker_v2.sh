@@ -12,11 +12,17 @@ ps aux | grep './myservers' | grep -v grep | awk '{print $2}' | xargs kill -9
 app_dir=$2
 image=$1
 
-oldImg=`docker ps -a --filter ancestor=${image} --format "{{.ID}}"`
+
+oldImg=`docker ps -a --filter ancestor=myservers/my_servers --format "{{.ID}}"`
 if [ "$oldImg" != "" ]; then
   docker stop ${oldImg}
   docker rm ${oldImg}
-  echo "删除旧镜像：${image}"
+fi
+
+oldImg=`docker ps -a --filter ancestor=myservers/my_servers:dev --format "{{.ID}}"`
+if [ "$oldImg" != "" ]; then
+  docker stop ${oldImg}
+  docker rm ${oldImg}
 fi
 
 # 目录不存在就创建
