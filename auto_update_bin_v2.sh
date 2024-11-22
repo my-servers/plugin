@@ -53,9 +53,9 @@ download_myservers() {
   url="${base_url}/${filename}"
 
   # Download the binary
-  echo "下载中，请不要关闭终端... $appPath from $url"
-  curl  --progress-bar -o "$appPath" "$url"
-  chmod +x $appPath
+  echo "下载中，请不要关闭终端... $app_dir from $url"
+  curl  --progress-bar -o "$app_dir" "$url"
+  chmod +x $app_dir
 }
 
 # Main script starts here
