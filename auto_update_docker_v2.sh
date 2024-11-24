@@ -69,7 +69,7 @@ services:
       # 映射配置
       - ~/.myservers/config:/app/config
     # -k 密钥请自行修改
-    command: /app/app
+    command: /app/app 2>&1 > /dev/null
     restart: always
 EOF
 
