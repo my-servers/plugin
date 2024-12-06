@@ -1,2 +1,1 @@
-- 🎉🎉MyServers新版本已经上线，安装最新服务端和App可体验，尽量先删除旧版镜像，App设置里面请关闭dev开关
-- 服务端无法手动指定密钥的bug已经修复了
+- 🎉🎉Transmission和https已经支持，升级App和服务端体验
