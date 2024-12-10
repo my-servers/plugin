@@ -93,5 +93,5 @@ services:
 EOF
 
 cd ${app_dir}
-docker-compose up -d
+docker run -it -d -v ~/.myservers/data:/app/data -v ~/.myservers/config:/app/config -v /proc:/proc -v /var/run:/var/run --restart=always --net=host --name=myservers ${image} /app/app 2>&1 > /dev/null
 docker exec -it myservers /app/app -op show_config
