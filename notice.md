@@ -1,2 +1,1 @@
-- app的服务器排序目前没有实现完整，不小心发出去了，请先不要体验
-- frp插件是配置客户端的管理端口，请根据frpc的官方指导，开始web管理
+- [MyServers新功能筹划](https://docs.qq.com/form/page/DTHpCSGJESXBuZXFR) 来给app提点新功能吧
