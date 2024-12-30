@@ -53,7 +53,6 @@ if ! [ -d "$app_dir" ]; then
   mkdir $app_dir
   echo "创建安装目录: ${app_dir}"
 fi
-echo "创建docker-compose.yaml: ${app_dir}/docker-compose.yaml"
 
 config_dir=$app_dir"/config"
 if ! [ -d "$config_dir" ]; then
@@ -69,29 +68,21 @@ if ! [ -d "$data_dir" ]; then
   echo "创建数据目录: ${data_dir}"
 fi
 
-# 准备一个默认的配置文件
-cat > ${app_dir}/docker-compose.yaml << EOF
-services:
-  myServers:
-    # :dev是开发版，:latest是正式版
-    image: ${image}
-    # 主机网络接口
-    network_mode: host
-    container_name: myservers
-    volumes:
-      # 主机进程映射
-      - /proc:/proc
-      # docker等信息映射
-      - /var/run:/var/run
-      # 服务端所有的数据都在/app/data文件夹中，映射到主机 ~/.myservers/data，这样容器重建后数据不丢
-      - ~/.myservers/data:/app/data
-      # 映射配置
-      - ~/.myservers/config:/app/config
-    # -k 密钥请自行修改
-    command: /app/app 2>&1 > /dev/null
-    restart: always
+# 查看宿主机所有挂载的磁盘，需要挂载到容器，这样系统监控才会显示这些磁盘的信息
+mounts=""
+myServersAllDisk=""
+while read -r dev path; do
+  if [ "$path" = "/" ]; then
+    continue
+  fi
+  if ! echo "$mounts" | grep -q "$dev"; then
+    mounts="$mounts $dev $path"
+    myServersAllDisk="$myServersAllDisk -v $path:$path "
+  fi
+done <<EOF
+$(mount | grep "^/dev" | grep -v "boot" | grep -v "/etc/" | awk '{ print $1,$3 }')
 EOF
 
 cd ${app_dir}
-docker run -it -d -v ~/.myservers/data:/app/data -v ~/.myservers/config:/app/config -v /proc:/proc -v /var/run:/var/run --restart=always --net=host --name=myservers ${image} /app/app 2>&1 > /dev/null
+docker run -it -d -v ~/.myservers/data:/app/data -v ~/.myservers/config:/app/config -v /proc:/proc -v /var/run:/var/run $myServersAllDisk --restart=always --net=host --name=myservers ${image} /app/app 2>&1 > /dev/null
 docker exec -it myservers /app/app -op show_config
