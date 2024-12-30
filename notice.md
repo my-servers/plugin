@@ -1,1 +1,1 @@
-- 🎉🎉Transmission和https已经支持，升级App和服务端体验
+- [MyServers新功能筹划](https://docs.qq.com/form/page/DTHpCSGJESXBuZXFR) 来给app提点新功能吧
