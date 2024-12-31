@@ -1,1 +1,1 @@
-- [MyServers新功能筹划](https://docs.qq.com/form/page/DTHpCSGJESXBuZXFR) 来给app提点新功能吧
+- 🎉🎉元旦快乐！45折甩卖App啦！！
