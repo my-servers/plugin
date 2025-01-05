@@ -16,6 +16,7 @@ fi
 
 app_dir=$2
 image=$1
+secKey=$3
 
 # 定义一个包含所有镜像的数组
 images=("myservers/my_servers" "myservers/my_servers:dev" ${image})
@@ -84,5 +85,5 @@ $(mount | grep "^/dev" | grep -v "boot" | grep -v "/etc/" | awk '{ print $1,$3 }
 EOF
 
 cd ${app_dir}
-docker run -it -d -v ~/.myservers/data:/app/data -v ~/.myservers/config:/app/config -v /proc:/proc -v /var/run:/var/run $myServersAllDisk --restart=always --net=host --name=myservers ${image} /app/app 2>&1 > /dev/null
+docker run -it -d -v ~/.myservers/data:/app/data -v ~/.myservers/config:/app/config -v /proc:/proc -v /var/run:/var/run $myServersAllDisk --restart=always --net=host --name=myservers ${image} /app/app -k "${secKey}" 2>&1 > /dev/null
 docker exec -it myservers /app/app -op show_config

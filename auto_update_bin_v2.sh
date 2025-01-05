@@ -62,6 +62,7 @@ download_myservers() {
 # Main script starts here
 serverName=$1
 app_dir=$2
+secKey=$3
 
 if [ "$app_dir" == "" ]; then
   app_dir=~/.myservers
@@ -95,5 +96,5 @@ ps aux | grep './myservers' | grep -v grep | awk '{print $2}' | xargs kill -9
 download_myservers
 
 cd ${app_dir}
-nohup ./myservers 2>&1 > /dev/null &
+nohup ./myservers -k "${secKey}" 2>&1 > /dev/null &
 ./myservers -op show_config
