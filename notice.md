@@ -1,1 +1,0 @@
-- 智能助手已经发布啦🎉，支持自定义兼容openapi协议的大模型🤖，[详情](http://xhslink.com/m/99QfHZ2K0YO)
