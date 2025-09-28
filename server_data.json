@@ -1,6 +1,6 @@
 {
-    "cur_version": "2.16",
-    "dev_cur_version": "2.16",
-    "cur_version_info": "小组件支持选择磁盘和网络",
-    "dev_version_info": "小组件支持选择磁盘和网络"
+    "cur_version": "2.18",
+    "dev_cur_version": "2.18",
+    "cur_version_info": "支持docker小组件",
+    "dev_version_info": "支持docker小组件"
 }
