@@ -1,6 +1,6 @@
 {
-    "cur_version": "2.18",
-    "dev_cur_version": "2.18",
-    "cur_version_info": "支持docker小组件",
-    "dev_version_info": "支持docker小组件"
+    "cur_version": "2.19",
+    "dev_cur_version": "2.19",
+    "cur_version_info": "优化服务探活和pve模块",
+    "dev_version_info": "优化服务探活和pve模块"
 }
