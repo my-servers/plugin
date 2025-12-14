@@ -1,6 +1,6 @@
 {
-    "cur_version": "2.20",
-    "dev_cur_version": "2.20",
-    "cur_version_info": "优化docker模块",
-    "dev_version_info": "优化docker模块"
+    "cur_version": "2.21",
+    "dev_cur_version": "2.21",
+    "cur_version_info": "重构qb和tr模块",
+    "dev_version_info": "重构qb和tr模块"
 }
